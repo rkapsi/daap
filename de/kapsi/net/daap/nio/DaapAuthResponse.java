@@ -7,6 +7,8 @@
 package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
+import de.kapsi.net.daap.DaapResponse;
+import de.kapsi.net.daap.DaapConnection;
 
 /**
  *
@@ -20,6 +22,12 @@ public class DaapAuthResponse implements DaapResponse {
     public DaapAuthResponse(DaapConnection connection) {
         header = DaapHeader.createAuthHeader(connection);
     }
+    
+    
+    public boolean hasRemainig() {
+        return header.hasRemaining();
+    }
+    
     
     /**
      *

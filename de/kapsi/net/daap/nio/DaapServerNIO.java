@@ -16,6 +16,7 @@ import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.SimpleConfig;
 import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapStreamSource;
+import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.SimpleConfig;
 
 import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
@@ -344,7 +345,8 @@ public class DaapServerNIO implements DaapServer {
     
     private SelectionKey register(DaapConnection connection, int op) 
             throws ClosedChannelException {
-        SocketChannel channel = connection.getChannel();
+                
+        SocketChannel channel = ((DaapConnectionImpl)connection).getChannel();
         SelectionKey sk = channel.register(selector, op, connection);
         connections.add(connection);
         return sk;
@@ -352,7 +354,7 @@ public class DaapServerNIO implements DaapServer {
     
     private void cancel(SelectionKey sk) {
         
-        DaapConnection connection = (DaapConnection)sk.attachment();
+        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
         
         if (connection != null)
             connections.remove(connection);
@@ -398,8 +400,8 @@ public class DaapServerNIO implements DaapServer {
 
             channel.configureBlocking(false);
 
-            DaapConnection connection 
-                = new DaapConnection(this, channel);
+            DaapConnectionImpl connection 
+                = new DaapConnectionImpl(this, channel);
             
             SelectionKey key = register(connection, SelectionKey.OP_READ);
             
@@ -417,7 +419,7 @@ public class DaapServerNIO implements DaapServer {
         if (!sk.isValid())
             return;
         
-        DaapConnection connection = (DaapConnection)sk.attachment(); 
+        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment(); 
         SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;
@@ -436,7 +438,7 @@ public class DaapServerNIO implements DaapServer {
         if (!sk.isValid())
             return;
         
-        DaapConnection connection = (DaapConnection)sk.attachment();
+        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
         SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;
@@ -463,7 +465,7 @@ public class DaapServerNIO implements DaapServer {
                 
                 if (channel instanceof SocketChannel) {
                     
-                    DaapConnection connection = (DaapConnection)sk.attachment();
+                    DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
                     
                     if (connection.isNormal()) {
                         try {

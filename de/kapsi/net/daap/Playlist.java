@@ -1,20 +1,28 @@
 
 package de.kapsi.net.daap;
 
+import java.io.IOException;
+
+import de.kapsi.util.ArrayIterator;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import de.kapsi.net.daap.chunks.Chunk;
 import de.kapsi.net.daap.chunks.AbstractChunk;
-import de.kapsi.net.daap.chunks.PlaylistSongsImpl;
 
 import de.kapsi.net.daap.chunks.impl.ItemId;
 import de.kapsi.net.daap.chunks.impl.ItemName;
 import de.kapsi.net.daap.chunks.impl.PersistentId;
 import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
-//import de.kapsi.net.daap.chunks.impl.ItemCount;
-//import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
-//import de.kapsi.net.daap.chunks.impl.ContainerItemId;
+import de.kapsi.net.daap.chunks.impl.Status;
+import de.kapsi.net.daap.chunks.impl.UpdateType;
+import de.kapsi.net.daap.chunks.impl.Listing;
+import de.kapsi.net.daap.chunks.impl.ListingItem;
+import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
+import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
+import de.kapsi.net.daap.chunks.impl.ReturnedCount;
+import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
 
 import java.util.Iterator;
 import java.util.List;
@@ -36,11 +44,8 @@ public class Playlist implements SongListener {
     
     private ItemId itemId;
     private ItemName itemName;
-    //private ItemCount itemCount;
     
     private PersistentId persistentId;
-    //private SmartPlaylist smartPlaylist;
-    //private final ContainerItemId containerItemId = new ContainerItemId();
     
     private ArrayList items;
     private ArrayList newItems;
@@ -48,8 +53,8 @@ public class Playlist implements SongListener {
     
     private HashMap properties;
     
-    private PlaylistSongs playlistSongs;
-    private PlaylistSongs playlistSongsUpdate;
+    private byte[] playlistSongs;
+    private byte[] playlistSongsUpdate;
     
     private Playlist masterPlaylist;
     
@@ -68,15 +73,10 @@ public class Playlist implements SongListener {
         
         itemName = new ItemName(name);
         persistentId = new PersistentId(itemId.getValue());
-        //smartPlaylist = new SmartPlaylist(true);
-        //itemCount = new ItemCount(0);
         
         add(itemId);
         add(itemName);
-        //add(itemCount);
         add(persistentId);
-        //add(smartPlaylist);
-        //add(containerItemId);
     }
     
     // required for createSnapshot()
@@ -88,14 +88,10 @@ public class Playlist implements SongListener {
         this.itemName = new ItemName(name);
         
         persistentId = new PersistentId(itemId.getValue());
-        //smartPlaylist = new SmartPlaylist(false);
         
         add(itemId);
         add(itemName);
-        //add(itemCount);
         add(persistentId);
-        //add(smartPlaylist);
-        //add(containerItemId);
     }
     
     void setMasterPlaylist(Playlist masterPlaylist) {
@@ -303,10 +299,10 @@ public class Playlist implements SongListener {
     void close() {
         
         playlistSongs 
-            = new PlaylistSongsImpl(items, newItems, deletedItems, false);
+            = (new PlaylistSongsImpl(items, newItems, deletedItems, false)).getBytes();
         
         playlistSongsUpdate 
-            = new PlaylistSongsImpl(items, newItems, deletedItems, true);
+            = (new PlaylistSongsImpl(items, newItems, deletedItems, true)).getBytes();
     }
     
     Playlist createSnapshot() {
@@ -327,5 +323,81 @@ public class Playlist implements SongListener {
     
     public String toString() {
         return getName();
+    }
+    
+    /**
+    * This class implements the PlaylistSongs
+    */
+    private final class PlaylistSongsImpl extends PlaylistSongs {
+    
+        private PlaylistSongsImpl(List items, List newItems, List deletedItems, boolean updateType) {
+            super();
+
+            add(new Status(200));
+            add(new UpdateType(updateType));
+
+            int secifiedTotalCount = items.size()-deletedItems.size();
+            int returnedCount = newItems.size();
+
+            add(new SpecifiedTotalCount(secifiedTotalCount));
+            add(new ReturnedCount(returnedCount));
+
+            Listing listing = new Listing();
+
+            Iterator it = ((updateType) ? newItems : items).iterator();
+
+            while(it.hasNext()) {
+                ListingItem listingItem = new ListingItem();
+                Song song = (Song)it.next();
+
+                Iterator properties = new ArrayIterator(DaapUtil.PLAYLIST_SONGS_META);
+                while(properties.hasNext()) {
+                    String key = (String)properties.next();
+
+                    Chunk chunk = song.getProperty(key);
+
+                    if (chunk != null) {
+                        listingItem.add(chunk);
+
+                    } else if (LOG.isInfoEnabled()) {
+                        LOG.info("Unknown chunk type: " + key);
+                    }
+                }
+
+                listing.add(listingItem);
+            }
+
+            add(listing);
+
+            if (updateType) {
+
+                it = deletedItems.iterator();
+
+                if (it.hasNext()) {
+
+                    DeletedIdListing deletedListing = new DeletedIdListing();
+
+                    while(it.hasNext()) {
+                        Integer itemId = (Integer)it.next();
+                        deletedListing.add(new ItemId(itemId.intValue()));
+                    }
+
+                    add(deletedListing);
+                }
+            }
+        }
+        
+        public byte[] getBytes() {
+            return getBytes(true);
+        }
+        
+        public byte[] getBytes(boolean compress) {
+            try {
+                return DaapUtil.serialize(this, compress);
+            } catch (IOException err) {
+                LOG.error(err);
+                return null;
+            }
+        }
     }
 }

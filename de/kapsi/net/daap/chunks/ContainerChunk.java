@@ -35,7 +35,7 @@ public class ContainerChunk extends AbstractChunk {
     /**
      * Adds <tt>chunk</tt> to this container
      */
-    protected void add(Chunk chunk) {
+    public void add(Chunk chunk) {
         collection.add(chunk);
     }
     

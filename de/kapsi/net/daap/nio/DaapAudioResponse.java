@@ -12,6 +12,8 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.DaapResponse;
+import de.kapsi.net.daap.DaapConnection;
 
 /**
  *
@@ -34,8 +36,14 @@ public class DaapAudioResponse implements DaapResponse {
         this.position = position;
         this.end = end;
         
-        channel = connection.getChannel();
+        channel = ((DaapConnectionImpl)connection).getChannel();
         header = DaapHeader.createAudioHeader(connection, (int)in.size());
+    }
+    
+    public boolean hasRemainig() {
+        if (header.hasRemaining())
+            return true;
+        else return (position < end);
     }
     
     public boolean write() throws IOException {

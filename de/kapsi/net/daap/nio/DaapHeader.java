@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.DaapRequest;
+import de.kapsi.net.daap.DaapConnection;
 
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
@@ -41,7 +42,7 @@ public class DaapHeader {
     
     public static DaapHeader createChunkHeader(DaapConnection connection, int contentLength) {
         DaapHeader daapHeader = new DaapHeader();
-        daapHeader.channel = connection.getChannel();
+        daapHeader.channel = ((DaapConnectionImpl)connection).getChannel();
         
         try {
             
@@ -66,7 +67,7 @@ public class DaapHeader {
     
     public static DaapHeader createAudioHeader(DaapConnection connection, int contentLength) {
         DaapHeader daapHeader = new DaapHeader();
-        daapHeader.channel = connection.getChannel();
+        daapHeader.channel = ((DaapConnectionImpl)connection).getChannel();
         
         try {
             
@@ -91,7 +92,7 @@ public class DaapHeader {
     
     public static DaapHeader createAuthHeader(DaapConnection connection) {
         DaapHeader daapHeader = new DaapHeader();
-        daapHeader.channel = connection.getChannel();
+        daapHeader.channel = ((DaapConnectionImpl)connection).getChannel();
         
         try {
             

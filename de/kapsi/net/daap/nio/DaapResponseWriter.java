@@ -6,10 +6,10 @@
 
 package de.kapsi.net.daap.nio;
 
-
 import java.io.IOException;
-
 import java.util.LinkedList;
+
+import de.kapsi.net.daap.DaapResponse;
 
 /**
  *

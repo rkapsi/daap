@@ -1,12 +1,27 @@
 
 package de.kapsi.net.daap;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
-import de.kapsi.net.daap.chunks.DatabaseSongsImpl;
-import de.kapsi.net.daap.chunks.DatabasePlaylistsImpl;
+import java.io.IOException;
 
-import de.kapsi.net.daap.chunks.impl.*;
+import de.kapsi.util.ArrayIterator;
+import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.chunks.impl.Status;
+import de.kapsi.net.daap.chunks.impl.UpdateType;
+import de.kapsi.net.daap.chunks.impl.Listing;
+import de.kapsi.net.daap.chunks.impl.ListingItem;
+import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
+import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
+import de.kapsi.net.daap.chunks.impl.ReturnedCount;
+import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.DatabasePlaylists;
+import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
+import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
+import de.kapsi.net.daap.chunks.impl.ReturnedCount;
+import de.kapsi.net.daap.chunks.impl.DatabaseSongs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,11 +39,11 @@ public class Database {
     private String name;
     private String persistentId;
     
-    private DatabaseSongs databaseSongs;
-    private DatabaseSongs databaseSongsUpdate;
+    private byte[] databaseSongs;
+    private byte[] databaseSongsUpdate;
     
-    private DatabasePlaylists databasePlaylists;
-    private DatabasePlaylists databasePlaylistsUpdate;
+    private byte[] databasePlaylists;
+    private byte[] databasePlaylistsUpdate;
     
     /** List of playlists */
     private ArrayList containers;
@@ -250,11 +265,11 @@ public class Database {
         List newItems = masterPlaylist.getNewSongs();
         List deletedItems = masterPlaylist.getDeletedSongs();
         
-        databaseSongs = new DatabaseSongsImpl(items, newItems, deletedItems, false);
-        databaseSongsUpdate = new DatabaseSongsImpl(items, newItems, deletedItems, true);
+        databaseSongs = (new DatabaseSongsImpl(items, newItems, deletedItems, false)).getBytes();
+        databaseSongsUpdate = (new DatabaseSongsImpl(items, newItems, deletedItems, true)).getBytes();
         
-        databasePlaylists = new DatabasePlaylistsImpl(containers, deletedContainers, false);
-        databasePlaylistsUpdate = new DatabasePlaylistsImpl(containers, deletedContainers, true);
+        databasePlaylists = (new DatabasePlaylistsImpl(containers, deletedContainers, false)).getBytes();
+        databasePlaylistsUpdate = (new DatabasePlaylistsImpl(containers, deletedContainers, true)).getBytes();
         
         Iterator it = containers.iterator();
         while(it.hasNext()) {
@@ -283,5 +298,155 @@ public class Database {
         }
         
         return clone;
+    }
+    
+    /**
+    * This class is an implementation of DatabasePlaylists
+    */
+    private final class DatabasePlaylistsImpl extends DatabasePlaylists {
+
+        private DatabasePlaylistsImpl(List containers, List deletedContainers, boolean updateType) {
+            super();
+
+            add(new Status(200));
+            add(new UpdateType(updateType));
+
+            int specifiedTotalCount = containers.size()-deletedContainers.size();
+            int returnedCount = specifiedTotalCount;
+
+            add(new SpecifiedTotalCount(specifiedTotalCount));
+            add(new ReturnedCount(returnedCount));
+
+            Listing listing = new Listing();
+
+            Iterator it = containers.iterator();
+            while(it.hasNext()) {
+                ListingItem listingItem = new ListingItem();
+                Playlist playlist = (Playlist)it.next();
+
+                Iterator properties = new ArrayIterator(DaapUtil.DATABASE_PLAYLISTS_META);
+                while(properties.hasNext()) {
+                    String key = (String)properties.next();
+                    Chunk chunk = playlist.getProperty(key);
+
+                    if (chunk != null) {
+                        listingItem.add(chunk);
+
+                    } else if (LOG.isInfoEnabled()) {
+                        LOG.info("Unknown chunk type: " + key);
+                    }
+                }
+
+                listing.add(listingItem);
+            }
+
+            add(listing);
+
+            if (updateType) {
+
+                it = deletedContainers.iterator();
+
+                if (it.hasNext()) {
+
+                    DeletedIdListing deletedListing = new DeletedIdListing();
+
+                    while(it.hasNext()) {
+                        Integer itemId = (Integer)it.next();
+                        deletedListing.add(new ItemId(itemId.intValue()));
+                    }
+
+                    add(deletedListing);
+                }
+            }
+        }
+        
+        public byte[] getBytes() {
+            return getBytes(true);
+        }
+        
+        public byte[] getBytes(boolean compress) {
+            try {
+                return DaapUtil.serialize(this, compress);
+            } catch (IOException err) {
+                LOG.error(err);
+                return null;
+            }
+        }
+    }
+    
+    /**
+    * This class is an implementation of DatabaseSongs
+    */
+    public final class DatabaseSongsImpl extends DatabaseSongs {
+        
+        public DatabaseSongsImpl(List items, List newItems, List deletedItems, boolean updateType) {
+            super();
+
+            add(new Status(200));
+            add(new UpdateType(updateType));
+
+            int secifiedTotalCount = items.size()-deletedItems.size();
+            int returnedCount = newItems.size();
+
+            add(new SpecifiedTotalCount(secifiedTotalCount));
+            add(new ReturnedCount(returnedCount));
+
+            Listing listing = new Listing();
+
+            Iterator it = ((updateType) ? newItems : items).iterator();
+
+            while(it.hasNext()) {
+                ListingItem listingItem = new ListingItem();
+                Song song = (Song)it.next();
+
+                Iterator properties = new ArrayIterator(DaapUtil.DATABASE_SONGS_META);
+                while(properties.hasNext()) {
+
+                    String key = (String)properties.next();
+                    Chunk chunk = song.getProperty(key);
+
+                    if (chunk != null) {
+                        listingItem.add(chunk);
+
+                    } else if (LOG.isInfoEnabled()) {
+                        LOG.info("Unknown chunk type: " + key);
+                    }
+                }
+
+                listing.add(listingItem);
+            }
+
+            add(listing);
+
+            if (updateType) {
+
+                it = deletedItems.iterator();
+
+                if (it.hasNext()) {
+
+                    DeletedIdListing deletedListing = new DeletedIdListing();
+
+                    while(it.hasNext()) {
+                        Integer itemId = (Integer)it.next();
+                        deletedListing.add(new ItemId(itemId.intValue()));
+                    }
+
+                    add(deletedListing);
+                }
+            }
+        }
+        
+        public byte[] getBytes() {
+            return getBytes(true);
+        }
+        
+        public byte[] getBytes(boolean compress) {
+            try {
+                return DaapUtil.serialize(this, compress);
+            } catch (IOException err) {
+                LOG.error(err);
+                return null;
+            }
+        }
     }
 }

@@ -13,13 +13,19 @@ import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.DaapRequest;
+import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapSession;
+
+import de.kapsi.net.daap.DaapServer;
+import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapResponseFactory;
+import de.kapsi.net.daap.DaapRequestProcessor;
 
 /**
  *
  * @author  roger
  */
-public class DaapConnection {
+public class DaapConnectionImpl implements DaapConnection {
     
     private static final int UNDEF  = 0;
     private static final int NORMAL = 1;
@@ -28,7 +34,7 @@ public class DaapConnection {
     private DaapServerNIO server;
     private SocketChannel channel;
     
-    private DaapProcessor processor;
+    private DaapRequestProcessor processor;
     private DaapRequestReader reader;
     private DaapResponseWriter writer;
     private DaapSession session;
@@ -36,11 +42,13 @@ public class DaapConnection {
     private int type = UNDEF;
     
     /** Creates a new instance of DaapConnection */
-    public DaapConnection(DaapServerNIO server, SocketChannel channel) {
+    public DaapConnectionImpl(DaapServerNIO server, SocketChannel channel) {
         this.server = server;
         this.channel = channel;
         
-        processor = new DaapProcessor(this);
+        DaapResponseFactory factory = new DaapResponseFactoryImpl(this);
+        
+        processor = new DaapRequestProcessor(this, factory);
         
         reader = new DaapRequestReader(channel);
         writer = new DaapResponseWriter();
@@ -107,7 +115,7 @@ public class DaapConnection {
      *
      * @return
      */    
-    public DaapServerNIO getServer() {
+    public DaapServer getServer() {
         return server;
     }
     

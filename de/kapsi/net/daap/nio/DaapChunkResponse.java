@@ -11,7 +11,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.DaapConnection;
 
 /**
  *
@@ -25,16 +27,21 @@ public class DaapChunkResponse implements DaapResponse {
     private ByteBuffer out;
     
     /** Creates a new instance of DaapChunkResponse */
-    public DaapChunkResponse(DaapConnection connection, Chunk chunk) 
-            throws IOException {
+    public DaapChunkResponse(DaapConnection connection, byte[] data) {
                 
-        channel = connection.getChannel();
+        channel = ((DaapConnectionImpl)connection).getChannel();
         
-        byte[] tmp = DaapUtil.serialize(chunk, true);
-        out = ByteBuffer.wrap(tmp);
+        out = ByteBuffer.wrap(data);
         
-        header = DaapHeader.createChunkHeader(connection, tmp.length);
+        header = DaapHeader.createChunkHeader(connection, data.length);
     }
+    
+    public boolean hasRemainig() {
+        if (header != null && header.hasRemaining())
+            return true;
+        else return (out != null && out.hasRemaining());
+    }
+    
     
     /**
      *

@@ -1,13 +1,27 @@
 
 package de.kapsi.net.daap;
 
+import java.io.IOException;
+
 import java.util.Iterator;
+import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.ServerDatabasesImpl;
+import de.kapsi.net.daap.chunks.impl.Status;
+import de.kapsi.net.daap.chunks.impl.UpdateType;
+import de.kapsi.net.daap.chunks.impl.Listing;
+import de.kapsi.net.daap.chunks.impl.ListingItem;
+import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
+import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
+import de.kapsi.net.daap.chunks.impl.ReturnedCount;
+import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.PersistentId;
+import de.kapsi.net.daap.chunks.impl.ItemName;
+import de.kapsi.net.daap.chunks.impl.ItemCount;
+import de.kapsi.net.daap.chunks.impl.ContainerCount;
 import de.kapsi.net.daap.chunks.impl.ServerDatabases;
 
 /**
@@ -39,8 +53,8 @@ public class Library {
     private Database current;
     private Database temp;
 	
-    private ServerDatabases serverDatabases;
-    private ServerDatabases serverDatabasesUpdate;
+    private byte[] serverDatabases;
+    private byte[] serverDatabasesUpdate;
     
     private boolean open = false;
 
@@ -189,8 +203,8 @@ public class Library {
         ArrayList databases = new ArrayList();
         databases.add(current);
 
-        serverDatabases = new ServerDatabasesImpl(databases, false);
-        serverDatabasesUpdate = new ServerDatabasesImpl(databases, true);
+        serverDatabases = (new ServerDatabasesImpl(databases, false)).getBytes();
+        serverDatabasesUpdate = (new ServerDatabasesImpl(databases, true)).getBytes();
 
         if (revisions.size() >= keepNumRevisions) {
             Database old = (Database)revisions.remove(0);
@@ -376,5 +390,55 @@ public class Library {
 
     public String toString() {
         return getName();
+    }
+    
+    private final class ServerDatabasesImpl extends ServerDatabases {
+   
+        public ServerDatabasesImpl(List databases, boolean updateType) {
+            super();
+
+            add(new Status(200));
+            add(new UpdateType(updateType));
+
+            add(new SpecifiedTotalCount(databases.size()));
+            add(new ReturnedCount(databases.size()));
+
+            Listing listing = new Listing();
+
+            Iterator it = databases.iterator();
+            while(it.hasNext()) {
+                ListingItem listingItem = new ListingItem();
+
+                Database database = (Database)it.next();
+
+                listingItem.add(new ItemId(database.getId()));
+                listingItem.add(new PersistentId(database.getPersistentId()));
+                listingItem.add(new ItemName(database.getName()));
+
+                Playlist playlist = database.getMasterPlaylist();
+                int itemCount = ((updateType) ? playlist.getNewSongs() : playlist.getSongs()).size();
+                int containerCount = database.getPlaylists().size();
+
+                listingItem.add(new ItemCount(itemCount));
+                listingItem.add(new ContainerCount(containerCount));
+
+                listing.add(listingItem);
+            }
+
+            add(listing);
+        }
+
+        public byte[] getBytes() {
+            return getBytes(true);
+        }
+        
+        public byte[] getBytes(boolean compress) {
+            try {
+                return DaapUtil.serialize(this, compress);
+            } catch (IOException err) {
+                LOG.error(err);
+                return null;
+            }
+        }
     }
 }
