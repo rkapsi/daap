@@ -39,7 +39,7 @@ public class FileManagerStub extends FileManager {
     public FileDesc getFileDescForUrn(URN urn) {
     	
 
-        if(urn.toString().equals(FileDescStub.urn))
+        if(urn.toString().equals(FileDescStub.DEFAULT_URN))
             return fdStub;
         else if (urn.equals(_notHave))
         	return null;
