@@ -88,14 +88,17 @@ public class DaapUtil {
 		return formatter.format(new Date());
 	}
 	
-	public static final byte[] serialize(Chunk chunk) throws IOException {
+	public static final byte[] serialize(Chunk chunk, boolean compress) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		GZIPOutputStream gzip = new GZIPOutputStream(buffer);
-		
-		chunk.serialize(gzip);
-		
-		gzip.finish();
-		gzip.close();
+        
+        if (compress) {
+            GZIPOutputStream gzip = new GZIPOutputStream(buffer);
+            chunk.serialize(gzip);
+            gzip.finish();
+            gzip.close();
+        } else {
+            chunk.serialize(buffer);
+        }
 		
 		return buffer.toByteArray();
 	}

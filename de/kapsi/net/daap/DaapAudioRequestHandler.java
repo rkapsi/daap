@@ -2,6 +2,7 @@
 package de.kapsi.net.daap;
 
 import java.io.*;
+import java.net.*;
 import java.util.*;
 
 import de.kapsi.net.daap.chunks.*;
@@ -65,12 +66,16 @@ public class DaapAudioRequestHandler {
 				length = end - begin;
 			}
 			
-			DaapResponse response = DaapResponse.createAudioResponse(length);
+			DaapResponse response = DaapResponse.createAudioResponse(request, length);
 			response.processAudioRequest(conn);
 			
-			//LOG.info("begin: " + begin + ", end: " + end + " => length: " + length);
-			
-			audioStream.stream(song, conn.getOutputStream(), begin, length);
+            try {
+                audioStream.stream(song, conn.getOutputStream(), begin, length);
+            } catch (SocketException err) {
+                // we can ignore this exception as is thrown when
+                // a song ends (or the user hits pause or whatever)
+                // and the client closes the connection
+            }
 		}
 		
 		return false;

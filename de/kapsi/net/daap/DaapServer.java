@@ -11,13 +11,17 @@ import de.kapsi.net.daap.chunks.ContentCodesResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class DaapServer {
+/**
+ * The famous DaapServer.
+ */
+public class DaapServer implements DaapConfig {
 	
 	private static final Log LOG = LogFactory.getLog(DaapServer.class);
 	
 	private final static Random generator = new Random();
 	
 	static {
+        // warm up...
 		for(int i = 0; i < 100; i++) {
 			generator.nextInt();
 		}
@@ -60,11 +64,15 @@ public class DaapServer {
         
         maxConnections = 1;
 	}
-
-	public int getLocalPort() {
+    
+	public int getPort() {
 		return port;
 	}
 	
+    public int getBacklog() {
+        return 0;
+    }
+
 	public void setAuthenticator(DaapAuthenticator authenticator) {
 		requestHandler.setAuthenticator(authenticator);
 	}
@@ -89,6 +97,14 @@ public class DaapServer {
         return maxConnections;
     }
     
+    public String getServerName() {
+        return "iTunes/4.2 (Mac OS X)";
+    }
+    
+    public DaapConfig getConfig() {
+        return this;
+    }
+    
     public boolean isRunning() {
         return (acceptor != null && acceptor.isRunning());
     }
@@ -97,6 +113,8 @@ public class DaapServer {
         
         if (isRunning())
             return;
+        
+        threadNo = 0;
         
         acceptor = new DaapAcceptor(this, port, 0, InetAddress.getLocalHost());
         
@@ -110,6 +128,9 @@ public class DaapServer {
             return;
         
         acceptor.stop();
+        
+        acceptor = null;
+        acceptThread = null;
         
         synchronized(connections) {
             Iterator it = connections.iterator();
@@ -130,9 +151,6 @@ public class DaapServer {
         synchronized(sessionIds) {
             sessionIds.clear();
         }
-        
-        acceptor = null;
-        acceptThread = null;
     }
     
     public boolean accept(Socket socket) 
@@ -140,11 +158,18 @@ public class DaapServer {
         
         DaapConnection connection = new DaapConnection(this, socket);
         
-        // 
-        int soTimeout = socket.getSoTimeout();
+        // Set the timeout to an acceptable value and read the first request.
+        // This is necessary as we have to know which type of connection this 
+        // is and we don't want block the DaapAcceptorThread for too long. We 
+        // could start a DaapConnectionThread immediately but that conflicts
+        // with the Library/DaapServer update logic and would need more logic
+        // and processsing resources to make sure so that don't issue an update
+        // on an uninitialized connection etc...
+        
+        int oldTimeout = socket.getSoTimeout();
         socket.setSoTimeout(10*1000); // 10 seconds timeout
         DaapRequest request = connection.getDaapRequest();
-        socket.setSoTimeout(soTimeout);
+        socket.setSoTimeout(oldTimeout);
         
         if (!request.isSongRequest() && 
                 !request.isServerInfoRequest()) {
@@ -154,9 +179,9 @@ public class DaapServer {
             return false;
         }
         
-        if (request.isSongRequest()) {
-            connection.setAudioStream(true);
-        }
+        // a connection can be either a song request (a audio stream)
+        // or a standart DAAP connection. 
+        connection.setAudioStream(request.isSongRequest());
         
         if (connection.isAudioStream()) {
             
@@ -177,14 +202,18 @@ public class DaapServer {
                     connections.add(connection);
                 } else {
                 
-                    // process /server-info (nice exit)
-                    // and then close the connection
+                    // This allows us to disconnect iTunes silently. We
+                    // process the first request (/server-info) and don't
+                    // keep the connection alive. An alternative would be
+                    // to 'return false' but iTunes displays a misleading
+                    // error dialog then... (TODO: someone has to check
+                    // which of these two options is the default behaviour)
                     connection.setKeepAlive(-1);
                 }
             }
         }
         
-        Thread connThread = new Thread(connection, "DaapConnectorThread-" + (++threadNo));
+        Thread connThread = new Thread(connection, "DaapConnectionThread-" + (++threadNo));
         connThread.setDaemon(true);
         connThread.start();
         

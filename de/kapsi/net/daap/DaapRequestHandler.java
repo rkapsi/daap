@@ -95,7 +95,7 @@ public class DaapRequestHandler {
 					
 					if (!authenticated) {
 						DaapResponse response = 
-							DaapResponse.createAuthResponse();
+							DaapResponse.createAuthResponse(request);
 				
 						return response.processRequest(conn);
 					}
@@ -141,7 +141,7 @@ public class DaapRequestHandler {
 		throws IOException {
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(serverInfo);
+			DaapResponse.createResponse(request, serverInfo);
 			
 		return response.processRequest(conn);
 	}
@@ -150,7 +150,7 @@ public class DaapRequestHandler {
 		throws IOException {
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(contentCodes);
+			DaapResponse.createResponse(request, contentCodes);
 			
 		return response.processRequest(conn);
 	}
@@ -163,7 +163,7 @@ public class DaapRequestHandler {
 		LoginResponseImpl login = new LoginResponseImpl(session.getSessionId().intValue());
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(login);
+			DaapResponse.createResponse(request, login);
 			
 		return response.processRequest(conn);
 	}
@@ -223,7 +223,7 @@ public class DaapRequestHandler {
 			UpdateResponseImpl update = new UpdateResponseImpl(revision.intValue());
 			
 			DaapResponse response = 
-				DaapResponse.createResponse(update);
+				DaapResponse.createResponse(request, update);
 				
 			return response.processRequest(conn);
 		}
@@ -242,7 +242,7 @@ public class DaapRequestHandler {
 		}
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(serverDatabases);
+			DaapResponse.createResponse(request, serverDatabases);
 			
 		return response.processRequest(conn);
 	}
@@ -258,7 +258,7 @@ public class DaapRequestHandler {
 		}
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(databaseSongs);
+			DaapResponse.createResponse(request, databaseSongs);
 			
 		return response.processRequest(conn);
 	}
@@ -274,7 +274,7 @@ public class DaapRequestHandler {
 		}
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(databasePlaylists);
+			DaapResponse.createResponse(request, databasePlaylists);
 			
 		return response.processRequest(conn);
 	}
@@ -290,7 +290,7 @@ public class DaapRequestHandler {
 		}
 		
 		DaapResponse response = 
-			DaapResponse.createResponse(playlistSongs);
+			DaapResponse.createResponse(request, playlistSongs);
 			
 		return response.processRequest(conn);
 	}

@@ -31,7 +31,8 @@ public class DaapConnection implements Runnable {
 	
     private DaapRequest request;
     
-	public DaapConnection(DaapServer server, Socket socket) throws IOException {
+	public DaapConnection(DaapServer server, Socket socket) 
+            throws IOException {
 		
 		this.server = server;
 		this.socket = socket;
@@ -54,11 +55,14 @@ public class DaapConnection implements Runnable {
 		try {
 			
             do {
-        
-                server.processRequest(this, getDaapRequest());
-                setDaapRequest(null);
                 
-            } while(--keepAlive > 0);
+                server.processRequest(this, getDaapRequest());
+                
+                // enforce getDaapRequest() to read a new
+                // request on the next cycle
+                setDaapRequest(null); 
+                                    
+            } while(--keepAlive > 0 && !audioStream);
 			
 		} catch (SocketException err) {
 			LOG.info(err);
@@ -88,7 +92,8 @@ public class DaapConnection implements Runnable {
 			if (delta != null && revisionNumber != null) {
 				
 				DaapRequest request = 
-					DaapRequest.createUpdateRequest(sessionId.intValue(), revisionNumber.intValue(), delta.intValue());
+					DaapRequest.createUpdateRequest(sessionId.intValue(), 
+                        revisionNumber.intValue(), delta.intValue());
 				
 				request.setHeaders(null);
 				
@@ -175,7 +180,8 @@ public class DaapConnection implements Runnable {
 		DaapRequest request = DaapRequest.parseRequest(line);
 		Header[] headers = HttpParser.parseHeaders(in);
 		request.setHeaders(headers);
-			
+        request.setConfig(server.getConfig());
+        
 		return request;
     }
 }

@@ -50,6 +50,8 @@ public class DaapRequest {
 	private boolean isServerSideRequest;
 	private boolean isUpdateType;
     
+    private DaapConfig config;
+    
 	public static DaapRequest parseRequest(String requestLine) throws URIException {
 		
 		String method = null;
@@ -223,6 +225,14 @@ public class DaapRequest {
 		return headers;
 	}
 	
+    public void setConfig(DaapConfig config) {
+        this.config = config;
+    }
+    
+    public DaapConfig getConfig() {
+        return config;
+    }
+    
 	public boolean isUnknownRequest() {
 		return (requestType==UNDEF_VALUE);
 	}

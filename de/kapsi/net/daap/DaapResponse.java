@@ -1,30 +1,29 @@
 
 package de.kapsi.net.daap;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
 import org.apache.commons.httpclient.Header;
 
 public class DaapResponse {
 	
-	public static DaapResponse createResponse(byte[] body, String encoding) {
+	public static DaapResponse createResponse(DaapRequest request, byte[] body, String encoding) {
 		
 		Header[] header = {
 			new Header("Date", DaapUtil.now()),
-			new Header("DAAP-Server", "iTunes/4.2 (Mac OS X)"),
+			new Header("DAAP-Server", request.getConfig().getServerName()),
 			new Header("Content-Type", "application/x-dmap-tagged"),
 			new Header("Content-Length", Integer.toString(body.length)),
 			new Header("Content-Encoding", encoding)
 		};
-		
+        
 		return (new DaapResponse("HTTP/1.1 200 OK", header, body));
 	}
 	
-	public static DaapResponse createResponse(int bodyLength, String encoding) {
+	public static DaapResponse createResponse(DaapRequest request, int bodyLength, String encoding) {
 		
 		Header[] header = {
 			new Header("Date", DaapUtil.now()),
-			new Header("DAAP-Server", "iTunes/4.2 (Mac OS X)"),
+			new Header("DAAP-Server", request.getConfig().getServerName()),
 			new Header("Content-Type", "application/x-dmap-tagged"),
 			new Header("Content-Length", Integer.toString(bodyLength)),
 			new Header("Content-Encoding", encoding)
@@ -33,16 +32,34 @@ public class DaapResponse {
 		return (new DaapResponse("HTTP/1.1 200 OK", header, null));
 	}
 	
-	public static DaapResponse createResponse(Chunk chunk) throws IOException {
-		byte[] body = DaapUtil.serialize(chunk);
-		return createResponse(body, "gzip");
+	public static DaapResponse createResponse(DaapRequest request, Chunk chunk) throws IOException {
+		
+        boolean compress = false;
+        
+        Header[] headers = request.getHeaders();
+        for(int i = 0; i < headers.length; i++) {
+            
+            Header h = headers[i];
+            String name = h.getName();
+            String value = h.getValue();
+            
+            if (name.equals("Accept-Encoding")) {
+                compress = value.equals("gzip");
+                break;
+            }
+        }
+        
+        byte[] body = DaapUtil.serialize(chunk, compress);
+        String encoding = (compress) ? "gzip" : "binary";
+        
+		return createResponse(request, body, encoding);
 	}
 	
-	public static DaapResponse createAuthResponse() {
+	public static DaapResponse createAuthResponse(DaapRequest request) {
 		
 		Header[] header = {
 			new Header("Date", DaapUtil.now()),
-			new Header("DAAP-Server", "iTunes/4.2 (Mac OS X)"),
+			new Header("DAAP-Server", request.getConfig().getServerName()),
 			new Header("Content-Type", "text/html"),
 			new Header("Content-Length", "0"),
 			new Header("WWW-Authenticate", "Basic-realm=\"daap\"")
@@ -51,11 +68,11 @@ public class DaapResponse {
 		return (new DaapResponse("HTTP/1.1 401 Authorization Required", header, null));
 	}
 	
-	public static DaapResponse createAudioResponse(int length) {
+	public static DaapResponse createAudioResponse(DaapRequest request, int length) {
 		
 		Header[] header = {
 			new Header("Date", DaapUtil.now()),
-			new Header("DAAP-Server", "iTunes/4.2 (Mac OS X)"),
+			new Header("DAAP-Server", request.getConfig().getServerName()),
 			new Header("Content-Type", "application/x-dmap-tagged"),
 			new Header("Content-Length", Integer.toString(length)),
 			new Header("Accept-Ranges", "bytes")
@@ -82,7 +99,8 @@ public class DaapResponse {
 		
 		ResponseWriter out = conn.getWriter();
 		
-		out.println(statusLine);
+		out.println(getStatusLine());
+        
 		for(int i = 0; i < header.length; i++) {
 			out.print(header[i].toExternalForm());
 		}
@@ -102,7 +120,8 @@ public class DaapResponse {
 		
 		ResponseWriter out = conn.getWriter();
 		
-		out.println(statusLine);
+		out.println(getStatusLine());
+        
 		for(int i = 0; i < header.length; i++) {
 			out.print(header[i].toExternalForm());
 		}
