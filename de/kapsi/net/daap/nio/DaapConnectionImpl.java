@@ -167,6 +167,7 @@ public class DaapConnectionImpl implements DaapConnection {
                 }
                 
                 DaapResponse response = processor.process(request);
+               
                 if (response != null) {
                     writer.add(response);
                 }

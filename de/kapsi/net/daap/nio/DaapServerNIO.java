@@ -207,13 +207,13 @@ public class DaapServerNIO implements DaapServer {
         sessionIds = new HashSet();
         
         try {
-            
+
             ssc = ServerSocketChannel.open();
-            ssc.configureBlocking(false);
-
             ssc.socket().bind(bindAddr, backlog);
+            ssc.configureBlocking(false);
+            
             selector = Selector.open();
-
+            
             if (LOG.isInfoEnabled()) {
                 LOG.info("DaapServerNIO bound to " + bindAddr);
             }
@@ -277,8 +277,15 @@ public class DaapServerNIO implements DaapServer {
    /**
     * Stops the DAAP Server
     */
-    public void stop() {
-        running = false;
+    public synchronized void stop() {
+        if (selector != null) {
+            if (running) {
+                running = false;
+                selector.wakeup();
+            } else {
+                close();
+            }
+        }
     }
     
     /**
@@ -288,49 +295,46 @@ public class DaapServerNIO implements DaapServer {
         
         running = false;
         update = false;
-        
-        disconnectAll();
-        
+       
         try {
-            if (ssc != null)
-                ssc.close();
-        } catch (IOException err) {
-            LOG.error(err);
-        }
-        
-        ssc = null;
-        
-        try {
-            if (selector != null)
+            
+            if (selector != null) {
+                
+                // BEGIN WORKAROUND
+                // Selector.close() doesn't close properly on OSX
+                // (Java 1.4.2_04) and leaves something in an 
+                // undefined state with the result that our Server
+                // PORT can not be longer used (no exception etc.
+                // the Selector just hangs at Selector.select()).
+                // This workaround is a combination of Bug: 5004075
+                // and http://forum.java.sun.com/thread.jsp?forum=31&thread=384019
+                
+                Iterator it = selector.keys().iterator();
+                while(it.hasNext()) {
+                    SelectionKey sk = (SelectionKey)it.next();
+                    cancel(sk);
+                }
+                
+                selector.selectNow();
+                // END WORKAROUND
+                
+                // Note: throws on OSX always "IOEx: Bad file descriptor"
                 selector.close(); 
+            }
+            
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("Selector.close()", err);
         }
-        
+
         selector = null;
-        
+        ssc = null;
        
         if (sessionIds != null)
             sessionIds.clear();
         
         sessionIds = null;
         
-        if (streams != null) {
-            Iterator it = streams.iterator();
-            while(it.hasNext()) {
-                ((DaapConnection)it.next()).close();
-            }
-        }
-        
         streams = null;
-        
-        if (connections != null) {
-            Iterator it = connections.iterator();
-            while(it.hasNext()) {
-                ((DaapConnection)it.next()).close();
-            }
-        }
-        
         connections = null;
     }
     
@@ -360,12 +364,12 @@ public class DaapServerNIO implements DaapServer {
      */
     private void cancel(SelectionKey sk) {
         
-        SocketChannel channel = (SocketChannel)sk.channel();
+        SelectableChannel channel = (SelectableChannel)sk.channel();
         
         try {
             channel.close();
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("Channel.close()", err);
         }
         
         sk.cancel();
@@ -450,7 +454,7 @@ public class DaapServerNIO implements DaapServer {
             try {
                 channel.close();
             } catch (IOException err) {
-                LOG.error(err);
+                LOG.error("SocketChannel.close()", err);
             }
         }
     }
@@ -534,11 +538,11 @@ public class DaapServerNIO implements DaapServer {
                             connection.update();
                             sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                         } catch (ClosedChannelException err) {
-                            LOG.error("Error while updating", err);
                             cancel(sk);
+                            LOG.error("DaapConnection.update()", err);
                         }  catch (IOException err) {
-                            LOG.error("Error while updating", err);
                             cancel(sk);
+                            LOG.error("DaapConnection.update()", err);
                         }
                     }
                 }
@@ -553,7 +557,7 @@ public class DaapServerNIO implements DaapServer {
     private void process() throws IOException {
        
         int n = -1;
-            
+        
         while(running) {
             
             try {
@@ -562,6 +566,10 @@ public class DaapServerNIO implements DaapServer {
                 continue;
             } catch (CancelledKeyException err) {
                 continue;
+            }
+            
+            if (!running) {
+                break;
             }
             
             if (update)
@@ -594,7 +602,7 @@ public class DaapServerNIO implements DaapServer {
  
                         } catch (IOException err) {
                             cancel(sk);
-                            LOG.error(err);
+                            LOG.error("Exception in processRead() or processWrite()", err);
                         }
                     }
                 } catch (CancelledKeyException err) {
@@ -605,16 +613,12 @@ public class DaapServerNIO implements DaapServer {
     }
     
     public void run() {
-       
+
         try {
             
             if (running) {
                 LOG.error("DaapServerNIO is already running.");
                 return;
-            }
-            
-            if (ssc == null || selector == null) {
-                throw new IOException("DaapServerNIO is not bound.");
             }
             
             SelectionKey sk = ssc.register(selector, SelectionKey.OP_ACCEPT);
@@ -624,6 +628,7 @@ public class DaapServerNIO implements DaapServer {
             
         } catch (IOException err) {
             LOG.error(err);
+            
         } finally {
             close();
         }
