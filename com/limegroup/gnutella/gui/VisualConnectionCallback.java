@@ -426,7 +426,7 @@ public final class VisualConnectionCallback implements ActivityCallback {
         public void run() {
             try {
                 DOWNLOAD_MEDIATOR.remove(mgr);
-                LIBRARY_MEDIATOR.refreshIfIncomplete();
+                LIBRARY_MEDIATOR.quickRefresh();
                 SearchMediator.updateResults();
             } catch(Throwable e) {
                 GUIMediator.showInternalError(e, "RemoveDownload");
