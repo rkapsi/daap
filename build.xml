@@ -1,4 +1,3 @@
-
 <project name="DAAP" default="build" basedir=".">
     <description>DAAP support</description>
 	
