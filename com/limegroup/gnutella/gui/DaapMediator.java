@@ -48,22 +48,22 @@ import de.kapsi.net.daap.DaapAuthenticator;
  */
 public final class DaapMediator {
     
-	private static final Log LOG = LogFactory.getLog(DaapMediator.class);
-        
-	private static final DaapMediator INSTANCE = new DaapMediator();
-    
-	public static DaapMediator instance() {
-		return INSTANCE;
-	}
-	
-	private SongURNMap map;
-    
-	private Library library;
-	private DaapServer server;
-	private RendezvousService rendezvous;
+    private static final Log LOG = LogFactory.getLog(DaapMediator.class);
+
+    private static final DaapMediator INSTANCE = new DaapMediator();
+
+    public static DaapMediator instance() {
+            return INSTANCE;
+    }
+
+    private SongURNMap map;
+
+    private Library library;
+    private DaapServer server;
+    private RendezvousService rendezvous;
     private UpdateWorker updateWorker;
-    
-	private boolean annotateEnabled = false;
+
+    private boolean annotateEnabled = false;
     
     private DaapMediator() {
     }
@@ -82,25 +82,27 @@ public final class DaapMediator {
     /**
      * Starts the DAAP Server
      */
-	public synchronized void start() 
-            throws IOException {
-        
+    public synchronized void start() 
+        throws IOException {
+
         if (CommonUtils.isJava14OrLater() && !isServerRunning()) {
-            
+
             try {
-            
+
                 map = new SongURNMap();
                 library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
-                updateWorker = new UpdateWorker();
+                library.init();
                 
+                updateWorker = new UpdateWorker();
+
                 LimeConfig config = new LimeConfig();
                 server = new DaapServer(library, config);
                 server.setAuthenticator(new LimeAuthenticator());
                 server.setStreamSource(new LimeStreamSource());
                 server.setFilter(new LimeFilter());
-                
+
                 final int attempts = 10;
-                
+
                 for(int i = 0; i < attempts; i++) {
                     try {
                         server.start();
@@ -112,48 +114,48 @@ public final class DaapMediator {
                             config.nextPort();
                     }
                 }
-                
+
                 Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
                 updateWorkerThread.setDaemon(true);
                 updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
                 updateWorkerThread.start();
-                
+
                 rendezvous = new RendezvousService();
                 rendezvous.registerService();
-                
+
             } catch (IOException err) {
                 stop();
                 throw err;
             }
         }
-	}
+    }
 	
     /**
      * Stops the DAAP Server and releases all resources
      */
-	public synchronized void stop() {
-		
+    public synchronized void stop() {
+
         if (CommonUtils.isJava14OrLater()) {
-            
+
             if (rendezvous != null)
                 rendezvous.close();
-            
+
             if (updateWorker != null)
                 updateWorker.stop();
-            
+
             if (server != null)
                 server.stop();
-                
+
             if (map != null)
                 map.clear();
-            
+
             rendezvous = null;
             server = null;
             updateWorker = null;
             map = null;
             library = null;
         }
-	}
+    }
 	
     /**
      * Updates the multicast-DNS servive info
@@ -178,12 +180,12 @@ public final class DaapMediator {
     /**
      * Returns <tt>true</tt> if server is running
      */
-	public synchronized boolean isServerRunning() {
-		if (server != null) {
-			return server.isRunning();
-		}
-		return false;
-	}
+    public synchronized boolean isServerRunning() {
+        if (server != null) {
+                return server.isRunning();
+        }
+        return false;
+    }
 	
 	/**
      * Returns true if the extension of name is a supported file type.
