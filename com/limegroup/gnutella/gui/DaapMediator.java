@@ -110,7 +110,9 @@ public final class DaapMediator implements FinalizeListener {
                 updateWorker = new UpdateWorker();
                 
                 LimeConfig config = new LimeConfig();
-                server = DaapServerFactory.createServer(library, config, true);
+                
+                final boolean NIO = iTunesSettings.DAAP_USE_NIO.getValue();
+                server = DaapServerFactory.createServer(library, config, NIO);
                 server.setAuthenticator(new LimeAuthenticator());
                 server.setStreamSource(new LimeStreamSource());
                 server.setFilter(new LimeFilter());

@@ -109,4 +109,10 @@ public class iTunesSettings extends LimeProps {
      */
     public static PasswordSetting DAAP_PASSWORD =
 	FACTORY.createPasswordSetting("DAAP_PASSWORD", "");
+    
+    /**
+     *
+     */
+    public static BooleanSetting DAAP_USE_NIO = 
+        FACTORY.createBooleanSetting("DAAP_USE_NIO", false);
 }
