@@ -474,15 +474,12 @@ public final class DaapMediator implements FinalizeListener {
                 year = doc.getValue("audios__audio__year__");
         }
         
-        String currentTitle = song.getName();
         if (title != null) {
+            String currentTitle = song.getName();
             if (currentTitle == null || !title.equals(currentTitle)) {
                 update = true;
                 song.setName(title);
             }
-        } else if (currentTitle != null) {
-            update = true;
-            song.setName(null);
         }
         
         int currentTrack = song.getTrackNumber();
