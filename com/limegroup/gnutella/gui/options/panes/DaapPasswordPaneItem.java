@@ -84,7 +84,12 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
 		
 		iTunesSettings.DAAP_PASSWORD.setValue(text);
         
-        if (changed) {// && iTunesSettings.) {
+        if (changed) {
+            
+            // A password is required now, disconnect all users...
+            if (iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue()) 
+                DaapMediator.instance().disconnectAll();
+                
             DaapMediator.instance().updateService();
         }
         

@@ -51,11 +51,6 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
     
     private DaapMediator() {
     }
-    
-	private static boolean isEnabled() {
-		return (CommonUtils.isJava14OrLater() 
-				&& iTunesSettings.DAAP_SUPPORT_ENABLED.getValue());
-	}
 	
     public synchronized void init() {
         
@@ -129,7 +124,12 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         if (CommonUtils.isJava14OrLater() && isServerRunning())
             rendezvous.updateService();
     }
-
+    
+    public synchronized void disconnectAll() {
+        if (CommonUtils.isJava14OrLater() && isServerRunning())
+            server.disconnectAll();
+    }
+    
 	public synchronized boolean isServerRunning() {
 		if (server != null) {
 			return server.isRunning();
@@ -206,61 +206,59 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
     
     public void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
         
-        if (!isEnabled())
-            return;
+        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
         
-        //System.out.println("handleMetaFileManagerEvent");
-        
-        if (evt.isChangeEvent()) {
-        
-            FileDesc oldDesc = evt.getFileDesc()[0];
+            if (evt.isChangeEvent()) {
             
-            Song song = map.remove(oldDesc.getSHA1Urn());
-            
-            if (song != null) {
+                FileDesc oldDesc = evt.getFileDesc()[0];
                 
-                FileDesc newDesc = evt.getFileDesc()[1];
+                Song song = map.remove(oldDesc.getSHA1Urn());
                 
-                map.put(song, newDesc.getSHA1Urn());
-                
-                if ( updateSongMeta(song, newDesc) ) {
-                    updateWorker.update(song);
+                if (song != null) {
+                    
+                    FileDesc newDesc = evt.getFileDesc()[1];
+                    
+                    map.put(song, newDesc.getSHA1Urn());
+                    
+                    if ( updateSongMeta(song, newDesc) ) {
+                        updateWorker.update(song);
+                    }
                 }
-            }
-            
-        } else if (evt.isAddEvent()) {
-            
-            FileDesc file = evt.getFileDesc()[0];
-            
-            if (!(file instanceof IncompleteFileDesc)) {
-                String name = file.getName().toLowerCase(Locale.US);
-                if (isSupported(name)) {
-                    
-                    Song song = createSong(file);
-                    
-                    map.put(song, file.getSHA1Urn());
-                    
-                    updateWorker.add(song);
+                
+            } else if (evt.isAddEvent()) {
+                
+                FileDesc file = evt.getFileDesc()[0];
+                
+                if (!(file instanceof IncompleteFileDesc)) {
+                    String name = file.getName().toLowerCase(Locale.US);
+                    if (isSupported(name)) {
+                        
+                        Song song = createSong(file);
+                        
+                        map.put(song, file.getSHA1Urn());
+                        
+                        updateWorker.add(song);
+                    }
                 }
-            }
+                
+            } else if (evt.isRenameEvent()) {
             
-        } else if (evt.isRenameEvent()) {
-        
-            FileDesc oldDesc = evt.getFileDesc()[0];
-            Song song = map.remove(oldDesc.getSHA1Urn());
-            
-            if (song != null) {
-                FileDesc newDesc = evt.getFileDesc()[1];
-                map.put(song, newDesc.getSHA1Urn());
-            }
-            
-        } else if (evt.isRemoveEvent()) {
-            
-            FileDesc file = evt.getFileDesc()[0];
-            Song song = map.remove(file.getSHA1Urn());
-            
-            if (song != null) {
-                updateWorker.remove(song);
+                FileDesc oldDesc = evt.getFileDesc()[0];
+                Song song = map.remove(oldDesc.getSHA1Urn());
+                
+                if (song != null) {
+                    FileDesc newDesc = evt.getFileDesc()[1];
+                    map.put(song, newDesc.getSHA1Urn());
+                }
+                
+            } else if (evt.isRemoveEvent()) {
+                
+                FileDesc file = evt.getFileDesc()[0];
+                Song song = map.remove(file.getSHA1Urn());
+                
+                if (song != null) {
+                    updateWorker.remove(song);
+                }
             }
         }
     }
@@ -269,67 +267,68 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         
         this.annotateEnabled = enabled;
         
-        if (!isEnabled() || !enabled)
-            return;
+        if (CommonUtils.isJava14OrLater() && 
+                isServerRunning() && enabled) {
         
-        // disable updateWorker
-        updateWorker.setEnabled(false);
-        
-        SongURNMap tmpMap = new SongURNMap();
-        
-        FileDesc[] files = RouterService.getFileManager().getAllSharedFileDescriptors();
-        
-        for(int i = 0; i < files.length; i++) {
+            // disable updateWorker
+            updateWorker.setEnabled(false);
             
-            FileDesc file = files[i];
+            SongURNMap tmpMap = new SongURNMap();
             
-            if (!(file instanceof IncompleteFileDesc)) {
-                String name = file.getName().toLowerCase(Locale.US);
-                if (isSupported(name)) {
-                    
-                    // 1)
-                    // _Remove_ URN from the current 'map'...
-                    Song song = map.remove(file.getSHA1Urn());
-                    
-                    // This URN was already mapped with a Song.
-                    // Save the Song (again) and update the meta 
-                    // data if necessary
-                    if (song != null) {
+            FileDesc[] files = RouterService.getFileManager().getAllSharedFileDescriptors();
+            
+            for(int i = 0; i < files.length; i++) {
+                
+                FileDesc file = files[i];
+                
+                if (!(file instanceof IncompleteFileDesc)) {
+                    String name = file.getName().toLowerCase(Locale.US);
+                    if (isSupported(name)) {
                         
-                        tmpMap.put(song, file.getSHA1Urn());
+                        // 1)
+                        // _Remove_ URN from the current 'map'...
+                        Song song = map.remove(file.getSHA1Urn());
                         
-                        // Any changes in the meta data?
-                        if ( updateSongMeta(song, file) ) {
-                            updateWorker.update(song);
+                        // This URN was already mapped with a Song.
+                        // Save the Song (again) and update the meta 
+                        // data if necessary
+                        if (song != null) {
+                            
+                            tmpMap.put(song, file.getSHA1Urn());
+                            
+                            // Any changes in the meta data?
+                            if ( updateSongMeta(song, file) ) {
+                                updateWorker.update(song);
+                            }
+                        
+                        // URN was unknown and we must create a
+                        // new Song for this URN...
+                        } else {
+                        
+                            song = createSong(file);
+                            tmpMap.put(song, file.getSHA1Urn());
+                            updateWorker.add(song);
                         }
-                    
-                    // URN was unknown and we must create a
-                    // new Song for this URN...
-                    } else {
-                    
-                        song = createSong(file);
-                        tmpMap.put(song, file.getSHA1Urn());
-                        updateWorker.add(song);
                     }
                 }
             }
+            
+            // See 1)
+            // As all known URNs were removed from 'map' only
+            // deleted FileDesc URNs can be leftover and we
+            // must remove the associated Songs from the Library
+            Iterator it = map.getSongIterator();
+            while(it.hasNext()) {
+                Song song = (Song)it.next();
+                updateWorker.remove(song);
+            }
+            
+            map.clear();
+            map = tmpMap; // tempMap is the new 'map'
+            
+            // enable updateWorker
+            updateWorker.setEnabled(true);
         }
-        
-        // See 1)
-        // As all known URNs were removed from 'map' only
-        // deleted FileDesc URNs can be leftover and we
-        // must remove the associated Songs from the Library
-        Iterator it = map.getSongIterator();
-        while(it.hasNext()) {
-            Song song = (Song)it.next();
-            updateWorker.remove(song);
-        }
-        
-        map.clear();
-        map = tmpMap; // tempMap is the new 'map'
-        
-        // enable updateWorker
-        updateWorker.setEnabled(true);
     }
     
     /**

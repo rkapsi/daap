@@ -120,6 +120,14 @@ public class DaapServer {
         acceptor.stop();
         acceptor = null;
         
+        disconnectAll();
+    }
+    
+    public synchronized void disconnectAll() {
+        
+        if (!isRunning())
+            return;
+            
         synchronized(connections) {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
