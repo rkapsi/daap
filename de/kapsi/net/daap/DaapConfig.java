@@ -8,19 +8,31 @@ import java.net.InetAddress;
  */
 public interface DaapConfig {
     
-    // "iTunes/4.2 (Mac OS X)"
-    public static final String DEFAULT_SERVER_NAME 
-            = "DaapServer/0.1 (" + System.getProperty("os.name") + ")";
-    
-    public static final int DEFAULT_PORT = 3689; // the default iTunes port
-    public static final int DEFAULT_BACKLOG = 0; // 
-    public static final int DEFAULT_MAX_CONNECTIONS = 5; // like iTunes
-
+    /**
+     *
+     * @return
+     */    
     public String getServerName();
     
+    /**
+     *
+     * @return
+     */    
     public InetAddress getBindAddress();
+    /**
+     *
+     * @return
+     */    
     public int getPort();
+    /**
+     *
+     * @return
+     */    
     public int getBacklog();
     
+    /**
+     *
+     * @return
+     */    
     public int getMaxConnections();
 }
