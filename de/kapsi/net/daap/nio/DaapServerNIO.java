@@ -356,10 +356,8 @@ public class DaapServerNIO implements DaapServer {
      */
     public void disconnectAll() {
         if (selector != null) {
-            
             Set keys = selector.keys();
-            
-            synchronized(keys) {
+            //synchronized(keys) {
                 Iterator it = keys.iterator();
                 while(it.hasNext()) {
                     SelectionKey sk = (SelectionKey)it.next();
@@ -368,7 +366,7 @@ public class DaapServerNIO implements DaapServer {
                         cancel(sk);
                     }
                 }
-            }
+            //}
         }
     }
    
@@ -541,7 +539,7 @@ public class DaapServerNIO implements DaapServer {
         
         Set keys = selector.keys();
             
-        synchronized(keys) {
+        //synchronized(keys) {
             Iterator it = keys.iterator();
             while(it.hasNext()) {
                 SelectionKey sk = (SelectionKey)it.next();
@@ -565,7 +563,7 @@ public class DaapServerNIO implements DaapServer {
                     }
                 }
             }
-        }
+        //}
     }
     
     /**

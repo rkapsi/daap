@@ -73,26 +73,30 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
 
         final boolean prevRequiresPassword = DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
         final String prevPassword = DaapSettings.DAAP_PASSWORD.getValue();
-
-        String password = TEXT_FIELD.getText().trim();
-
-        if (password.length()==0 && CHECK_BOX.isSelected()) { 
-                throw new IOException(); 
+        
+        final boolean requiresPassword = CHECK_BOX.isSelected();
+        final String password = TEXT_FIELD.getText().trim();
+        
+        if (password.equals("") && requiresPassword) { 
+            throw new IOException(); 
         }
 
-        if (password.equals(prevPassword) == false)
+        if ( ! password.equals(prevPassword))
             DaapSettings.DAAP_PASSWORD.setValue(password);
 
-        if (CHECK_BOX.isSelected() != prevRequiresPassword) {
+        if (requiresPassword != prevRequiresPassword || 
+                (requiresPassword && !password.equals(prevPassword))) {
 
-            DaapSettings.DAAP_REQUIRES_PASSWORD.setValue(CHECK_BOX.isSelected());
+            DaapSettings.DAAP_REQUIRES_PASSWORD.setValue(requiresPassword);
 
             try {
 
-                // A password is required now, disconnect all users...
-                if (DaapSettings.DAAP_REQUIRES_PASSWORD.getValue()) 
+                // A password is required now or password has changed, 
+                // disconnect all users...
+                if (requiresPassword) { 
                     DaapMediator.instance().disconnectAll();
-
+                }
+                
                 DaapMediator.instance().updateService();
 
             } catch (IOException err) {

@@ -223,8 +223,9 @@ public final class DaapMediator implements FinalizeListener {
      * Disconnects all clients
      */
     public synchronized void disconnectAll() {
-        if (CommonUtils.isJava14OrLater() && isServerRunning())
+        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
             server.disconnectAll();
+        }
     }
     
     /**

@@ -49,6 +49,8 @@ public class DaapRequestProcessor {
     
     private static final Log LOG = LogFactory.getLog(DaapRequestProcessor.class);
     
+    private static final String ISO_8859_1 = "8859_1";
+    
     private DaapResponseFactory factory;
     
     /** Creates a new instance of DaapRequestProcessor */
@@ -150,7 +152,7 @@ public class DaapRequestProcessor {
                         return false;
                     }
                     
-                    byte[] logpass = Base64.decode(tok.nextToken().getBytes("UTF-8"));
+                    byte[] logpass = Base64.decode(tok.nextToken().getBytes(ISO_8859_1));
                     
                     int q = 0;
                     for(;q<logpass.length && logpass[q] != ':';q++);
@@ -204,6 +206,13 @@ public class DaapRequestProcessor {
         DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] data = (byte[])server.getLibrary().select(request);
+        
+        if (data == null) {
+            // request was either illegal or the protocol version
+            // is not supported
+            throw new IOException("library.select(ServerInfoRequest) returned null");
+        }
+        
         return factory.createChunkResponse(request, data);
     }
     
@@ -219,6 +228,12 @@ public class DaapRequestProcessor {
         DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] data = (byte[])server.getLibrary().select(request);
+        
+        if (data == null) {
+            // in theory not possible
+            throw new IOException("library.select(ContentCodesRequest) returned null");
+        }
+        
         return factory.createChunkResponse(request, data);
     }
     
@@ -299,8 +314,7 @@ public class DaapRequestProcessor {
         
         DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
-        byte[] serverDatabases
-            = (byte[])server.getLibrary().select(request);
+        byte[] serverDatabases = (byte[])server.getLibrary().select(request);
         
         if (serverDatabases == null) {
             // request was either illegal or the requested revision
@@ -323,8 +337,7 @@ public class DaapRequestProcessor {
         
         DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
-        byte[] databaseSongs
-            = (byte[])server.getLibrary().select(request);
+        byte[] databaseSongs = (byte[])server.getLibrary().select(request);
         
         if (databaseSongs == null) {
             // see processDatabasesRequest()
@@ -345,8 +358,7 @@ public class DaapRequestProcessor {
         
         DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
-        byte[] databasePlaylists
-            = (byte[])server.getLibrary().select(request);
+        byte[] databasePlaylists = (byte[])server.getLibrary().select(request);
         
         if (databasePlaylists == null) {
             // see processDatabasesRequest()
@@ -367,8 +379,7 @@ public class DaapRequestProcessor {
         
         DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
-        byte[] playlistSongs
-                = (byte[])server.getLibrary().select(request);
+        byte[] playlistSongs = (byte[])server.getLibrary().select(request);
         
         if (playlistSongs == null) {
             // see processDatabasesRequest()
@@ -462,7 +473,7 @@ public class DaapRequestProcessor {
                     return null;
                 }
                 
-                byte[] range = tok.nextToken().getBytes("UTF-8");
+                byte[] range = tok.nextToken().getBytes(ISO_8859_1);
                 
                 int q = 0;
                 for(;q<range.length && range[q] != '-';q++);
