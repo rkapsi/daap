@@ -29,6 +29,8 @@ import com.limegroup.gnutella.settings.iTunesSettings;
 import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.limegroup.gnutella.xml.MetaFileManagerEvent;
 import com.limegroup.gnutella.filters.IPFilter;
+import com.limegroup.gnutella.gui.GUIMediator;
+import com.limegroup.gnutella.gui.FinalizeListener;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
@@ -47,7 +49,7 @@ import de.kapsi.net.daap.DaapAuthenticator;
 /**
  *
  */
-public final class DaapMediator {
+public final class DaapMediator implements FinalizeListener {
     
     private static final Log LOG = LogFactory.getLog(DaapMediator.class);
     
@@ -67,6 +69,8 @@ public final class DaapMediator {
     private boolean annotateEnabled = false;
     
     private DaapMediator() {
+        if (CommonUtils.isJava14OrLater())
+            GUIMediator.addFinalizeListener(this);
     }
     
     /**
@@ -75,8 +79,7 @@ public final class DaapMediator {
     public synchronized void init() {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
-            if (annotateEnabled)
-                setAnnotateEnabled(true);
+            setAnnotateEnabled(annotateEnabled);
         }
     }
     
@@ -138,11 +141,11 @@ public final class DaapMediator {
         
         if (CommonUtils.isJava14OrLater()) {
             
-            if (rendezvous != null)
-                rendezvous.close();
-            
             if (updateWorker != null)
                 updateWorker.stop();
+            
+            if (rendezvous != null)
+                rendezvous.close();
             
             if (server != null)
                 server.stop();
@@ -156,6 +159,16 @@ public final class DaapMediator {
             map = null;
             library = null;
         }
+    }
+    
+    /**
+     * Shutdown the DAAP service properly. In this case
+     * is the main focus on mDNS (Rendezsvous) as in
+     * some rare cases iTunes doesn't recognize that
+     * LimeWire/DAAP is no longer online.
+     */
+    public void doFinalize() {
+        stop();
     }
     
     /**
