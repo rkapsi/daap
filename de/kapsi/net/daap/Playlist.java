@@ -20,35 +20,31 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
-
-import de.kapsi.util.ArrayIterator;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.Chunk;
 import de.kapsi.net.daap.chunks.AbstractChunk;
+import de.kapsi.net.daap.chunks.Chunk;
 import de.kapsi.net.daap.chunks.DummyChunk;
-
+import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
+import de.kapsi.net.daap.chunks.impl.ItemCount;
 import de.kapsi.net.daap.chunks.impl.ItemId;
 import de.kapsi.net.daap.chunks.impl.ItemName;
-import de.kapsi.net.daap.chunks.impl.PersistentId;
-import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.UpdateType;
 import de.kapsi.net.daap.chunks.impl.Listing;
 import de.kapsi.net.daap.chunks.impl.ListingItem;
-import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
-import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
-import de.kapsi.net.daap.chunks.impl.ReturnedCount;
+import de.kapsi.net.daap.chunks.impl.PersistentId;
 import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
+import de.kapsi.net.daap.chunks.impl.ReturnedCount;
 import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
-import de.kapsi.net.daap.chunks.impl.ItemCount;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
+import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
+import de.kapsi.net.daap.chunks.impl.Status;
+import de.kapsi.net.daap.chunks.impl.UpdateType;
+import de.kapsi.util.ArrayIterator;
 
 /**
  * The name is self explaining.

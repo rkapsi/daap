@@ -20,24 +20,19 @@
 package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
-import java.nio.channels.Selector;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapUtil;
-
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapResponseFactory;
-import de.kapsi.net.daap.DaapRequestProcessor;
-import de.kapsi.net.daap.DaapResponseWriter;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapRequest;
+import de.kapsi.net.daap.DaapRequestProcessor;
+import de.kapsi.net.daap.DaapResponse;
+import de.kapsi.net.daap.DaapResponseFactory;
+import de.kapsi.net.daap.DaapSession;
+import de.kapsi.net.daap.DaapUtil;
 
 /**
  * A NIO based implementation of DaapConnection.

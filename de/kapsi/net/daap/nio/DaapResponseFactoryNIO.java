@@ -19,14 +19,13 @@
 
 package de.kapsi.net.daap.nio;
 
-import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.IOException;
 
-import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapResponseFactory;
+import de.kapsi.net.daap.Song;
 
 
 /**

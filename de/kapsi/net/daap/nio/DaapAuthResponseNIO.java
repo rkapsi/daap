@@ -23,9 +23,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapAuthResponse;
+import de.kapsi.net.daap.DaapRequest;
 
 /**
  * NIO (New or Non-Blocking I/O) based DaapAuthResponse.

@@ -19,7 +19,6 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.ByteUtil;
 import de.kapsi.net.daap.DaapUtil;
 
 /**

@@ -20,49 +20,44 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
-
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import de.kapsi.net.daap.chunks.ChunkClasses;
 import de.kapsi.net.daap.chunks.ContentCode;
-
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.UpdateType;
+import de.kapsi.net.daap.chunks.impl.ContainerCount;
+import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
+import de.kapsi.net.daap.chunks.impl.DaapProtocolVersion;
+import de.kapsi.net.daap.chunks.impl.DatabaseCount;
+import de.kapsi.net.daap.chunks.impl.DmapProtocolVersion;
+import de.kapsi.net.daap.chunks.impl.ItemCount;
+import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.ItemName;
 import de.kapsi.net.daap.chunks.impl.Listing;
 import de.kapsi.net.daap.chunks.impl.ListingItem;
-import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
-import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
-import de.kapsi.net.daap.chunks.impl.ReturnedCount;
-import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.LoginRequired;
 import de.kapsi.net.daap.chunks.impl.PersistentId;
-import de.kapsi.net.daap.chunks.impl.ItemName;
-import de.kapsi.net.daap.chunks.impl.ItemCount;
-import de.kapsi.net.daap.chunks.impl.ContainerCount;
+import de.kapsi.net.daap.chunks.impl.ReturnedCount;
 import de.kapsi.net.daap.chunks.impl.ServerDatabases;
 import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
-import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
-
-import de.kapsi.net.daap.chunks.impl.TimeoutInterval;
-import de.kapsi.net.daap.chunks.impl.DmapProtocolVersion;
-import de.kapsi.net.daap.chunks.impl.DaapProtocolVersion;
-import de.kapsi.net.daap.chunks.impl.LoginRequired;
+import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
+import de.kapsi.net.daap.chunks.impl.Status;
 import de.kapsi.net.daap.chunks.impl.SupportsAutoLogout;
-import de.kapsi.net.daap.chunks.impl.SupportsUpdate;
-import de.kapsi.net.daap.chunks.impl.SupportsPersistentIds;
-import de.kapsi.net.daap.chunks.impl.SupportsExtensions;
 import de.kapsi.net.daap.chunks.impl.SupportsBrowse;
-import de.kapsi.net.daap.chunks.impl.SupportsQuery;
+import de.kapsi.net.daap.chunks.impl.SupportsExtensions;
 import de.kapsi.net.daap.chunks.impl.SupportsIndex;
+import de.kapsi.net.daap.chunks.impl.SupportsPersistentIds;
+import de.kapsi.net.daap.chunks.impl.SupportsQuery;
 import de.kapsi.net.daap.chunks.impl.SupportsResolve;
-import de.kapsi.net.daap.chunks.impl.DatabaseCount;
+import de.kapsi.net.daap.chunks.impl.SupportsUpdate;
+import de.kapsi.net.daap.chunks.impl.TimeoutInterval;
+import de.kapsi.net.daap.chunks.impl.UpdateType;
 
 /**
  * This class and its internals are the heart of this DAAP

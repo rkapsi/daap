@@ -21,9 +21,6 @@ package de.kapsi.net.daap;
 
 import java.io.IOException;
 
-import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
-import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
-
 /**
  * Interface of the DaapServer
  *

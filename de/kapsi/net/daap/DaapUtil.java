@@ -19,19 +19,25 @@
 
 package de.kapsi.net.daap;
 
-import java.text.*;
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
-import java.nio.ByteBuffer;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.httpclient.Header;
-
-import de.kapsi.net.daap.chunks.Chunk;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import de.kapsi.net.daap.chunks.Chunk;
 
 /**
  * Misc methods and constants

@@ -19,11 +19,18 @@
 
 package de.kapsi.net.daap;
 
-import de.kapsi.net.daap.chunks.Chunk;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
 import de.kapsi.net.daap.chunks.AbstractChunk;
-import de.kapsi.net.daap.chunks.impl.ItemKind;
+import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.chunks.impl.ContainerItemId;
 import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.ItemKind;
 import de.kapsi.net.daap.chunks.impl.ItemName;
+import de.kapsi.net.daap.chunks.impl.NormVolume;
+import de.kapsi.net.daap.chunks.impl.PersistentId;
 import de.kapsi.net.daap.chunks.impl.SongAlbum;
 import de.kapsi.net.daap.chunks.impl.SongArtist;
 import de.kapsi.net.daap.chunks.impl.SongBeatsPerMinute;
@@ -42,7 +49,7 @@ import de.kapsi.net.daap.chunks.impl.SongDiscNumber;
 import de.kapsi.net.daap.chunks.impl.SongEqPreset;
 import de.kapsi.net.daap.chunks.impl.SongFormat;
 import de.kapsi.net.daap.chunks.impl.SongGenre;
-import de.kapsi.net.daap.chunks.impl.SongFormat;
+import de.kapsi.net.daap.chunks.impl.SongGrouping;
 import de.kapsi.net.daap.chunks.impl.SongRelativeVolume;
 import de.kapsi.net.daap.chunks.impl.SongSampleRate;
 import de.kapsi.net.daap.chunks.impl.SongSize;
@@ -53,18 +60,6 @@ import de.kapsi.net.daap.chunks.impl.SongTrackCount;
 import de.kapsi.net.daap.chunks.impl.SongTrackNumber;
 import de.kapsi.net.daap.chunks.impl.SongUserRating;
 import de.kapsi.net.daap.chunks.impl.SongYear;
-import de.kapsi.net.daap.chunks.impl.SongGrouping;
-import de.kapsi.net.daap.chunks.impl.ContainerItemId;
-import de.kapsi.net.daap.chunks.impl.PersistentId;
-import de.kapsi.net.daap.chunks.impl.NormVolume;
-import de.kapsi.net.daap.chunks.impl.SongTrackNumber;
-
-//import de.kapsi.net.daap.chunks.impl.SongCodecType;
-//import de.kapsi.net.daap.chunks.impl.SongCodecSubtype;
-        
-import java.util.Iterator;
-import java.util.HashSet;
-import java.util.HashMap;
 
 /**
  * There isn't much to say: a Song is a Song.<p>

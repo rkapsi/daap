@@ -22,11 +22,8 @@ package de.kapsi.net.daap.bio;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapChunkResponse;
+import de.kapsi.net.daap.DaapRequest;
 
 /**
  * BIO (Blocking I/O) based DaapChunkResponse.

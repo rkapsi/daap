@@ -19,16 +19,15 @@
 
 package de.kapsi.net.daap.bio;
 
-import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
 
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapAudioResponse;
 import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapStreamException;
+import de.kapsi.net.daap.Song;
 
 /**
  * BIO (Blocking I/O) based DaapAudioResponse.

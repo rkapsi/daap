@@ -19,12 +19,9 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
-
 import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.chunks.impl.ContentCodesNumber;
 import de.kapsi.net.daap.chunks.impl.ContentCodesName;
+import de.kapsi.net.daap.chunks.impl.ContentCodesNumber;
 import de.kapsi.net.daap.chunks.impl.ContentCodesType;
 import de.kapsi.net.daap.chunks.impl.Dictionary;
 

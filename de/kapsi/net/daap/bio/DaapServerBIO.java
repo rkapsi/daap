@@ -20,31 +20,27 @@
 package de.kapsi.net.daap.bio;
 
 import java.io.IOException;
-
-import java.net.SocketAddress;
-import java.net.Socket;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
-
-import java.util.Iterator;
 import java.util.HashSet;
-
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapConfig;
-import de.kapsi.net.daap.DaapFilter;
-import de.kapsi.net.daap.SimpleConfig;
-import de.kapsi.net.daap.DaapAuthenticator;
-import de.kapsi.net.daap.DaapStreamSource;
-import de.kapsi.net.daap.SimpleConfig;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapThreadFactory;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import de.kapsi.net.daap.DaapAuthenticator;
+import de.kapsi.net.daap.DaapConfig;
+import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapFilter;
+import de.kapsi.net.daap.DaapServer;
+import de.kapsi.net.daap.DaapSession;
+import de.kapsi.net.daap.DaapStreamSource;
+import de.kapsi.net.daap.DaapThreadFactory;
+import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.Library;
+import de.kapsi.net.daap.SimpleConfig;
 
 /**
  * This DAAP server is written with the classical BIO pattern.

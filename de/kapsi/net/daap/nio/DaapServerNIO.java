@@ -20,41 +20,37 @@
 package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
-
-import java.net.InetAddress;
-import java.net.SocketAddress;
-import java.net.ServerSocket;
-import java.net.SocketException;
 import java.net.BindException;
-
-import java.util.Iterator;
-import java.util.Set;
-import java.util.HashSet;
-
-import java.nio.channels.Selector;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SelectableChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.ServerSocketChannel;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
-
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapConfig;
-import de.kapsi.net.daap.DaapFilter;
-import de.kapsi.net.daap.SimpleConfig;
-import de.kapsi.net.daap.DaapAuthenticator;
-import de.kapsi.net.daap.DaapStreamSource;
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.SimpleConfig;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapStreamException;
-import de.kapsi.net.daap.DaapThreadFactory;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import de.kapsi.net.daap.DaapAuthenticator;
+import de.kapsi.net.daap.DaapConfig;
+import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapFilter;
+import de.kapsi.net.daap.DaapServer;
+import de.kapsi.net.daap.DaapSession;
+import de.kapsi.net.daap.DaapStreamException;
+import de.kapsi.net.daap.DaapStreamSource;
+import de.kapsi.net.daap.DaapThreadFactory;
+import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.Library;
+import de.kapsi.net.daap.SimpleConfig;
 
 /**
  * A NIO based DAAP server

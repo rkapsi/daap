@@ -19,11 +19,12 @@
 
 package de.kapsi.net.daap;
 
-import java.io.*;
-import java.net.*;
-import javax.jmdns.*;
-import java.util.*;
-import org.apache.commons.httpclient.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
 /**
  * Test and Sample environment for DAAP

@@ -19,17 +19,16 @@
 
 package de.kapsi.net.daap.nio;
 
-import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.Song;
-import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapAudioResponse;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapStreamException;
+import de.kapsi.net.daap.Song;
 
 /**
  * NIO (New or Non-Blocking I/O) based DaapAudioResponse.

@@ -1,9 +1,7 @@
 package com.limegroup.gnutella.gui;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.FileInputStream;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.HashMap;
@@ -13,15 +11,9 @@ import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.InetSocketAddress;
 import java.net.BindException;
-import javax.swing.SwingUtilities;
-
-import com.sun.java.util.collections.List;
 
 import com.limegroup.gnutella.URN;
-import com.limegroup.gnutella.Downloader;
-import com.limegroup.gnutella.ErrorService;
 import com.limegroup.gnutella.RouterService;
-import com.limegroup.gnutella.FileManager;
 import com.limegroup.gnutella.FileDesc;
 import com.limegroup.gnutella.IncompleteFileDesc;
 import com.limegroup.gnutella.util.CommonUtils;
@@ -54,7 +46,6 @@ import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapThreadFactory;
-import de.kapsi.net.daap.DaapUtil;
 
 /**
  * This class handles the mDNS registration and acts as an

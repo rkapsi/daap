@@ -19,27 +19,26 @@
 
 package de.kapsi.net.daap.bio;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.SocketException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpParser;
-import org.apache.commons.httpclient.HttpStatus;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapResponseFactory;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapRequestProcessor;
-import de.kapsi.net.daap.DaapResponseWriter;
+import de.kapsi.net.daap.DaapResponse;
+import de.kapsi.net.daap.DaapResponseFactory;
+import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapStreamException;
+import de.kapsi.net.daap.DaapUtil;
 
 /**
  * This class is a cover for an incoming connection and is based 

@@ -21,14 +21,12 @@ package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import de.kapsi.net.daap.DaapRequest;
-
 import org.apache.commons.httpclient.Header;
+
+import de.kapsi.net.daap.DaapRequest;
 
 /**
  * This class reads bytes from a SocketChannel and 

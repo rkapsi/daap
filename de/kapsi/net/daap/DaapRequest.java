@@ -19,16 +19,16 @@
 
 package de.kapsi.net.daap;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -322,8 +322,6 @@ public class DaapRequest {
                     }
                 }
             }
-
-            this.queryMap = queryMap;
         
         } else {
             

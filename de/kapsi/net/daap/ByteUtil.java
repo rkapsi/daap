@@ -19,7 +19,6 @@
 
 package de.kapsi.net.daap;
 
-import java.io.UnsupportedEncodingException;
 
 /**
  * Miscellaneous Java primitive to byte array and vice versa
