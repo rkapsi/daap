@@ -11,6 +11,8 @@
     <property name="lib" value="${basedir}/../lib"/>
     <property name="jars" value="${lib}/jars"/>
   
+	<property name="DEBUG" value="false"/>
+	
     <path id="default.classpath">
         <pathelement location="${basedir}"/>
         <pathelement location="${core}"/>
@@ -108,7 +110,9 @@
         			excludes="**/tests/*" 
         			deprecation="no"
         			target="1.3"
-        			source="1.3">
+        			source="1.3"
+        			debug="${DEBUG}"
+        			debuglevel="lines">
             <classpath refid="default.classpath"/>
         </javac>
         
