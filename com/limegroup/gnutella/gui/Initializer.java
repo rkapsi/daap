@@ -12,7 +12,7 @@ import com.limegroup.gnutella.gui.notify.NotifyUserProxy;
 
 import java.io.IOException;
 import com.limegroup.gnutella.gui.DaapMediator;
-import com.limegroup.gnutella.settings.iTunesSettings;
+import com.limegroup.gnutella.settings.DaapSettings;
 
 import java.lang.reflect.*;
 import javax.swing.UIManager;
@@ -210,7 +210,7 @@ public final class Initializer {
         ExternalControl.runQueuedMagnetRequest();
 		
         if (CommonUtils.isJava14OrLater() && 
-                iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
+                DaapSettings.DAAP_ENABLED.getValue()) {
             
             try {
                 DaapMediator.instance().start();

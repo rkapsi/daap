@@ -2,30 +2,20 @@
 package com.limegroup.gnutella.settings;
 
 /**
- * Settings for iTunes
+ *
  */
-public class iTunesSettings extends LimeProps {
+public class DaapSettings extends LimeProps {
     
-    private iTunesSettings() {}
+    private DaapSettings() {
+    }
     
     /**
-     * whether or not player should be enabled.
+     * Whether or not DAAP should be enabled
      */
-    public static BooleanSetting ITUNES_SUPPORT_ENABLED =
-        FACTORY.createBooleanSetting("ITUNES_SUPPORT_ENABLED", true);
-
-      
-    /**
-     * Supported file types
-     */
-    public static StringArraySetting ITUNES_SUPPORTED_FILE_TYPES = 
-        FACTORY.createStringArraySetting("ITUNES_SUPPORTED_FILE_TYPES", 
-            new String[]{".mp3", ".aif", ".aiff", ".wav", ".mp2", ".mp4", 
-                        ".aac", ".mid", ".m4a", ".m4p", ".ogg"});
-						
+    public static BooleanSetting DAAP_ENABLED =
+	FACTORY.createBooleanSetting("DAAP_ENABLED", false);
 	
-     // --- DAAP ---
-	
+    
     /**
      * The file types supported by DAAP. I haven't checked if
      * .ogg, .mp2 etc. work too but what I can say is that .mid
@@ -35,13 +25,7 @@ public class iTunesSettings extends LimeProps {
     public static StringArraySetting DAAP_SUPPORTED_FILE_TYPES = 
         FACTORY.createStringArraySetting("DAAP_SUPPORTED_FILE_TYPES", 
             new String[]{".mp3", ".aif", ".aiff", ".wav", ".m4a"});
-    
-    /**
-     * Whether or not DAAP should be enabled
-     */
-    public static BooleanSetting DAAP_SUPPORT_ENABLED =
-	FACTORY.createBooleanSetting("DAAP_SUPPORT_ENABLED", false);
-	
+            
     /**
      * The name of the Library.
      */
@@ -104,7 +88,7 @@ public class iTunesSettings extends LimeProps {
 	FACTORY.createPasswordSetting("DAAP_PASSWORD", "");
     
     /**
-     * Use either classic I/O (default) or NIO for DAAP
+     * Use either BIO (default) or NIO for DAAP
      */
     public static BooleanSetting DAAP_USE_NIO = 
         FACTORY.createBooleanSetting("DAAP_USE_NIO", false);

@@ -28,7 +28,7 @@ import com.limegroup.gnutella.util.CommonUtils;
 import com.limegroup.gnutella.util.NetworkUtils;
 import com.limegroup.gnutella.util.FileUtils;
 import com.limegroup.gnutella.util.ManagedThread;
-import com.limegroup.gnutella.settings.iTunesSettings;
+import com.limegroup.gnutella.settings.DaapSettings;
 import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.limegroup.gnutella.FileManagerEvent;
 import com.limegroup.gnutella.filters.IPFilter;
@@ -50,6 +50,7 @@ import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapAuthenticator;
+import de.kapsi.net.daap.DaapThreadFactory;
 
 /**
  *
@@ -99,7 +100,7 @@ public final class DaapMediator implements FinalizeListener {
             try {
                 
                 map = new SongURNMap();
-                library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
+                library = new Library(DaapSettings.DAAP_LIBRARY_NAME.getValue());
                 whatsNew = new Playlist(GUIMediator.getStringResource("SEARCH_TYPE_WHATSNEW"));
                 whatsNew.setSmartPlaylist(true);
                 
@@ -111,11 +112,15 @@ public final class DaapMediator implements FinalizeListener {
                 
                 LimeConfig config = new LimeConfig();
                 
-                final boolean NIO = iTunesSettings.DAAP_USE_NIO.getValue();
+                final boolean NIO = DaapSettings.DAAP_USE_NIO.getValue();
                 server = DaapServerFactory.createServer(library, config, NIO);
                 server.setAuthenticator(new LimeAuthenticator());
                 server.setStreamSource(new LimeStreamSource());
                 server.setFilter(new LimeFilter());
+                
+                if (!NIO) {
+                    server.setThreadFactory(new LimeThreadFactory());
+                }
                 
                 final int attempts = 10;
                 
@@ -195,7 +200,7 @@ public final class DaapMediator implements FinalizeListener {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
             rendezvous.updateService();
-            updateWorker.setName(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
+            updateWorker.setName(DaapSettings.DAAP_LIBRARY_NAME.getValue());
         }
     }
     
@@ -221,7 +226,7 @@ public final class DaapMediator implements FinalizeListener {
      * Returns true if the extension of name is a supported file type.
      */
     private static boolean isSupportedFileType(String name) {
-        String[] types = iTunesSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();
+        String[] types = DaapSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();
         for(int i = 0; i < types.length; i++)
             if (name.endsWith(types[i]))
                 return true;
@@ -232,7 +237,7 @@ public final class DaapMediator implements FinalizeListener {
      * Called by VisualConnectionCallback
      */
     public void handleFileManagerEvent(FileManagerEvent evt) {
-        
+        System.out.println(evt);
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
               
             if (evt.isChangeEvent()) {
@@ -550,6 +555,18 @@ public final class DaapMediator implements FinalizeListener {
         return update;
     }
     
+    private final class LimeThreadFactory implements DaapThreadFactory {
+        
+        public LimeThreadFactory() {    
+        }
+        
+        public Thread createDaapThread(Runnable runner, String name) {
+            Thread thread = new ManagedThread(runner, name);
+            thread.setDaemon(true);
+            return thread;
+        }
+    }
+    
     /**
      * Handles the audio stream
      */
@@ -586,7 +603,7 @@ public final class DaapMediator implements FinalizeListener {
         }
         
         public boolean requiresAuthentication() {
-            return iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
+            return DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
         }
         
         /**
@@ -595,7 +612,7 @@ public final class DaapMediator implements FinalizeListener {
          * don't care)!
          */
         public boolean authenticate(String username, String password) {
-            return password.equals(iTunesSettings.DAAP_PASSWORD.getValue());
+            return password.equals(DaapSettings.DAAP_PASSWORD.getValue());
         }
     }
     
@@ -633,7 +650,7 @@ public final class DaapMediator implements FinalizeListener {
         public LimeConfig() {
             // Reset PORT to default value to prevent increasing
             // it to infinity
-            iTunesSettings.DAAP_PORT.revertToDefault();
+            DaapSettings.DAAP_PORT.revertToDefault();
         }
         
         public String getServerName() {
@@ -641,8 +658,8 @@ public final class DaapMediator implements FinalizeListener {
         }
         
         public void nextPort() {
-            int port = iTunesSettings.DAAP_PORT.getValue();
-            iTunesSettings.DAAP_PORT.setValue(port+1);
+            int port = DaapSettings.DAAP_PORT.getValue();
+            DaapSettings.DAAP_PORT.setValue(port+1);
         }
         
         public int getBacklog() {
@@ -650,12 +667,12 @@ public final class DaapMediator implements FinalizeListener {
         }
         
         public SocketAddress getSocketAddress() {
-            int port = iTunesSettings.DAAP_PORT.getValue();
+            int port = DaapSettings.DAAP_PORT.getValue();
             return new InetSocketAddress(port);
         }
         
         public int getMaxConnections() {
-            return iTunesSettings.DAAP_MAX_CONNECTIONS.getValue();
+            return DaapSettings.DAAP_MAX_CONNECTIONS.getValue();
         }
     }
     
@@ -681,14 +698,14 @@ public final class DaapMediator implements FinalizeListener {
         
         private ServiceInfo createServiceInfo() {
             
-            String type = iTunesSettings.DAAP_TYPE_NAME.getValue();
-            String name = iTunesSettings.DAAP_SERVICE_NAME.getValue();
+            String type = DaapSettings.DAAP_TYPE_NAME.getValue();
+            String name = DaapSettings.DAAP_SERVICE_NAME.getValue();
             
-            int port = iTunesSettings.DAAP_PORT.getValue();
-            int weight = iTunesSettings.DAAP_WEIGHT.getValue();
-            int priority = iTunesSettings.DAAP_PRIORITY.getValue();
+            int port = DaapSettings.DAAP_PORT.getValue();
+            int weight = DaapSettings.DAAP_WEIGHT.getValue();
+            int priority = DaapSettings.DAAP_PRIORITY.getValue();
             
-            boolean password = iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
+            boolean password = DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
             
             java.util.Hashtable props = new java.util.Hashtable();
             props.put(MACHINE_NAME, name);
@@ -736,7 +753,7 @@ public final class DaapMediator implements FinalizeListener {
                 throw new IOException();
             
             
-            if (service.getPort() != iTunesSettings.DAAP_PORT.getValue())
+            if (service.getPort() != DaapSettings.DAAP_PORT.getValue())
                 unregisterService();
             
             ServiceInfo service = createServiceInfo();

@@ -23,12 +23,7 @@ import de.kapsi.net.daap.SimpleConfig;
 import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapConnection;
-
-import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
-import de.kapsi.net.daap.chunks.ServerInfoResponseImpl;
-
-import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
-import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
+import de.kapsi.net.daap.DaapThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,12 +35,10 @@ import org.apache.commons.logging.LogFactory;
 public class DaapServerBIO implements DaapServer {
     
     private static final Log LOG = LogFactory.getLog(DaapServerBIO.class);
-    
+   
     private int threadNo = 0;
     
     private Library library;
-    private ServerInfoResponse serverInfo;
-    private ContentCodesResponse contentCodes;
     
     private DaapFilter filter;
     
@@ -56,6 +49,7 @@ public class DaapServerBIO implements DaapServer {
     private DaapConfig config;
     private DaapAuthenticator authenticator;
     private DaapStreamSource streamSource;
+    private DaapThreadFactory threadFactory;
     
     private DaapServer server;
     private ServerSocket ssocket;
@@ -75,8 +69,7 @@ public class DaapServerBIO implements DaapServer {
         this.library = library;
         this.config = config;
         
-        serverInfo = new ServerInfoResponseImpl(library.getName());
-        contentCodes = new ContentCodesResponseImpl();
+        threadFactory = new DaapThreadFactoryImpl();
         
         sessionIds = new HashSet();
         connections = new HashSet();
@@ -85,14 +78,6 @@ public class DaapServerBIO implements DaapServer {
     
     public Library getLibrary() {
         return library;
-    }
-    
-    public ServerInfoResponse getServerInfoResponse() {
-        return serverInfo;
-    }
-    
-    public ContentCodesResponse getContentCodesResponse() {
-        return contentCodes;
     }
     
     public void setConfig(DaapConfig config) {
@@ -121,6 +106,18 @@ public class DaapServerBIO implements DaapServer {
     
     public DaapFilter getFilter() {
         return filter;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public void setThreadFactory(DaapThreadFactory factory) {
+        if (factory == null) {
+            threadFactory = new DaapThreadFactoryImpl();
+        } else {
+            threadFactory = factory;
+        }
     }
     
     public DaapConfig getConfig() {
@@ -270,8 +267,7 @@ public class DaapServerBIO implements DaapServer {
         
         DaapConnectionBIO connection = new DaapConnectionBIO(this, socket);
         
-        Thread connThread = new Thread(connection, "DaapConnectionThread-" + (++threadNo));
-        connThread.setDaemon(true);
+        Thread connThread = threadFactory.createDaapThread(connection, "DaapConnectionThread-" + (++threadNo));
         connThread.start();
         
         return true;
@@ -395,8 +391,8 @@ public class DaapServerBIO implements DaapServer {
                         socket.close();
                     }
                     
-                } catch (IOException sErr) {
-                    LOG.error(sErr);
+                } catch (IOException err) {
+                    LOG.error(err);
                     socket.close();
                 }
                 
@@ -414,4 +410,15 @@ public class DaapServerBIO implements DaapServer {
         }
     }
     
+    private static class DaapThreadFactoryImpl implements DaapThreadFactory {
+        
+        private DaapThreadFactoryImpl() {    
+        }
+        
+        public Thread createDaapThread(Runnable runnable, String name) {
+            Thread thread = new Thread(runnable, name);
+            thread.setDaemon(true);
+            return thread;
+        }
+    }
 }

@@ -58,6 +58,12 @@ public interface DaapServer extends Runnable {
     
     /**
      *
+     * @param factory
+     */    
+    public void setThreadFactory(DaapThreadFactory factory);
+    
+    /**
+     *
      * @return
      */    
     public DaapConfig getConfig();
@@ -67,18 +73,6 @@ public interface DaapServer extends Runnable {
      * @throws IOException
      */    
     public void bind() throws IOException;
-    
-    /**
-     *
-     * @return
-     */    
-    public ServerInfoResponse getServerInfoResponse();
-    
-    /**
-     *
-     * @return
-     */    
-    public ContentCodesResponse getContentCodesResponse();
     
     /**
      *

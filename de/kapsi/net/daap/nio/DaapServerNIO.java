@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.net.ServerSocket;
+import java.net.SocketException;
+import java.net.BindException;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -29,12 +32,7 @@ import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.SimpleConfig;
 import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapStreamException;
-
-import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
-import de.kapsi.net.daap.chunks.ServerInfoResponseImpl;
-
-import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
-import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
+import de.kapsi.net.daap.DaapThreadFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,8 +48,6 @@ public class DaapServerNIO implements DaapServer {
     private Selector selector = null;
     
     private Library library;
-    private ServerInfoResponse serverInfo;
-    private ContentCodesResponse contentCodes;
     
     private HashSet streams;
     private HashSet connections;
@@ -93,9 +89,6 @@ public class DaapServerNIO implements DaapServer {
         
         this.library = library;
         this.config = config;
-        
-        serverInfo = new ServerInfoResponseImpl(library.getName());
-        contentCodes = new ContentCodesResponseImpl();
     }
     
     /**
@@ -104,22 +97,6 @@ public class DaapServerNIO implements DaapServer {
      */    
     public Library getLibrary() {
         return library;
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public ServerInfoResponse getServerInfoResponse() {
-        return serverInfo;
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public ContentCodesResponse getContentCodesResponse() {
-        return contentCodes;
     }
     
     /**
@@ -181,6 +158,13 @@ public class DaapServerNIO implements DaapServer {
     /**
      *
      * @return
+     */
+    public void setThreadFactory(DaapThreadFactory factory) {
+    }
+    
+    /**
+     *
+     * @return
      */    
     public DaapConfig getConfig() {
         return config;
@@ -211,7 +195,14 @@ public class DaapServerNIO implements DaapServer {
         try {
 
             ssc = ServerSocketChannel.open();
-            ssc.socket().bind(bindAddr, backlog);
+            ServerSocket socket = ssc.socket();
+            
+            try {
+                socket.bind(bindAddr, backlog);
+            } catch (SocketException err) {
+                throw new BindException(err.getMessage());
+            }
+            
             ssc.configureBlocking(false);
             
             selector = Selector.open();

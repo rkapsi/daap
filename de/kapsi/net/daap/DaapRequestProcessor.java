@@ -202,7 +202,7 @@ public class DaapRequestProcessor {
             throws IOException {
         
         DaapServer server = connection.getServer();
-        byte[] data = DaapUtil.serialize(server.getServerInfoResponse(), true);
+        byte[] data = (byte[])server.getLibrary().select(request);
         return factory.createChunkResponse(data);
     }
     
@@ -216,7 +216,7 @@ public class DaapRequestProcessor {
             throws IOException {
                 
         DaapServer server = connection.getServer();
-        byte[] data = DaapUtil.serialize(server.getContentCodesResponse(), true);
+        byte[] data = (byte[])server.getLibrary().select(request);
         return factory.createChunkResponse(data);
     }
     

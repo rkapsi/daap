@@ -7,8 +7,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import de.kapsi.net.daap.chunks.ChunkClasses;
+import de.kapsi.net.daap.chunks.ContentCode;
 
 import de.kapsi.net.daap.chunks.impl.Status;
 import de.kapsi.net.daap.chunks.impl.UpdateType;
@@ -23,6 +29,22 @@ import de.kapsi.net.daap.chunks.impl.ItemName;
 import de.kapsi.net.daap.chunks.impl.ItemCount;
 import de.kapsi.net.daap.chunks.impl.ContainerCount;
 import de.kapsi.net.daap.chunks.impl.ServerDatabases;
+import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
+import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
+
+import de.kapsi.net.daap.chunks.impl.TimeoutInterval;
+import de.kapsi.net.daap.chunks.impl.DmapProtocolVersion;
+import de.kapsi.net.daap.chunks.impl.DaapProtocolVersion;
+import de.kapsi.net.daap.chunks.impl.LoginRequired;
+import de.kapsi.net.daap.chunks.impl.SupportsAutoLogout;
+import de.kapsi.net.daap.chunks.impl.SupportsUpdate;
+import de.kapsi.net.daap.chunks.impl.SupportsPersistentIds;
+import de.kapsi.net.daap.chunks.impl.SupportsExtensions;
+import de.kapsi.net.daap.chunks.impl.SupportsBrowse;
+import de.kapsi.net.daap.chunks.impl.SupportsQuery;
+import de.kapsi.net.daap.chunks.impl.SupportsIndex;
+import de.kapsi.net.daap.chunks.impl.SupportsResolve;
+import de.kapsi.net.daap.chunks.impl.DatabaseCount;
 
 /**
  * This class and its internals are the heart of this DAAP
@@ -58,8 +80,11 @@ public class Library {
     private byte[] serverDatabases;
     private byte[] serverDatabasesUpdate;
     
+    private byte[] contentCodes;
+    private byte[] serverInfo;
+    
     private boolean open = false;
-
+    
     /**
      * Creates a new Library with the provided <tt>name</tt>
      * and with the default revision history of <tt>DEFAULT_KEEP_REVISIONS</tt>
@@ -79,6 +104,9 @@ public class Library {
         
         this.name = name;
         this.keepNumRevisions = keepNumRevisions;
+        
+        contentCodes = new ContentCodesResponseImpl().getBytes();
+        serverInfo = new ServerInfoResponseImpl(name).getBytes();
     }
     
     /**
@@ -186,7 +214,7 @@ public class Library {
     /**
      * Closes the Library
      */
-    public  void close() {
+    public void close() {
         if (!isOpen()) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Library is already closed");
@@ -196,8 +224,12 @@ public class Library {
 
         if (current != null) {
             revisions.add(current);
+     
+            if (current.getName().equals(temp.getName()) == false) {
+                serverInfo = new ServerInfoResponseImpl(temp.getName()).getBytes();
+            }
         }
-
+        
         current = temp;
         current.close();
         temp = null;
@@ -215,7 +247,7 @@ public class Library {
 
         open = false;
     }
-
+    
     /**
      * Returns some kind of Object or null if <tt>request</tt>
      * didn't matched for this Library (unknown request, unknown id,
@@ -225,7 +257,13 @@ public class Library {
      */
     public synchronized Object select(DaapRequest request) {
 
-        if (request.isUpdateRequest()) {
+        if (request.isServerInfoRequest()) {
+            return serverInfo;
+            
+        } else if (request.isContentCodesRequest()) {
+            return contentCodes;
+            
+        } else if (request.isUpdateRequest()) {
 
             int delta = request.getDelta();
 
@@ -434,6 +472,108 @@ public class Library {
             add(listing);
         }
 
+        public byte[] getBytes() {
+            return getBytes(true);
+        }
+        
+        public byte[] getBytes(boolean compress) {
+            try {
+                return DaapUtil.serialize(this, compress);
+            } catch (IOException err) {
+                LOG.error(err);
+                return null;
+            }
+        }
+    }
+    
+    /**
+    * Groups many ContentCodes to one single chunk
+    */
+    private static final class ContentCodesResponseImpl extends ContentCodesResponse {
+        
+        public ContentCodesResponseImpl() {
+            super();
+
+            add(new Status(200));
+
+            String[] names = ChunkClasses.names;
+
+            final Class[] arg1 = new Class[]{};
+            final Object[] arg2 = new Object[]{};
+
+            for(int i = 0; i < names.length; i++) {
+                try {
+                    Class clazz = Class.forName(names[i]);
+
+                    Method methodContentCode = clazz.getMethod("getContentCode", arg1);
+                    Method methodName = clazz.getMethod("getName", arg1);
+                    Method methodType = clazz.getMethod("getType", arg1);
+
+                    Object inst = clazz.newInstance();
+
+                    String cotentCode = (String)methodContentCode.invoke(inst, arg2);
+                    String name = (String)methodName.invoke(inst, arg2);
+                    int type = ((Integer)methodType.invoke(inst, arg2)).intValue();
+
+                    add(new ContentCode(cotentCode, name, type));
+
+                } catch (ClassNotFoundException err) {
+                    LOG.error(err);
+                } catch (NoSuchMethodException err) {
+                    LOG.error(err);
+                } catch (InstantiationException err) {
+                    LOG.error(err);
+                } catch (IllegalAccessException err) {
+                    LOG.error(err);
+                } catch (IllegalArgumentException err) {
+                    LOG.error(err);
+                } catch (InvocationTargetException err) {
+                    LOG.error(err);
+                } catch (SecurityException err) {
+                    LOG.error(err);
+                }
+            }
+        }
+        
+        public byte[] getBytes() {
+            return getBytes(true);
+        }
+        
+        public byte[] getBytes(boolean compress) {
+            try {
+                return DaapUtil.serialize(this, compress);
+            } catch (IOException err) {
+                LOG.error(err);
+                return null;
+            }
+        }
+    }
+    
+    /**
+     * This class implements the ServerInfoResponse
+     */
+    private static final class ServerInfoResponseImpl extends ServerInfoResponse {
+
+        public ServerInfoResponseImpl(String name) {
+            super();
+
+            add(new Status(200));
+            add(new TimeoutInterval(1800));
+            add(new DmapProtocolVersion(0x00020000)); // 2.0.0
+            add(new DaapProtocolVersion(0x00020000)); // 2.0.0
+            add(new ItemName(name));
+            add(new LoginRequired(false));
+            add(new SupportsAutoLogout(false));
+            add(new SupportsUpdate(false));
+            add(new SupportsPersistentIds(false));
+            add(new SupportsExtensions(false));
+            add(new SupportsBrowse(false));
+            add(new SupportsQuery(false));
+            add(new SupportsIndex(false));
+            add(new SupportsResolve(false));
+            add(new DatabaseCount(1));
+        }
+        
         public byte[] getBytes() {
             return getBytes(true);
         }
