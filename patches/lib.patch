@@ -1,10 +1,10 @@
 Index: messagebundles/MessagesBundle.properties
 ===================================================================
 RCS file: /cvs/lib/messagebundles/MessagesBundle.properties,v
-retrieving revision 1.105
-diff -u -r1.105 MessagesBundle.properties
---- messagebundles/MessagesBundle.properties	23 Jul 2004 22:30:03 -0000	1.105
-+++ messagebundles/MessagesBundle.properties	24 Jul 2004 17:14:28 -0000
+retrieving revision 1.106
+diff -u -r1.106 MessagesBundle.properties
+--- messagebundles/MessagesBundle.properties	2 Aug 2004 19:20:52 -0000	1.106
++++ messagebundles/MessagesBundle.properties	2 Aug 2004 19:41:35 -0000
 @@ -845,6 +845,7 @@
  SPLASH_STATUS_MESSAGE_SERVICE=Loading messages...
  SPLASH_STATUS_ICONS=Loading icons...
@@ -13,7 +13,7 @@ diff -u -r1.105 MessagesBundle.properties
  SPLASH_STATUS_COMPONENT_LOADING_ACCEPTOR=Loading connection listener...
  SPLASH_STATUS_COMPONENT_LOADING_MESSAGE_ROUTER=Loading message router...
  SPLASH_STATUS_COMPONENT_LOADING_CONNECTION_MANAGER=Loading connection management...
-@@ -1050,6 +1051,7 @@
+@@ -1051,6 +1052,7 @@
  OPTIONS_CHAT_MAIN_TITLE=Chat
  OPTIONS_PLAYER_MAIN_TITLE=Player
  OPTIONS_ITUNES_MAIN_TITLE=iTunes
@@ -21,7 +21,7 @@ diff -u -r1.105 MessagesBundle.properties
  OPTIONS_APPS_MAIN_TITLE=Helper Apps
  OPTIONS_BUGS_MAIN_TITLE=Bug Reports
  OPTIONS_GUI_MAIN_TITLE=View
-@@ -1247,6 +1249,21 @@
+@@ -1248,6 +1250,21 @@
  OPTIONS_ITUNES_SUPPORT_ACTIVE_CHECK_BOX_LABEL=Enable iTunes support:
  OPTIONS_ITUNES_PREFERENCE_TITLE=iTunes options
  OPTIONS_ITUNES_PREFERENCE_LABEL=You can enable iTunes support (Mac OS X only).
