@@ -1,10 +1,19 @@
 
 package de.kapsi.net.daap;
 
-public class ByteUtil {
-
+/**
+ * Miscellaneous Java primitive to byte array and vice versa
+ * methods.
+ *
+ * Note: All values are in Big-Endian!
+ */
+public final class ByteUtil {
+    
+    private ByteUtil() {
+    }
+    
 	/**
-	 *
+	 * 16bit to int
 	 */
 	public static final int toInt16BE(byte[] src, int offset) {
         return 	(((src[  offset] & 0xFF) << 8) + 
@@ -12,7 +21,7 @@ public class ByteUtil {
     }
     
 	/**
-	 *
+	 * int to 16bit
 	 */
 	public static final int toByte16BE(int value, byte[] dst, int offset) {
 		dst[  offset] = (byte)((value >> 8) & 0xFF);
@@ -21,7 +30,7 @@ public class ByteUtil {
     }
 	
 	/**
-	 *
+	 * 32bit to int
 	 */
     public static final int toIntBE(byte[] src, int offset) {
         return (((src[  offset] & 0xFF) << 24) + 
@@ -31,9 +40,10 @@ public class ByteUtil {
     }
 	
 	/**
-	 *
+	 * Used to copy the bytes of a content code (a four character string)
+     * to dst...
 	 */
-	public static final int toByteBE(String value, byte[] dst, int offset) 
+	public static final int toBytes(String value, byte[] dst, int offset) 
 			throws java.io.UnsupportedEncodingException {
 			
 		byte[] bytes = value.getBytes("UTF-8");
@@ -42,7 +52,7 @@ public class ByteUtil {
 	}
 	
 	/**
-	 *
+	 * int to 32bit
 	 */
 	public static final int toByteBE(int value, byte[] dst, int offset) {
 		dst[  offset] = (byte)((value >> 24) & 0xFF);
@@ -53,7 +63,7 @@ public class ByteUtil {
     }
 	
 	/**
-	 * 
+	 * long to 64bit
 	 */
 	public static final int toByte64BE(long value, byte[] dst, int offset) {
 		dst[  offset] = (byte)((value >> 56) & 0xFF);

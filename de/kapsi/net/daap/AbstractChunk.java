@@ -41,7 +41,7 @@ public abstract class AbstractChunk implements Chunk {
 	public void serialize(OutputStream out) throws IOException {
 		byte[] buffer = new byte[HEADER_SIZE];
 		
-		ByteUtil.toByteBE(contentCode, buffer, 0);
+		ByteUtil.toBytes(contentCode, buffer, 0);
 		ByteUtil.toByteBE(getLength(), buffer, 4);
 		
 		out.write(buffer, 0, buffer.length);

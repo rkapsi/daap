@@ -22,7 +22,9 @@ public class DaapRequestHandler {
 	
 	private DaapAuthenticator authenticator;
 	
-	public DaapRequestHandler(ServerInfoResponse serverInfo, ContentCodesResponse contentCodes, Library library) {
+	public DaapRequestHandler(ServerInfoResponse serverInfo, 
+                ContentCodesResponse contentCodes, Library library) {
+                
 		this.serverInfo = serverInfo;
 		this.contentCodes = contentCodes;
 		this.library = library;
@@ -36,7 +38,8 @@ public class DaapRequestHandler {
 		return authenticator;
 	}
 	
-	public boolean processRequest(DaapConnection conn, DaapRequest request) throws IOException {
+	public boolean processRequest(DaapConnection conn, DaapRequest request) 
+            throws IOException {
 		
 		if (request == null || request.isUnknownRequest()) {
 		
