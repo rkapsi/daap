@@ -66,6 +66,7 @@ public class DaapConnectionImpl implements DaapConnection {
     }
     
     /**
+     * Returns <tt>true</tt> if this is an Audio Stream
      *
      * @return
      */    
@@ -74,7 +75,8 @@ public class DaapConnectionImpl implements DaapConnection {
     }
     
     /**
-     *
+     * Returns <tt>true</tt> if this is a normal connection
+     * 
      * @return
      */    
     public boolean isNormal() {
@@ -82,14 +84,17 @@ public class DaapConnectionImpl implements DaapConnection {
     }
     
     /**
+     * Returns <tt>true</tt> if this is an indetermined
+     * connection
      *
      * @return
      */    
     public boolean isUndef() {
-        return (type == UNDEF);
+        return (type==DaapConnection.UNDEF);
     }
     
     /**
+     * What do you do next?
      *
      * @return
      */    
@@ -108,6 +113,7 @@ public class DaapConnectionImpl implements DaapConnection {
             return op;
         
         } else {
+            // isAudioStream
             return SelectionKey.OP_WRITE;
         }
     }

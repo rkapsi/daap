@@ -69,7 +69,23 @@ public class Database {
     }
     
     // required for createSnapshot()
-    private Database() {
+    private Database(Database orig) {
+        
+        revision = orig.revision;
+        id = orig.id;
+        name = orig.name;
+        persistentId = orig.persistentId;
+        
+        databaseSongs = orig.databaseSongs;
+        databaseSongsUpdate = orig.databaseSongsUpdate;
+        databasePlaylists = orig.databasePlaylists;
+        databasePlaylistsUpdate = orig.databasePlaylistsUpdate;
+        
+        containers = new ArrayList();
+        Iterator it = orig.containers.iterator();
+        while(it.hasNext()) {
+            containers.add(((Playlist)it.next()).createSnapshot());
+        }
     }
     
     /**
@@ -321,25 +337,7 @@ public class Database {
      */    
     Database createSnapshot() {
         
-        Database clone = new Database();
-        
-        clone.revision = this.revision;
-        clone.id = this.id;
-        clone.name = this.name;
-        clone.persistentId = this.persistentId;
-        
-        clone.databaseSongs = this.databaseSongs;
-        clone.databaseSongsUpdate = this.databaseSongsUpdate;
-        clone.databasePlaylists = this.databasePlaylists;
-        clone.databasePlaylistsUpdate = this.databasePlaylistsUpdate;
-        
-        clone.containers = new ArrayList();
-        Iterator it = this.containers.iterator();
-        while(it.hasNext()) {
-            clone.containers.add(((Playlist)it.next()).createSnapshot());
-        }
-        
-        return clone;
+        return new Database(this);
     }
     
     /**

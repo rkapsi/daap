@@ -39,13 +39,15 @@ public class Playlist implements SongListener {
     
     private static final Log LOG = LogFactory.getLog(Playlist.class);
     
-    private static int PLAYLIST_ID = 1;
+    private static int PLAYLIST_ID = 0;
     
     private static final boolean notifyMasterPlaylistAddSong = true;
     private static final boolean notifyMasterPlaylistRemoveSong = false;
     private static final boolean notifyMasterPlaylistUpdateSong = true;
     
-    private static final SmartPlaylist SMART_PLAYLIST = new SmartPlaylist(false);
+    // Note: a playlist is "smart" when aeSP is in the serialized 
+    // chunklist regardless of its value (i.e. true or false doesn't matter)
+    private static final SmartPlaylist SMART_PLAYLIST = new SmartPlaylist(!true);
     private static final DummyChunk DUMMY_CHUNK = new DummyChunk(SMART_PLAYLIST);
     
     private ItemId itemId;
@@ -63,14 +65,12 @@ public class Playlist implements SongListener {
     private byte[] playlistSongsUpdate;
     
     private Playlist masterPlaylist;
-    
     private boolean isSmartPlaylist = false;
-    private boolean isclone = true;
     
     public Playlist(String name) {
-        isclone = false;
+        
         synchronized(Playlist.class) {
-            itemId = new ItemId(PLAYLIST_ID++);
+            itemId = new ItemId(++PLAYLIST_ID);
         }
         
         items = new ArrayList();
@@ -103,7 +103,17 @@ public class Playlist implements SongListener {
         add(itemId);
         add(itemName);
         add(persistentId);
+        
+        if (orig.isSmartPlaylist()) {
+            add(SMART_PLAYLIST);
+        } else {
+            add(DUMMY_CHUNK);
+        }
+        
         add(itemCount);
+        
+        playlistSongs = orig.playlistSongs;
+        playlistSongsUpdate = orig.playlistSongsUpdate;
     }
     
     void setMasterPlaylist(Playlist masterPlaylist) {
@@ -130,6 +140,12 @@ public class Playlist implements SongListener {
         return itemName.getValue();
     }
     
+    /**
+     * Sets whether or not this Playlist is a smart playlist.
+     * The difference between smart and common playlists is that
+     * smart playlists have a star as an icon and they appear
+     * at first in the list.
+     */
     public void setSmartPlaylist(boolean smart) {
         isSmartPlaylist = smart;
         
@@ -139,7 +155,11 @@ public class Playlist implements SongListener {
             add(DUMMY_CHUNK);
         }
     }
-     
+    
+    /**
+     * Returns <tt>true</tt> if this Playlist is a smart
+     * playlist.
+     */
     public boolean isSmartPlaylist() {
         return isSmartPlaylist;
     }
@@ -329,19 +349,7 @@ public class Playlist implements SongListener {
     
     Playlist createSnapshot() {
         
-        //Playlist clone = new Playlist(itemName.getValue(), itemId.getValue());
-        Playlist clone = new Playlist(this);
-        
-        clone.playlistSongs = this.playlistSongs;
-        clone.playlistSongsUpdate = this.playlistSongsUpdate;
-        
-        // Clones do not need this information...
-        //clone.items = null;
-        //clone.newItems = null;
-        //clone.deletedItems = null;
-        //clone.properties = null;
-        
-        return clone;
+        return new Playlist(this);
     }
     
     public String toString() {

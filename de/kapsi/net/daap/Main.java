@@ -164,6 +164,18 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
                 
                 updateSong.update();
                 
+                boolean smart = playlist0.isSmartPlaylist();
+                playlist0.setSmartPlaylist(!playlist1.isSmartPlaylist());
+                playlist1.setSmartPlaylist(!playlist2.isSmartPlaylist());
+                playlist2.setSmartPlaylist(!playlist3.isSmartPlaylist());
+                playlist3.setSmartPlaylist(!smart);
+                
+                String p0 = playlist0.getName();
+                playlist0.setName(playlist1.getName());
+                playlist1.setName(playlist2.getName());
+                playlist2.setName(playlist3.getName());
+                playlist3.setName(p0);
+                
                 library.close();
             }
             

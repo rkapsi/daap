@@ -27,6 +27,7 @@ import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.SimpleConfig;
+import de.kapsi.net.daap.DaapSession;
 
 import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
 import de.kapsi.net.daap.chunks.ServerInfoResponseImpl;
@@ -377,6 +378,12 @@ public class DaapServerNIO implements DaapServer {
         DaapConnection connection = (DaapConnection)sk.attachment();
         
         if (connection != null) {
+            
+            DaapSession session = connection.getSession(false);
+            if (session != null) {
+                sessionIds.remove(session.getSessionId());
+            }
+            
             connection.close();
             
             if (connection.isNormal()) {
@@ -517,7 +524,6 @@ public class DaapServerNIO implements DaapServer {
     
     /**
      *
-     * @throws IOException
      */
     private void processUpdate() {
         
