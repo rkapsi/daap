@@ -114,4 +114,12 @@ public interface DaapServer extends Runnable {
      * Creates and returns an unique session-id
      */
     public Integer createSessionId();
+    
+    /**
+     * Returns a DAAP connection from the "normal" connections
+     * pool (i.e. a non audio stream) for the sessionId. The
+     * primary purpose for this method is that Audio Streams
+     * can determinate their "normal" connection
+     */
+    DaapConnection getConnection(Integer sessionId);
 }

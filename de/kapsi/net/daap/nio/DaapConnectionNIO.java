@@ -15,6 +15,7 @@ import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapSession;
+import de.kapsi.net.daap.DaapUtil;
 
 import de.kapsi.net.daap.DaapServer;
 import de.kapsi.net.daap.DaapConnection;
@@ -39,6 +40,7 @@ public class DaapConnectionNIO implements DaapConnection {
     private DaapSession session;
     
     private int type = DaapConnection.UNDEF;
+    private int protocolVersion = DaapUtil.UNDEF_VALUE;
     
     /** Creates a new instance of DaapConnection */
     public DaapConnectionNIO(DaapServerNIO server, SocketChannel channel) {
@@ -89,6 +91,13 @@ public class DaapConnectionNIO implements DaapConnection {
      */    
     public boolean isUndef() {
         return (type==DaapConnection.UNDEF);
+    }
+    
+    /**
+     *
+     */
+    public int getProtocolVersion() {
+        return protocolVersion;
     }
     
     /**
@@ -156,18 +165,37 @@ public class DaapConnectionNIO implements DaapConnection {
                             throw new IOException("Unknown Session-ID: " + sid);
                         }
                         
-                        server.registerConnection(this);
+                        // Get the associated "normal" connection...
+                        DaapConnection connection = server.getConnection(sid);
+                        if (connection == null) {
+                            throw new IOException("No connection associated with this Session-ID: " + sid);
+                        }
+                        
+                        // ...and use its protocolVersion for this Audio Stream
+                        // because Audio Streams do not provide the version in 
+                        // the request header (we could use the User-Agent header
+                        // but that breaks compatibility to non iTunes hosts and
+                        // they would have to fake their request header.
+                        protocolVersion = connection.getProtocolVersion();
                         
                     } else if (request.isServerInfoRequest()) {
+                        
                         type = DaapConnection.NORMAL;
-                        server.registerConnection(this);
-                    
+                        protocolVersion = DaapUtil.getProtocolVersion(request);
+                        
                     } else {
                         
                         // disconnect as the first request must be
                         // either a song or server-info request!
                         throw new IOException("Illegal first request: " + request);
                     }
+                    
+                    if (protocolVersion < DaapUtil.VERSION_2) {
+                        throw new IOException("Unsupported Protocol Version: " + protocolVersion);
+                    }
+                    
+                    // All checks passed successfully...
+                    server.registerConnection(this);
                 }
                 
                 DaapResponse response = PROCESSOR.process(request);

@@ -62,6 +62,14 @@ public interface DaapConnection {
     public boolean isUndef();
     
     /**
+     * Returns <tt>true</tt> if the type of this connection
+     * is currently indetermined.
+     * 
+     * @return <tt>true</tt> if connection is indetermined
+     */
+    public int getProtocolVersion();
+    
+    /**
      * Called when a DaapConnection is beeing removed
      * from the connection pool.
      */

@@ -2,6 +2,7 @@
 package de.kapsi.net.daap.chunks;
 
 import de.kapsi.net.daap.ByteUtil;
+import de.kapsi.net.daap.DaapUtil;
 
 /**
  * This class implements a Version chunk. A Version chunk is 
@@ -12,58 +13,54 @@ import de.kapsi.net.daap.ByteUtil;
 public class VersionChunk extends IntChunk {
     
     private int majorVersion;
-    private byte minorVersion;
-    private byte patchlevel;
+    private int minorVersion;
+    private int patchLevel;
     
     protected VersionChunk(String type, String name, int value) {
         super(type, name, value);
     }
     
     protected VersionChunk(String type, String name, int majorVersion, 
-            byte minorVersion, byte patchlevel) {
+            int minorVersion, int patchLevel) {
                 
         super(type, name, 0);
         
-        this.majorVersion = majorVersion;
-        this.minorVersion = minorVersion;
-        this.patchlevel = patchlevel;
+        this.majorVersion = majorVersion & 0xFFFF;
+        this.minorVersion = minorVersion & 0xFF;
+        this.patchLevel = patchLevel & 0xFF;
         
         setValue(createVersion());
     }
     
     private final int createVersion() {
-        byte[] dst = new byte[4];
-        ByteUtil.toByte16BE(majorVersion, dst, 0);
-        dst[2] = minorVersion;
-        dst[3] = patchlevel;
-        return ByteUtil.toIntBE(dst, 0);
+        return DaapUtil.toVersion(majorVersion, minorVersion, patchLevel);
     }
     
     public void setMajorVersion(int majorVersion) {
-        this.majorVersion = majorVersion;
+        this.majorVersion = majorVersion & 0xFFFF;
         setValue(createVersion());
     }
     
-    public void setMinorVersion(byte minorVersion) {
-        this.minorVersion = minorVersion;
+    public void setMinorVersion(int minorVersion) {
+        this.minorVersion = minorVersion & 0xFF;
         setValue(createVersion());
     }
     
-    public void setPatchlevel(byte patchlevel) {
-        this.patchlevel = patchlevel;
+    public void setPatchlevel(int patchLevel) {
+        this.patchLevel = patchLevel & 0xFF;
         setValue(createVersion());
     }
     
     public int getMajorVersion() {
-        return this.majorVersion;
+        return majorVersion;
     }
     
-    public byte getMinorVersion() {
-        return this.minorVersion;
+    public int getMinorVersion() {
+        return minorVersion;
     }
     
-    public byte getPatchlevel() {
-        return this.patchlevel;
+    public int getPatchLevel() {
+        return patchLevel;
     }
     
     /**
@@ -75,6 +72,6 @@ public class VersionChunk extends IntChunk {
     
     public String toString() {
         return super.toString() + "=" + majorVersion + "." +
-        minorVersion + "." + patchlevel;
+        minorVersion + "." + patchLevel;
     }
 }

@@ -51,6 +51,7 @@ import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapThreadFactory;
+import de.kapsi.net.daap.DaapUtil;
 
 /**
  *
@@ -720,6 +721,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     private final class RendezvousService {
         
+        private static final String VERSION = "Version";
         private static final String MACHINE_NAME = "Machine Name";
         private static final String PASSWORD = "Password";
         
@@ -746,6 +748,15 @@ public final class DaapMediator implements FinalizeListener {
             boolean password = DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
             
             java.util.Hashtable props = new java.util.Hashtable();
+            
+            // Greys the share and the playlist names when iTunes's
+            // protocol version is different from this version. It's
+            // only a nice visual effect and has no impact to the
+            // ability to connect this server! Disabled because 
+            // iTunes 4.2 is still widespread...
+            //props.put(VERSION, Integer.toString(DaapUtil.VERSION_3));
+            
+            // This is the inital share name
             props.put(MACHINE_NAME, name);
             
             // shows the small lock if Service is protected
@@ -762,8 +773,8 @@ public final class DaapMediator implements FinalizeListener {
                 qualifiedName = name + "." + type;
             }
             
-            ServiceInfo service =
-            new ServiceInfo(type, qualifiedName, port, weight, priority, props);
+            ServiceInfo service = new ServiceInfo(type, qualifiedName, port, 
+                                                     weight, priority, props);
             
             return service;
         }

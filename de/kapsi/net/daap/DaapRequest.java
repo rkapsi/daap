@@ -23,8 +23,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DaapRequest {
     
-    public static final int UNDEF_VALUE         = 0;	//  zero means not defined (system wide)
-    
     public static final int SERVER_INFO         = 1;	//  "/server-info"
     public static final int CONTENT_CODES       = 2;	//  "/content-codes"
     public static final int LOGIN		= 3;	//  "/login"
@@ -45,17 +43,17 @@ public class DaapRequest {
     
     private Map queryMap;
     
-    private int sessionId = UNDEF_VALUE;
-    private int revisionNumber = UNDEF_VALUE;
-    private int delta = UNDEF_VALUE;
+    private int sessionId = DaapUtil.UNDEF_VALUE;
+    private int revisionNumber = DaapUtil.UNDEF_VALUE;
+    private int delta = DaapUtil.UNDEF_VALUE;
     
     private ArrayList meta;
     private String metaString;
     
-    private int requestType = UNDEF_VALUE;
-    private int databaseId = UNDEF_VALUE;
-    private int containerId = UNDEF_VALUE;
-    private int itemId = UNDEF_VALUE;
+    private int requestType = DaapUtil.UNDEF_VALUE;
+    private int databaseId = DaapUtil.UNDEF_VALUE;
+    private int containerId = DaapUtil.UNDEF_VALUE;
+    private int itemId = DaapUtil.UNDEF_VALUE;
     
     private ArrayList headers;
     private boolean isServerSideRequest;
@@ -154,7 +152,7 @@ public class DaapRequest {
      *
      * @param method
      */
-    public void setMethod(String method) {
+    private void setMethod(String method) {
         this.method = method;
     }
     
@@ -163,7 +161,7 @@ public class DaapRequest {
      *
      * @param protocol
      */
-    public void setProtocol(String protocol) {
+    private void setProtocol(String protocol) {
         this.protocol = protocol;
     }
     
@@ -174,7 +172,7 @@ public class DaapRequest {
      * @param uri
      * @throws URIException
      */    
-    public void setURI(URI uri) throws URIException {
+    private void setURI(URI uri) throws URIException {
         
         this.uri = uri;
         
@@ -202,7 +200,7 @@ public class DaapRequest {
                 sessionId = Integer.parseInt((String)queryMap.get("session-id"));
             }
 
-            if (sessionId != UNDEF_VALUE) {
+            if (sessionId != DaapUtil.UNDEF_VALUE) {
 
                 if (queryMap.containsKey("revision-number")) {
                     revisionNumber = Integer.parseInt((String)queryMap.get("revision-number"));
@@ -216,7 +214,7 @@ public class DaapRequest {
                     metaString = (String)queryMap.get("meta");
                 }
 
-                isUpdateType = (delta != UNDEF_VALUE) && (delta < revisionNumber);
+                isUpdateType = (delta != DaapUtil.UNDEF_VALUE) && (delta < revisionNumber);
 
 
                 // "/databases/id/items"                3 tokens
@@ -294,14 +292,14 @@ public class DaapRequest {
             metaString = null;
             isUpdateType = false;
             
-            requestType = UNDEF_VALUE;
-            databaseId = UNDEF_VALUE;
-            containerId = UNDEF_VALUE;
-            itemId = UNDEF_VALUE;
+            requestType = DaapUtil.UNDEF_VALUE;
+            databaseId = DaapUtil.UNDEF_VALUE;
+            containerId = DaapUtil.UNDEF_VALUE;
+            itemId = DaapUtil.UNDEF_VALUE;
             
-            sessionId = UNDEF_VALUE;
-            revisionNumber = UNDEF_VALUE;
-            delta = UNDEF_VALUE;
+            sessionId = DaapUtil.UNDEF_VALUE;
+            revisionNumber = DaapUtil.UNDEF_VALUE;
+            delta = DaapUtil.UNDEF_VALUE;
         }
     }
     
@@ -368,58 +366,10 @@ public class DaapRequest {
     }
     
     /**
-     *
+     * Returns the associated DaapConnection
      */
     public DaapConnection getConnection() {
         return connection;
-    }
-    
-    /**
-     * Returns <tt>true</tt> if this request is from iTunes 4.0 
-     * (DAAP version 1.0)
-     */
-    public boolean isITunes40() {
-        Header agent = getHeader("User-Agent");
-        if (agent != null) {
-            return agent.getValue().startsWith("iTunes/4.0");
-        }
-        return false;
-    }
-    
-    /**
-     * Returns <tt>true</tt> if this request is from iTunes 4.1 or 4.2 
-     * (DAAP version 2.0)
-     */
-    public boolean isITunes41Or42() {
-        
-        Header agent = getHeader("User-Agent");
-        
-        if (agent != null) {
-            String value = agent.getValue();
-            
-            if (value.startsWith("iTunes/4.1") || 
-                    value.startsWith("iTunes/4.2")) {
-                        
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Returns <tt>true</tt> if this request is from iTunes 4.5 
-     * (DAAP version 3.0)
-     */
-    public boolean isITunes45() {
-        
-        Header agent = getHeader("User-Agent");
-        
-        if (agent != null) {
-            return agent.getValue().startsWith("iTunes/4.5");
-        }
-        
-        return false;
     }
     
     /**
@@ -429,7 +379,7 @@ public class DaapRequest {
      * @return
      */
     public boolean isUnknownRequest() {
-        return (requestType==UNDEF_VALUE);
+        return (requestType==DaapUtil.UNDEF_VALUE);
     }
     
     /**
@@ -656,7 +606,7 @@ public class DaapRequest {
      * @return
      */
     public boolean isDatabaseIdSet() {
-        return (databaseId != UNDEF_VALUE);
+        return (databaseId != DaapUtil.UNDEF_VALUE);
     }
     
     /**
@@ -666,7 +616,7 @@ public class DaapRequest {
      * @return
      */
     public boolean isContainerIdSet() {
-        return (containerId != UNDEF_VALUE);
+        return (containerId != DaapUtil.UNDEF_VALUE);
     }
     
     /**
@@ -676,7 +626,7 @@ public class DaapRequest {
      * @return
      */
     public boolean isItemIdSet() {
-        return (itemId != UNDEF_VALUE);
+        return (itemId != DaapUtil.UNDEF_VALUE);
     }
     
     /**

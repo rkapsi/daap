@@ -77,6 +77,11 @@ public class DaapHeaderConstructor {
         try {
             
             DaapConnection connection = request.getConnection();
+            int version = connection.getProtocolVersion();
+            
+            if (version == DaapUtil.UNDEF_VALUE)
+                throw new IOException("Client Protocol Version is unknown");
+            
             String serverName = connection.getServer().getConfig().getServerName();
             
             String statusLine = null;
@@ -88,7 +93,7 @@ public class DaapHeaderConstructor {
             headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
             
             // 
-            if ( ! request.isITunes45() || pos == 0) {
+            if ( version <= DaapUtil.VERSION_2 || pos == 0) {
                 
                 statusLine = HTTP_OK;
                 headers.add(new Header("Content-Length", Integer.toString(contentLength)));

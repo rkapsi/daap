@@ -20,13 +20,15 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class DaapUtil {
     
+    public static final int UNDEF_VALUE = 0;
+    
     private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
     private static final String ISO_8859_1 = "ISO-8859-1";
     
     private static final Log LOG = LogFactory.getLog(DaapUtil.class);
     
-    private final static SimpleDateFormat formatter
-    = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z", Locale.US);
+    private final static SimpleDateFormat formatter = 
+        new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z", Locale.US);
     
     private final static Random generator = new Random();
     
@@ -89,6 +91,13 @@ public final class DaapUtil {
         "dmap.containeritemid"
     };
     
+    public static final int VERSION_1 = 0x00010000; // 1.0.0
+    public static final int VERSION_2 = 0x00020000; // 2.0.0
+    public static final int VERSION_3 = 0x00030000; // 3.0.0
+    
+    private static final String CLIENT_DAAP_VERSION = "Client-DAAP-Version";
+    private static final String USER_AGENT = "User-Agent";
+    
     private DaapUtil() {
     }
     
@@ -117,8 +126,7 @@ public final class DaapUtil {
      * Serializes the <tt>chunk</tt> and compresses it optionally.
      * The serialized data is returned as a byte-Array.
      */
-    public static final byte[] serialize(Chunk chunk, boolean compress)
-    throws IOException {
+    public static final byte[] serialize(Chunk chunk, boolean compress) throws IOException {
         
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(chunk.getSize());
         
@@ -203,6 +211,91 @@ public final class DaapUtil {
         }
         
         return sessionId;
+    }
+    
+    public static int toVersion(int major) {
+        return toVersion(major, 0, 0);
+    }
+    
+    public static int toVersion(int major, int minor) {
+        return toVersion(major, minor, 0);
+    }
+    
+    /**
+     * Converts major, minor and patch to a DAAP version.
+     * Version 2.0.0 is for example 0x00020000
+     */
+    public static int toVersion(int major, int minor, int patch) {
+        byte[] dst = new byte[4];
+        ByteUtil.toByte16BE((major & 0xFFFF), dst, 0);
+        dst[2] = (byte)(minor & 0xFF);
+        dst[3] = (byte)(patch & 0xFF);
+        return ByteUtil.toIntBE(dst, 0);
+    }
+    
+    /**
+     * This method tries the determinate the protocol version
+     * and returns it or UNDEF_VALUE if version could not be
+     * estimated...
+     */
+    public static int getProtocolVersion(DaapRequest request) {
+        
+        if (request.isUnknownRequest())
+            return DaapUtil.UNDEF_VALUE;
+        
+        Header header = request.getHeader(CLIENT_DAAP_VERSION);
+        
+        if (header == null && request.isSongRequest()) {
+            header = request.getHeader(USER_AGENT);
+        }
+        
+        if (header == null)
+            return DaapUtil.UNDEF_VALUE;
+        
+        String name = header.getName();
+        String value = header.getValue();
+
+        // Unfortunately song requests do not have a Client-DAAP-Version
+        // header. As a workaround we can estimate the protocol version
+        // by User-Agent but that is weak an may break with non iTunes
+        // hosts...
+        if ( request.isSongRequest() && name.equals(USER_AGENT)) {
+            
+            if (value.startsWith("iTunes/4.5"))
+                return DaapUtil.VERSION_3;
+            else if (value.startsWith("iTunes/4.2") || value.startsWith("iTunes/4.1"))
+                return DaapUtil.VERSION_2;
+            else if (value.startsWith("iTunes/4.0"))
+                return DaapUtil.VERSION_1;
+            else
+                return DaapUtil.UNDEF_VALUE;
+            
+        } else {
+            
+            StringTokenizer tokenizer = new StringTokenizer(value, ".");
+            int count = tokenizer.countTokens();
+            
+            if (count >= 2 && count <= 3) {
+                try {
+
+                    int major = DaapUtil.UNDEF_VALUE;
+                    int minor = DaapUtil.UNDEF_VALUE;
+                    int patch = DaapUtil.UNDEF_VALUE;
+
+                    major = Integer.parseInt(tokenizer.nextToken());
+                    minor = Integer.parseInt(tokenizer.nextToken());
+
+                    if (count == 3)
+                        patch = Integer.parseInt(tokenizer.nextToken());
+
+                    return DaapUtil.toVersion(major, minor, patch);
+
+                } catch (NumberFormatException err) {
+                }
+            }
+        }
+        
+        return DaapUtil.UNDEF_VALUE;
     }
     
     /*public static final void dump(String file, byte[] bytes) throws IOException {

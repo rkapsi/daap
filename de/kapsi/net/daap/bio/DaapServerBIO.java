@@ -336,6 +336,28 @@ public class DaapServerBIO implements DaapServer {
     }
     
     /**
+     *
+     * @param sessionId
+     * @return
+     */ 
+    public DaapConnection getConnection(Integer sessionId) {
+        synchronized(connections) {
+            Iterator it = connections.iterator();
+            while(it.hasNext()) {
+                DaapConnection connection = (DaapConnection)it.next();
+                DaapSession session = connection.getSession(false);
+                if (session != null) {
+                    Integer sid = session.getSessionId();
+                    if (sid.equals(sessionId)) {
+                        return connection;
+                    }
+                }
+            }
+            return null;
+        }
+    }
+    
+    /**
      * Returns an unique session-id
      */
     public Integer createSessionId() {

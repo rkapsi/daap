@@ -111,13 +111,13 @@ public class Library {
         contentCodes = new ContentCodesResponseImpl().getBytes();
         
         // 1.0.0 (iTunes 4.0)
-        //serverInfoV1 = new ServerInfoResponseImpl(name, 0x00010000).getBytes();
+        //serverInfoV1 = new ServerInfoResponseImpl(name, DaapUtil.VERSION_1).getBytes();
         
         // 2.0.0 (iTunes 4.1 and 4.2)
-        serverInfoV2 = new ServerInfoResponseImpl(name, 0x00020000).getBytes();
+        serverInfoV2 = new ServerInfoResponseImpl(name, DaapUtil.VERSION_2).getBytes();
         
         // 3.0.0 (iTunes 4.5)
-        serverInfoV3 = new ServerInfoResponseImpl(name, 0x00030000).getBytes();
+        serverInfoV3 = new ServerInfoResponseImpl(name, DaapUtil.VERSION_3).getBytes();
     }
     
     /**
@@ -237,9 +237,9 @@ public class Library {
             revisions.add(current);
      
             if (current.getName().equals(temp.getName()) == false) {
-                //serverInfoV1 = new ServerInfoResponseImpl(temp.getName(), 0x00010000).getBytes();
-                serverInfoV2 = new ServerInfoResponseImpl(temp.getName(), 0x00020000).getBytes();
-                serverInfoV3 = new ServerInfoResponseImpl(temp.getName(), 0x00030000).getBytes();
+                //serverInfoV1 = new ServerInfoResponseImpl(temp.getName(), DaapUtil.VERSION_1).getBytes();
+                serverInfoV2 = new ServerInfoResponseImpl(temp.getName(), DaapUtil.VERSION_2).getBytes();
+                serverInfoV3 = new ServerInfoResponseImpl(temp.getName(), DaapUtil.VERSION_3).getBytes();
             }
         }
         
@@ -272,14 +272,15 @@ public class Library {
 
         if (request.isServerInfoRequest()) {
             
-            if (request.isITunes45()) {
-                return serverInfoV3;
-                
-            } else if (request.isITunes41Or42()) {
+            DaapConnection connection = request.getConnection();
+            int version = connection.getProtocolVersion();
+              
+            if (version == DaapUtil.VERSION_2) {
                 return serverInfoV2;
-                
-            } else { // iTunes 4.0
-                //return serverInfoV1;
+            } else if (version >= DaapUtil.VERSION_3) {
+                return serverInfoV3;
+            
+            } else { // Undef or VERSION_1
                 return null;
             }
             
@@ -292,7 +293,7 @@ public class Library {
 
             // What's the next revision of the database 
             // iTunes should ask for?
-            if (delta == DaapRequest.UNDEF_VALUE) { 
+            if (delta == DaapUtil.UNDEF_VALUE) { 
                  
                 // 1st. request, iTunes should/will 
                 // ask for the current revision
@@ -366,7 +367,7 @@ public class Library {
 
         int revisionNumber = request.getRevisionNumber();
         
-        if (revisionNumber == DaapRequest.UNDEF_VALUE || 
+        if (revisionNumber == DaapUtil.UNDEF_VALUE || 
                        revisionNumber == current.getRevision()) {
                            
             return current;

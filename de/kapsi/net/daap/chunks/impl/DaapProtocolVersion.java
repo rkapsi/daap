@@ -8,14 +8,15 @@ import de.kapsi.net.daap.chunks.VersionChunk;
  */
 public class DaapProtocolVersion extends VersionChunk {
     
-    public static final int VERSION_1 = 0x00010000; // 1.0.0
-    public static final int VERSION_2 = 0x00020000; // 2.0.0
-    
     public DaapProtocolVersion() {
         this(0);
     }
     
     public DaapProtocolVersion(int version) {
         super("apro", "daap.protocolversion", version);
+    }
+    
+    public DaapProtocolVersion(int major, int minor, int patch) {
+        super("apro", "daap.protocolversion", major, minor, patch);
     }
 }
