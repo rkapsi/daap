@@ -131,7 +131,7 @@ public class Playlist implements SongListener {
      * <tt>null</tt> if this id is unknown for
      * this Playlist
      */
-    public Song getSong(int songId) {
+    Song getSong(int songId) {
         Iterator it = items.iterator();
         while(it.hasNext()) {
             Song song = (Song)it.next();
@@ -153,21 +153,21 @@ public class Playlist implements SongListener {
     /**
      * Used internally by Database
      */
-    public List getSongs() {
+    List getSongs() {
         return items;
     }
     
     /**
      * Used internally by Database
      */
-    public List getNewSongs() {
+    List getNewSongs() {
         return newItems;
     }
     
     /**
      * Used internally by Database
      */
-    public List getDeletedSongs() {
+    List getDeletedSongs() {
         return deletedItems;
     }
     

@@ -72,40 +72,60 @@ public class Database {
     private Database() {
     }
     
+    /**
+     *
+     * @return
+     */    
     public int getRevision() {
         return revision;
     }
     
+    /**
+     *
+     * @return
+     */    
     public int getId() {
         return id;
     }
     
+    /**
+     *
+     * @return
+     */    
     public String getName() {
         return name;
     }
     
+    /**
+     *
+     * @param name
+     */    
     public void setName(String name) {
         this.name = name;
         masterPlaylist.setName(name);
     }
     
-    public String getPersistentId() {
+    String getPersistentId() {
         return persistentId;
     }
     
+    /**
+     *
+     * @return
+     */    
     public int size() {
         return masterPlaylist.size();
     }
     
-    public Playlist getMasterPlaylist() {
+    Playlist getMasterPlaylist() {
         return masterPlaylist;
     }
     
-    public List getPlaylists() {
+    List getPlaylists() {
         return containers;
     }
     
-    public List getDeletedPlaylists() {
+    List getDeletedPlaylists() {
         return deletedContainers;
     }
     
@@ -133,6 +153,10 @@ public class Database {
         return false;
     }
     
+    /**
+     *
+     * @param playlist
+     */    
     public void add(Playlist playlist) {
         if (containers.contains(playlist)==false) {
             containers.add(playlist);
@@ -142,6 +166,11 @@ public class Database {
         }
     }
     
+    /**
+     *
+     * @param playlist
+     * @return
+     */    
     public boolean remove(Playlist playlist) {
         if (containers.remove(playlist)) {
             deletedContainers.add(new Integer(playlist.getId()));
@@ -169,10 +198,19 @@ public class Database {
         return masterPlaylist.getSong(songId);
     }
     
+    /**
+     *
+     * @return
+     */    
     public String toString() {
         return "Name: " + getName() + ", revision: " + revision;
     }
     
+    /**
+     *
+     * @param request
+     * @return
+     */    
     public synchronized Object select(DaapRequest request) {
         
         if (request.isSongRequest()) {
@@ -218,7 +256,7 @@ public class Database {
     /**
      * Used to speed up the destruction process
      */
-    public void destroy() {
+    void destroy() {
         
         if (containers != null) {
             Iterator it = containers.iterator();
@@ -245,7 +283,7 @@ public class Database {
     /**
      * Used internally. See Library.open()
      */
-    public void open() {
+    void open() {
         revision++;
         
         deletedContainers.clear();
@@ -259,7 +297,7 @@ public class Database {
     /**
      * Used internally. See Library.open()
      */
-    public void close() {
+    void close() {
         
         List items = masterPlaylist.getSongs();
         List newItems = masterPlaylist.getNewSongs();
@@ -277,7 +315,11 @@ public class Database {
         }
     }
     
-    public Database createSnapshot() {
+    /**
+     *
+     * @return
+     */    
+    Database createSnapshot() {
         
         Database clone = new Database();
         
@@ -379,6 +421,13 @@ public class Database {
     */
     public final class DatabaseSongsImpl extends DatabaseSongs {
         
+        /**
+         *
+         * @param items
+         * @param newItems
+         * @param deletedItems
+         * @param updateType
+         */        
         public DatabaseSongsImpl(List items, List newItems, List deletedItems, boolean updateType) {
             super();
 
@@ -436,10 +485,19 @@ public class Database {
             }
         }
         
+        /**
+         *
+         * @return
+         */        
         public byte[] getBytes() {
             return getBytes(true);
         }
         
+        /**
+         *
+         * @param compress
+         * @return
+         */        
         public byte[] getBytes(boolean compress) {
             try {
                 return DaapUtil.serialize(this, compress);
