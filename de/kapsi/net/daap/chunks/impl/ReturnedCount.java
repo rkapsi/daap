@@ -22,10 +22,10 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The number of songs, databases or whatever are retuned with
- * the current response. This chunk usually appears together with
+ * The number of items (e.g. the number of Songs in a Playlist)
+ * a DAAP response has. This chunk usually appears together with
  * SpecifiedTotalCount.
- *
+ * 
  * @see SpecifiedTotalCount
  * @author  Roger Kapsi
  */

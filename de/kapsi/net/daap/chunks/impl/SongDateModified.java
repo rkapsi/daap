@@ -22,10 +22,10 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.DateChunk;
 
 /**
- * The date when this song was modified. Date is the difference between
+ * The date when the Song was modified. Date is the difference between
  * the current time and midnight, January 1, 1970 UTC in <u>seconds</u>!
  *
- * <p>int date = (int)(System.currentTimeMillis()/1000);</p>
+ * <code>int date = (int)(System.currentTimeMillis()/1000);</code>
  *
  * @author  Roger Kapsi
  */

@@ -31,7 +31,7 @@ import java.util.TimerTask;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.ChunkClasses;
+import de.kapsi.net.daap.chunks.ChunkImpls;
 import de.kapsi.net.daap.chunks.ContentCode;
 import de.kapsi.net.daap.chunks.impl.ContainerCount;
 import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
@@ -264,7 +264,7 @@ public class Library {
 
             // What's the next revision of the database
             // iTunes should ask for?
-            if (delta == DaapUtil.UNDEF_VALUE) {
+            if (delta == DaapUtil.NULL) {
 
                 // 1st. request, iTunes should/will
                 // ask for the current revision
@@ -348,7 +348,7 @@ public class Library {
     private LibraryRevision getLibraryRevision(DaapRequest request) {
         int revisionNumber = request.getRevisionNumber();
 
-        if (revisionNumber == DaapUtil.UNDEF_VALUE) {
+        if (revisionNumber == DaapUtil.NULL) {
             revisionNumber = revision;
         }
         
@@ -374,7 +374,7 @@ public class Library {
     }
 
     /**
-     * 
+     * A Library specific implementation of Txn
      */
     private static final class LibraryTxn implements Txn {
 
@@ -589,13 +589,13 @@ public class Library {
 
             int revisionNumber = request.getRevisionNumber();
 
-            if (revisionNumber == DaapUtil.UNDEF_VALUE) {
+            if (revisionNumber == DaapUtil.NULL) {
                 revisionNumber = revision;
             }
 
             if (databases != null && !databases.isEmpty()) {
                 int databaseId = request.getDatabaseId();
-                if (databaseId == DaapUtil.UNDEF_VALUE) {
+                if (databaseId == DaapUtil.NULL) {
                     return (Database) databases.get(0);
                 } else {
                     Iterator it = databases.iterator();
@@ -681,7 +681,7 @@ public class Library {
 
             add(new Status(200));
 
-            String[] names = ChunkClasses.names;
+            String[] names = ChunkImpls.classes;
 
             final Class[] arg1 = new Class[] {};
             final Object[] arg2 = new Object[] {};

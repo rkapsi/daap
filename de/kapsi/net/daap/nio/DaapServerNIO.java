@@ -53,7 +53,7 @@ import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.SimpleConfig;
 
 /**
- * A NIO based DAAP server
+ * A DAAP server written with NIO and a singe Thread.
  *
  * @author  Roger Kapsi
  */
@@ -84,114 +84,127 @@ public class DaapServerNIO implements DaapServer {
     private boolean update = false;
     
     /**
-     *
-     * @param library
+     * Creates a new DAAP server with Library and {@see SimpleConfig}
+     * 
+     * @param library a Library
      */    
     public DaapServerNIO(Library library) {
         this(library, new SimpleConfig());
     }
     
     /**
-     *
-     * @param library
-     * @param port
+     * Creates new DAAP server with Library, a {@see SimpleConfig} and 
+     * the Port
+     * 
+     * @param library a Library
+     * @param port a Port used by SimpleConfig
      */    
     public DaapServerNIO(Library library, int port) {
         this(library, new SimpleConfig(port));
     }
     
     /**
-     *
-     * @param library
-     * @param config
+     * Creates a new DAAP server with Library and DaapConfig
+     * 
+     * @param library a Library
+     * @param config a DaapConfig
      */    
     public DaapServerNIO(Library library, DaapConfig config) {
-        
         this.library = library;
         this.config = config;
     }
     
     /**
-     *
-     * @return
+     * Returns the Library of this server
+     * 
+     * @return Library
      */    
     public Library getLibrary() {
         return library;
     }
     
     /**
-     *
-     * @param config
+     * Sets the DaapConfig for this server
+     * 
+     * @param config DaapConfig
      */    
     public void setConfig(DaapConfig config) {
         this.config = config;
     }
     
     /**
-     *
-     * @param authenticator
-     */    
-    public void setAuthenticator(DaapAuthenticator authenticator) {
-        this.authenticator = authenticator;
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public DaapAuthenticator getAuthenticator() {
-        return authenticator;
-    }
-    
-    /**
-     *
-     * @param streamSource
-     */    
-    public void setStreamSource(DaapStreamSource streamSource) {
-        this.streamSource = streamSource;
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public DaapStreamSource getStreamSource() {
-        return streamSource;
-    }
-    
-    /**
-     *
-     * @param filter
-     */    
-    public void setFilter(DaapFilter filter) {
-        this.filter = filter;
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public DaapFilter getFilter() {
-        return filter;
-    }
-    
-    /**
-     *
-     * @return
-     */
-    public void setThreadFactory(DaapThreadFactory factory) {
-    }
-    
-    /**
-     *
-     * @return
+     * Returns the DaapConfig of this server
+     * 
+     * @return DaapConfig of this server
      */    
     public DaapConfig getConfig() {
         return config;
     }
     
     /**
-     * Returns <tt>true</tt> if DAAP Server
+     * Sets the DaapAuthenticator for this server
+     * 
+     * @param authenticator a DaapAuthenticator
+     */    
+    public void setAuthenticator(DaapAuthenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+    
+    /**
+     * Retrieves the DaapAuthenticator of this server
+     * 
+     * @return DaapAuthenticator or <code>null</code>
+     */    
+    public DaapAuthenticator getAuthenticator() {
+        return authenticator;
+    }
+    
+    /**
+     * Sets the DaapStreamSource for this server
+     * 
+     * @param streamSource a DaapStreamSource
+     */    
+    public void setStreamSource(DaapStreamSource streamSource) {
+        this.streamSource = streamSource;
+    }
+    
+    /**
+     * Retrieves the DaapStreamSource of this server
+     * 
+     * @return DaapStreamSource or <code>null</code>
+     */    
+    public DaapStreamSource getStreamSource() {
+        return streamSource;
+    }
+    
+    /**
+     * Sets a DaapFilter for this server
+     * 
+     * @param filter a DaapFilter
+     */    
+    public void setFilter(DaapFilter filter) {
+        this.filter = filter;
+    }
+    
+    /**
+     * Returns a DaapFilter
+     * 
+     * @return a DaapFilter or <code>null</code>
+     */    
+    public DaapFilter getFilter() {
+        return filter;
+    }
+    
+    /**
+     * Throws an {@see java.lang.UnsupportedOperationException} as
+     * the NIO server is implemented with a singe Thread.
+     */
+    public void setThreadFactory(DaapThreadFactory factory) {
+        throw new UnsupportedOperationException();
+    }
+    
+    /**
+     * Returns <code>true</code> if DAAP Server
      * accepts incoming connections.
      */
     public boolean isRunning() {
@@ -199,7 +212,8 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     *
+     * Binds this server to the SocketAddress supplied by DaapConfig
+     * 
      * @throws IOException
      */    
     public void bind() throws IOException {
@@ -251,9 +265,9 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     * Returns <tt>true</tt> if sessionId is known and valid
+     * Returns <code>true</code> if sessionId is known and valid
      */
-    public boolean isSessionIdValid(int sessionId) {
+    public synchronized boolean isSessionIdValid(int sessionId) {
         return isSessionIdValid(new Integer(sessionId));
     }
     
@@ -262,7 +276,7 @@ public class DaapServerNIO implements DaapServer {
      * @param sessionId
      * @return
      */    
-    public boolean isSessionIdValid(Integer sessionId) {
+    public synchronized boolean isSessionIdValid(Integer sessionId) {
         return sessionIds.contains(sessionId);
     }
     
@@ -299,14 +313,14 @@ public class DaapServerNIO implements DaapServer {
     /**
      * Returns the number of connections
      */
-    public int getNumberOfConnections() {
+    public synchronized int getNumberOfConnections() {
         return (connections != null) ? connections.size() : 0;
     }
     
     /**
      * Returns the number of streams
      */
-    public int getNumberOfStreams() {
+    public synchronized int getNumberOfStreams() {
         return (streams != null) ? streams.size() : 0;
     }
     
@@ -320,7 +334,7 @@ public class DaapServerNIO implements DaapServer {
     /**
      *
      */
-    private void close() {
+    private synchronized void close() {
         
         running = false;
         update = false;
@@ -381,6 +395,8 @@ public class DaapServerNIO implements DaapServer {
      */
     private void cancel(SelectionKey sk) {
         
+        sk.cancel();
+        
         SelectableChannel channel = (SelectableChannel)sk.channel();
         
         sk.cancel();
@@ -402,7 +418,7 @@ public class DaapServerNIO implements DaapServer {
             
             connection.close();
             
-            if (connection.isNormal()) {
+            if (connection.isDaapConnection()) {
                 connections.remove(connection);
             } else if (connection.isAudioStream()) {
                 streams.remove(connection);
@@ -423,7 +439,7 @@ public class DaapServerNIO implements DaapServer {
                 return;
             }
             
-        } else if (connection.isNormal()) {
+        } else if (connection.isDaapConnection()) {
             
             if (connections.size() < config.getMaxConnections()) {
                 connections.add(connection);
@@ -435,8 +451,10 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
+     * Returns <code>true</code> if host with <code>addr</code> is
+     * allowed to connect to this DAAP server.
      * 
-     * @throws IOException
+     * @return true host with <code>addr</code> is allowed to connect
      */
     private boolean accept(InetAddress addr) {
         
@@ -453,7 +471,8 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     *
+     * Accept an icoming connection
+     * 
      * @throws IOException
      */
     private void processAccept(SelectionKey sk) throws IOException {
@@ -463,7 +482,10 @@ public class DaapServerNIO implements DaapServer {
         
         ServerSocketChannel ssc = (ServerSocketChannel)sk.channel();
         SocketChannel channel = ssc.accept();
-
+        
+        if (channel == null)
+            return;
+        
         if (channel.isOpen() && accept(channel.socket().getInetAddress())) {
 
             channel.configureBlocking(false);
@@ -483,7 +505,8 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     *
+     * Read data
+     * 
      * @throws IOException
      */
     private void processRead(SelectionKey sk) throws IOException {
@@ -506,7 +529,8 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     *
+     * Write data
+     * 
      * @throws IOException
      */
     private void processWrite(SelectionKey sk) throws IOException {
@@ -553,7 +577,7 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     * Notify all clients about the Library update
+     * Notify all clients about an update of the Library
      */
     private void processUpdate() {
         
@@ -567,7 +591,7 @@ public class DaapServerNIO implements DaapServer {
                 
                 DaapConnection connection = (DaapConnection)sk.attachment();
                 
-                if (connection.isNormal()) {
+                if (connection.isDaapConnection()) {
                     try {
                         connection.update();
                         if (sk.isValid()) {
@@ -591,7 +615,7 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     * The NIO run loop
+     * The actual NIO run loop
      * 
      * @throws IOException
      */
@@ -643,19 +667,21 @@ public class DaapServerNIO implements DaapServer {
                         processAccept(sk);
 
                     } else {
-                       
-                        try {
 
-                            if (sk.isReadable()) {
+                        if (sk.isReadable()) {
+                            try {
                                 processRead(sk);
-                                
-                            } else if (sk.isWritable()) {
-                                processWrite(sk);
+                            } catch (IOException err) {
+                                cancel(sk);
+                                LOG.error("An exception occured in processRead()", err);
                             }
- 
-                        } catch (IOException err) {
-                            cancel(sk);
-                            LOG.error("An exception occured in processRead() or processWrite()", err);
+                        } else if (sk.isWritable()) {
+                            try {
+                                processWrite(sk);
+                            } catch (IOException err) {
+                                cancel(sk);
+                                LOG.error("An exception occured in processWrite()", err);
+                            }
                         }
                     }
                 } catch (CancelledKeyException err) {
@@ -667,6 +693,9 @@ public class DaapServerNIO implements DaapServer {
         // close() is in finally of run() {}
     }
     
+    /**
+     * 
+     */
     public void run() {
 
         try {

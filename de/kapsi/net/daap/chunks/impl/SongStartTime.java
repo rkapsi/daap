@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The start time of this song in seconds. I.e. you can use it
+ * The start time of the Song in seconds. I.e. you can use it
  * to skip n-seconds at the beginning.
  *
  * @author  Roger Kapsi

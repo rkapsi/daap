@@ -42,7 +42,11 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
 import de.kapsi.util.ArrayIterator;
 
 /**
- * 
+ * A Database is a container for Playlists and it keeps track of 
+ * all Songs in the Database whereat it is not responsible for
+ * the actual management of the Songs (it's only interested in 
+ * the Song IDs).
+ *  
  * @author Roger Kapsi
  */
 public class Database implements Cloneable {
@@ -67,6 +71,11 @@ public class Database implements Cloneable {
     /** master playlist */
     private Playlist masterPlaylist;
 
+    /**
+     * Create a new Database with the name
+     * 
+     * @param name a name for this Database
+     */
     public Database(String name) {
 
         synchronized (Database.class) {
@@ -109,7 +118,7 @@ public class Database implements Cloneable {
     /**
      * Returns the unique id of this Database
      * 
-     * @return
+     * @return unique id of this Database
      */
     public int getId() {
         return id;
@@ -119,7 +128,7 @@ public class Database implements Cloneable {
      * Returns the name of this Database. Same as
      * Database.getMasterPlaylist().getName()
      * 
-     * @return
+     * @return name of this Database
      */
     public String getName() {
         return masterPlaylist.getName();
@@ -129,32 +138,62 @@ public class Database implements Cloneable {
      * Sets the name of this Database. Same as
      * Database.getMasterPlaylist().setName(String)
      * 
-     * @param name
+     * @param name the new name of the master Playlist
      */
     public void setName(Transaction txn, String name) {
         masterPlaylist.setName(txn, name);
     }
 
+    /**
+     * The persistent id of this Database. Unused at the
+     * moment!
+     * 
+     * @return the persistent id of this Database
+     */
     long getPersistentId() {
         return persistentId;
     }
 
     /**
-     * Returns the master playlist
-     * @return
+     * Returns the master Playlist. The master Playlist
+     * is created automatically by the Database! There's
+     * no technical difference between a master Playlist
+     * and a usual Playlist except that it cannot be
+     * removed from the Database.
+     * 
+     * @return the master Playlist
      */
     public Playlist getMasterPlaylist() {
         return masterPlaylist;
     }
 
+    /**
+     * Returns an unmodifiable Set with all Playlists
+     * in this Database
+     * 
+     * @return unmodifiable Set of Playlists
+     */
     public Set getPlaylists() {
         return Collections.unmodifiableSet(containers);
     }
 
+    /**
+     * Returns an unmodifiable Set with all deleted Playlists.
+     * <p>NOTE: only valid during a {@see Transaction.commit()}
+     * and always empty in the meantime.</p>
+     * 
+     * @return unmodifiable Set of deleted Playlists
+     */
     public Set getDeletedPlaylists() {
         return Collections.unmodifiableSet(deletedContainers);
     }
 
+    /**
+     * 
+     * @param txn
+     * @return
+     * @throws DaapException
+     */
     Txn openTxn(Transaction txn) throws DaapException {
         if (!txn.isOpen()) {
             throw new DaapException("Transaction is not open");
@@ -171,8 +210,9 @@ public class Database implements Cloneable {
     /**
      * Adds playlist to this Database
      * 
-     * @param playlist
-     * @throws DaapTransactionException
+     * @param txn a Transaction
+     * @param playlist the Playliost to add
+     * @throws DaapException
      */
     public void add(Transaction txn, Playlist playlist) throws DaapException {
         if (playlist == masterPlaylist)
@@ -185,9 +225,9 @@ public class Database implements Cloneable {
     /**
      * Removes playlist from this Database
      * 
-     * @param playlist
-     * @return
-     * @throws DaapTransactionException
+     * @param txn a Transaction
+     * @param playlist the Playlist to remove
+     * @throws DaapException
      */
     public void remove(Transaction txn, Playlist playlist) throws DaapException {
         if (playlist == masterPlaylist)
@@ -201,8 +241,9 @@ public class Database implements Cloneable {
      * Performs an update operation on all playlists which contain
      * this song
      * 
-     * @param song
-     * @throws DaapTransactionException
+     * @param txn a Transaction
+     * @param song the Song to be updated in all Playlists
+     * @throws DaapException
      */
     public void update(Transaction txn, Song song) throws DaapException {
         DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
@@ -210,9 +251,11 @@ public class Database implements Cloneable {
     }
     
     /**
-     * Adds song to all playlists of this Database
+     * Adds Song to all Playlists of this Database
      * 
-     * @param song
+     * @param txn a Transaction
+     * @param song the Song to be added
+     * @throws DaapException
      */
     public void add(Transaction txn, Song song) throws DaapException {
         DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
@@ -222,7 +265,9 @@ public class Database implements Cloneable {
     /**
      * Removes song from all playlists of this Database
      * 
-     * @param song
+     * @param txn a Transaction
+     * @param song the Song to be removed from all Playlists
+     * @throws DaapException
      */
     public void remove(Transaction txn, Song song) throws DaapException {
         DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
@@ -230,16 +275,18 @@ public class Database implements Cloneable {
     }
 
     /**
-     * Returns true if Database is empty
-     * @return
+     * Returns true if Database contains no Playlists
+     * 
+     * @return true if Database contains no Playlists
      */
     public boolean isEmpty() {
         return containers.isEmpty();
     }
     
     /**
-     * Returns the number of playlists
-     * @return
+     * Returns the number of Playlists in this Database
+     * 
+     * @return the number of Playlists in this Database
      */
     public int size() {
         return containers.size();
@@ -247,13 +294,20 @@ public class Database implements Cloneable {
     
     /**
      * Returns true if playlist is in this Database
+     * 
      * @param playlist
-     * @return
+     * @return true if Database contains playlist
      */
     public boolean contains(Playlist playlist) {
         return containers.contains(playlist);
     }
     
+    /**
+     * Gets and returns a Playlist by its ID
+     * 
+     * @param playlistId
+     * @return
+     */
     private Playlist getPlaylist(int playlistId) {
         Iterator it = containers.iterator();
         while (it.hasNext()) {
@@ -266,6 +320,12 @@ public class Database implements Cloneable {
         return null;
     }
 
+    /**
+     * Gets and returns a Song by its ID
+     * 
+     * @param songId
+     * @return
+     */
     private Song getSong(int songId) {
         Iterator it = containers.iterator();
         while (it.hasNext()) {
@@ -278,9 +338,11 @@ public class Database implements Cloneable {
     }
 
     /**
+     * Performs a select on this Database and returns 
+     * something for the request or <code>null</code>
      * 
-     * @param request
-     * @return
+     * @param request a DaapRequest
+     * @return a response for the DaapRequest
      */
     public synchronized Object select(DaapRequest request) {
 
@@ -333,7 +395,7 @@ public class Database implements Cloneable {
     }
 
     /**
-     * 
+     * A Txn implementation for Databases
      */
     private static class DatabaseTxn implements Txn {
 
@@ -495,6 +557,8 @@ public class Database implements Cloneable {
                     if (obj != null)
                         obj.cleanup(txn);
                 }
+                
+                database.deletedContainers.clear();
             }
             
             containers.clear();

@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * Unknown purpose.
+ * The grouping of the Song.
  *
  * @author  Roger Kapsi
  */

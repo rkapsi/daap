@@ -6,7 +6,8 @@
     
     <property name="gui" value="${basedir}/../gui"/>
     <property name="core" value="${basedir}/../core"/>
-	
+    <property name="tests" value="${basedir}/../tests"/>
+    
     <property name="lib" value="${basedir}/../lib"/>
     <property name="jars" value="${lib}/jars"/>
   
@@ -84,17 +85,21 @@
 		
         <mkdir dir="${javadoc}"/>
 
-        <javadoc 
-                destdir="${javadoc}"
-                author="true"
-                version="true"
-                use="true">
-
-                <classpath refid="default.classpath"/>
-
-                <packageset dir="${basedir}"/>
-
-        </javadoc>
+		<javadoc 
+		        destdir="${javadoc}"
+		        author="true"
+		        version="true"
+		        use="true">
+		
+			<classpath refid="default.classpath"/>
+			
+			<classpath>
+				<fileset dir="${tests}" includes="lib/*.jar"/>
+			</classpath>
+			
+			<packageset dir="${basedir}"/>
+		
+		</javadoc>
     </target>
 
     <target name="jar">

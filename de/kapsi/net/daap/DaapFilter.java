@@ -30,8 +30,9 @@ import java.net.InetAddress;
 public interface DaapFilter {
        
     /**
-     * Return <tt>true</tt> if incoming connection
-     * from <tt>address</tt> is allowed to connect
+     * Called by DAAP server to filter not welcome hosts
+     *  
+     * @return <code>true</code> if connection is accepted
      */
     public boolean accept(InetAddress address);
 }

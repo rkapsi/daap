@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The size of this song in bytes.
+ * The size of the Song in bytes.
  *
  * @author  Roger Kapsi
  */

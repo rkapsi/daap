@@ -76,38 +76,46 @@ public class Transaction {
     }
     
     /**
+     * Returns <code>true</code> if this Transaction is an
+     * autocommiting Transaction
      * 
-     * @return
+     * @return <code>true</code> if this Transaction will commit
+     *          automatically
      */
     public boolean isAutoCommit() {
         return autoCommit;
     }
      
     /**
+     * Returns <code>true</code> if this Transaction is open
+     * what means that it hasn't been commited yet.
      * 
-     * @return
+     * @return <code>true</code> if this Transaction is open
      */
     public synchronized boolean isOpen() {
         return open;
     }
     
     /**
+     * Returns the modification time of this Transaction
      * 
-     * @return
+     * @return the time when this Transaction was modified for last time
      */
     public synchronized long lastModified() {
         return lastModified;
     }
     
     /**
-     * 
-     *
+     * Sets the modification date to 'now'. By polling this method you can
+     * delay the commit of an autocommiting Transaction (it makes no sense
+     * tho). 
      */
     public synchronized void touch() {
         lastModified = System.currentTimeMillis();
     }
     
     /**
+     * Commit this Transaction
      * 
      * @throws DaapException
      */
@@ -131,6 +139,7 @@ public class Transaction {
     }
     
     /**
+     * Rollback this Transaction
      * 
      * @throws DaapException
      */
@@ -154,8 +163,10 @@ public class Transaction {
     }
     
     /**
+     * Join this Transaction with txn. In 99.9% of all thinkable cases
+     * you do not do this yourself!
      * 
-     * @param txn
+     * @param txn a Transaction
      * @throws DaapException
      */
     public synchronized void join(Transaction txn) throws DaapException {
@@ -189,27 +200,29 @@ public class Transaction {
     }
     
     /**
+     * Adds a TransactionListener to this Transaction
      * 
-     * @param l
+     * @param l a TransactionListener
      */
     public synchronized void addTransactionListener(TransactionListener l) {
         listener.add(l);
     }
     
     /**
+     * Removes a TransactionListener from this Transaction
      * 
-     * @param l
+     * @param l a TransactionListener
      */
     public synchronized void removeTransactionListener(TransactionListener l) {
         listener.remove(l);
     }
     
     /**
-     * Objects can attach attributes to transaction objects. The calling thread
-     * must be associated with this transaction.
+     * Attachs the key/value pair to this Transaction or removes it
+     * if value is <code>null</code>
      * 
-     * @param key
-     * @param value
+     * @param key an key Object
+     * @param value a Txn Object
      * @throws DaapException
      */
     void setAttribute(Object key, Txn value) throws DaapException {
@@ -228,8 +241,9 @@ public class Transaction {
     }
 
     /**
+     * Retrieves an Txn Object that is associated with <code>key</code>.
      * 
-     * @param key
+     * @param key an key Object
      * @return @throws
      *         DaapException
      */
@@ -244,9 +258,14 @@ public class Transaction {
     }
 
     /**
+     * Returns <code>true</code> if this Transaction has an
+     * attribute that is associated with the <code>key</code>
+     * Object.
      * 
-     * @param key
-     * @return @throws
+     * @param key an key Object
+     * @return <code>true</code> if this Transaction has a such
+     *      attribute
+     * @throws
      *         DaapException
      */
     boolean hasAttribute(Object key) throws DaapException {
@@ -264,7 +283,10 @@ public class Transaction {
     }
     
     /**
-     * 
+     * The AutoCommitTask commits all Transactions that haven't been
+     * modified for a certain period of time. If multible Transactions
+     * have been timed out in this manner they'll be joined and
+     * commited as a single Transaction.
      */
     private static final class AutoCommitTask extends TimerTask {
         

@@ -28,8 +28,13 @@ import java.io.IOException;
  */
 public abstract class DaapConnection {
    
-    protected static final int UNDEF  = DaapUtil.UNDEF_VALUE;
-    protected static final int NORMAL = 1;
+    /** Undef type of connection */
+    protected static final int UNDEF  = DaapUtil.NULL;
+    
+    /** A DAAP connection */
+    protected static final int DAAP = 1;
+    
+    /** An audio stream */
     protected static final int AUDIO  = 2;
     
     protected final DaapResponseWriter writer;
@@ -54,9 +59,10 @@ public abstract class DaapConnection {
     public abstract void update() throws IOException;
     
     /**
-     *
+     * Writes data from the queue to the Channel/OutputStream
+     * 
      * @throws IOException
-     * @return
+     * @return true if keepAlive
      */ 
     public boolean write() throws IOException {
         
@@ -88,15 +94,17 @@ public abstract class DaapConnection {
      * Returns the DaapServer to which this DaapConnection is
      * associated to.
      *
-     * Returns the DaapServer
-     * @return
+     * @return the associated DaapServer
      */    
     public DaapServer getServer() {
         return server;
     }
     
     /**
-     * Sets the type of this connection
+     * Sets the type of this connection. Either UNDEF, DAAP
+     * or an AUDIO stream
+     * 
+     * @param type the type of this connection
      */
     protected void setConnectionType(int type) {
         this.type = type;
@@ -110,30 +118,30 @@ public abstract class DaapConnection {
     }
     
     /**
-     * Returns <tt>true</tt> if this connection is an audio
+     * Returns <code>true</code> if this connection is an audio
      * stream.
      *
-     * @return
+     * @return true if this is an audio stream
      */ 
     public boolean isAudioStream() {
         return (type==DaapConnection.AUDIO);
     }
     
     /**
-     * Returns <tt>true</tt> if this connection is a normal
+     * Returns <code>true</code> if this connection is a DAAP
      * connection (handles Requests/Respones).
      *
-     * @return
+     * @return true if this is a DAAP connection 
      */    
-    public boolean isNormal() {
-        return (type==DaapConnection.NORMAL);
+    public boolean isDaapConnection() {
+        return (type==DaapConnection.DAAP);
     }
     
     /**
-     * Returns <tt>true</tt> if the type of this connection
+     * Returns <code>true</code> if the type of this connection
      * is currently indetermined.
      * 
-     * @return <tt>true</tt> if connection is indetermined
+     * @return <code>true</code> if connection is indetermined
      */    
     public boolean isUndef() {
         return (type==DaapConnection.UNDEF);
@@ -152,8 +160,10 @@ public abstract class DaapConnection {
     /**
      * Creates if nessesary a new DaapSession and returns it.
      *
-     * @param create
-     * @return
+     * @param create if true creates a new Session object if
+     *  necessary
+     * @return a DaapSession object or null if create is false
+     *  and no DaapSession object existed
      */    
     public DaapSession getSession(boolean create) {
         

@@ -22,8 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ShortChunk;
 
 /**
- * The year this song was released. You can maybe map this to 
- * an IDv2/IDv3 Tag.
+ * The year when the Song was released.
  *
  * @author  Roger Kapsi
  */
@@ -41,7 +40,7 @@ public class SongYear extends ShortChunk {
      * Creates a new SongYear and initializes it with
      * the assigned year.
      * You can change this value with {@see #setValue(int)}.
-     * @param <tt>year</tt> the year
+     * @param <code>year</code> the year
      */
     public SongYear(int year) {
         super("asyr", "daap.songyear", year);

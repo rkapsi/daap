@@ -48,7 +48,7 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
 import de.kapsi.util.ArrayIterator;
 
 /**
- * The name is self explaining.
+ * The name is self explaining. A Playlist is a set of Songs.
  *
  * @author  Roger Kapsi
  */
@@ -129,6 +129,11 @@ public class Playlist implements Cloneable {
         }
     }
     
+    /**
+     * Clone constructor
+     * 
+     * @param orig the original Playlist that shall be cloned
+     */
     private Playlist(Playlist orig) {
         
         properties = new HashMap();
@@ -172,34 +177,68 @@ public class Playlist implements Cloneable {
         return obj;
     }
     
+    /**
+     * Sets the master Playlist. This value is only valid
+     * during a commit!
+     * 
+     * @param masterPlaylist a master Playlist
+     */
     void setMasterPlaylist(Playlist masterPlaylist) {
         this.masterPlaylist = masterPlaylist;
     }
     
+    /**
+     * Returns the unique ID of this Playlist
+     * 
+     * @return unique ID of this Playlist
+     */
     public int getId() {
         return itemId.getValue();
     }
     
+    /**
+     * 
+     * @param chunk
+     */
     private void add(AbstractChunk chunk) {
         properties.put(chunk.getName(), chunk);
     }
     
+    /**
+     * <b>This method does not exist! Ignore it! I'm serious! :)</b>
+     * 
+     * @param property a key (secret, only accessible for API developers)
+     * @return a Chunk or <code>null</code>
+     */
     public Chunk getProperty(String property) {
         return (Chunk)properties.get(property);
     }
     
+    /**
+     * Sets the name of this Playlist
+     * 
+     * @param txn a Transaction
+     * @param name a new name
+     * @throws DaapException
+     */
     public void setName(Transaction txn, String name) throws DaapException {
         PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
         obj.setName(name);
     }
     
+    /**
+     * Returns the name of this Playlist
+     * 
+     * @return the name of this Playlist
+     */
     public String getName() {
         return itemName.getValue();
     }
     
     /**
-     * If <tt>true</tt> (default) then add songs also to the 
+     * If <code>true</code> (default) then add songs also to the 
      * master playlist
+     * 
      * @param notify
      */
     public void setNotifyMasterPlaylistOnAdd(boolean notify) {
@@ -207,8 +246,9 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * If <tt>false</tt> (default) then remove songs also from 
+     * If <code>false</code> (default) then remove songs also from 
      * the master playlist
+     * 
      * @param notify
      */
     public void setNotifyMasterPlaylistOnRemove(boolean notify) {
@@ -216,8 +256,9 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * If <tt>true</tt> (default) then update songs also on the 
+     * If <code>true</code> (default) then update songs also on the 
      * master playlist
+     * 
      * @param notify
      */
     public void setNotifyMasterPlaylistOnUpdate(boolean notify) {
@@ -228,7 +269,7 @@ public class Playlist implements Cloneable {
      * Sets whether or not this Playlist is a smart playlist.
      * The difference between smart and common playlists is that
      * smart playlists have a star as an icon and they appear
-     * at first in the list.
+     * as first in the list.
      */
     public void setSmartPlaylist(Transaction txn, boolean smart) throws DaapException {
         PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
@@ -236,7 +277,7 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * Returns <tt>true</tt> if this Playlist is a smart
+     * Returns <code>true</code> if this Playlist is a smart
      * playlist.
      */
     public boolean isSmartPlaylist() {
@@ -245,7 +286,7 @@ public class Playlist implements Cloneable {
     
     /**
      * Returns a Song for the provided songId or
-     * <tt>null</tt> if this id is unknown for
+     * <code>null</code> if this id is unknown for
      * this Playlist
      */
     Song getSong(int songId) {
@@ -315,7 +356,7 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * Adds <tt>song</tt> to this Playlist
+     * Adds <code>song</code> to this Playlist
      * 
      * @param song
      * @throws DaapTransactionException
@@ -326,8 +367,7 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * Removes <tt>song</tt> from this Playlist
-     * and returns <tt>true</tt>
+     * Removes <code>song</code> from this Playlist
      * 
      * @param song
      * @throws DaapTransactionException
@@ -337,6 +377,13 @@ public class Playlist implements Cloneable {
         obj.remove(song);
     }
     
+    /**
+     * Performs a select on this Playlist and returns 
+     * something for the request or <code>null</code>
+     * 
+     * @param request a DaapRequest
+     * @return a response for the DaapRequest
+     */
     public synchronized Object select(DaapRequest request) {
         
         if (request.isPlaylistSongsRequest()) {
@@ -355,8 +402,8 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * Returns <tt>true</tt> if the provided
-     * <tt>song</tt> is in this Playlist.
+     * Returns <code>true</code> if the provided
+     * <code>song</code> is in this Playlist.
      */
     public boolean contains(Song song) {
         return items.contains(song);
@@ -371,7 +418,7 @@ public class Playlist implements Cloneable {
     }
     
     /**
-     * 
+     * A Playlist specific implementation of Txn
      */
     private static class PlaylistTxn implements Txn {
         

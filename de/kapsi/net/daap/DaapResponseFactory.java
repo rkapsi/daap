@@ -33,7 +33,7 @@ public interface DaapResponseFactory {
     /**
      * Creates an returns a DaapAuthResponse for the passed request.
      *
-     * @param connection
+     * @param request
      * @return
      */    
     public DaapResponse createAuthResponse(DaapRequest request);
@@ -42,7 +42,7 @@ public interface DaapResponseFactory {
      * Creates and returns a DaapChunResponse for the passed request and
      * data (payload, i.e. the serialized Chunks).
      *
-     * @param connection
+     * @param request
      * @param data
      * @return
      */    
@@ -50,13 +50,14 @@ public interface DaapResponseFactory {
     
     /**
      * Creates and returns a DaapAudioResponse for the passed parameters.
-     *
-     * @return
-     * @param end
+     * 
+     * @param request
+     * @param song
      * @param in
-     * @param connection
      * @param pos
+     * @param end
+     * @return
      * @throws IOException
-     */    
+     */ 
     public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException;
 }

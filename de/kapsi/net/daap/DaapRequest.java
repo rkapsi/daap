@@ -42,37 +42,37 @@ import org.apache.commons.logging.LogFactory;
 public class DaapRequest {
     
     /** "/server-info" */
-    public static final int SERVER_INFO         = 1;
-    
+    public static final int SERVER_INFO = 1;
+
     /** "/content-codes" */
-    public static final int CONTENT_CODES       = 2;
-    
+    public static final int CONTENT_CODES = 2;
+
     /** "/login" */
-    public static final int LOGIN		= 3;
-    
+    public static final int LOGIN = 3;
+
     /** "/logout" */
-    public static final int LOGOUT		= 4;
-    
+    public static final int LOGOUT = 4;
+
     /** "/update" */
-    public static final int UPDATE		= 5;
-    
+    public static final int UPDATE = 5;
+
     /** "/resolve" */
-    public static final int RESOLVE		= 6;
-    
+    public static final int RESOLVE = 6;
+
     /** "/databases" */
-    public static final int DATABASES		= 7;
-    
+    public static final int DATABASES = 7;
+
     /** "/databases/databaseId/items" */
-    public static final int DATABASE_SONGS	= 8;
-    
+    public static final int DATABASE_SONGS = 8;
+
     /** "/databases/databaseId/containers" */
-    public static final int DATABASE_PLAYLISTS  = 9;
-    
+    public static final int DATABASE_PLAYLISTS = 9;
+
     /** "/databases/databaseId/containers/containerId/items" */
-    public static final int PLAYLIST_SONGS	= 10;
-    
+    public static final int PLAYLIST_SONGS = 10;
+
     /** "/databases/databaseId/items/itemId.format" */
-    public static final int SONG		= 11;
+    public static final int SONG = 11;
     
     private static final Log LOG = LogFactory.getLog(DaapRequest.class);
     
@@ -82,17 +82,17 @@ public class DaapRequest {
     
     private Map queryMap;
     
-    private int sessionId = DaapUtil.UNDEF_VALUE;
-    private int revisionNumber = DaapUtil.UNDEF_VALUE;
-    private int delta = DaapUtil.UNDEF_VALUE;
+    private int sessionId = DaapUtil.NULL;
+    private int revisionNumber = DaapUtil.NULL;
+    private int delta = DaapUtil.NULL;
     
     private ArrayList meta;
     private String metaString;
     
-    private int requestType = DaapUtil.UNDEF_VALUE;
-    private int databaseId = DaapUtil.UNDEF_VALUE;
-    private int containerId = DaapUtil.UNDEF_VALUE;
-    private int itemId = DaapUtil.UNDEF_VALUE;
+    private int requestType = DaapUtil.NULL;
+    private int databaseId = DaapUtil.NULL;
+    private int containerId = DaapUtil.NULL;
+    private int itemId = DaapUtil.NULL;
     
     private ArrayList headers;
     private boolean isServerSideRequest;
@@ -239,7 +239,7 @@ public class DaapRequest {
                 sessionId = Integer.parseInt((String)queryMap.get("session-id"));
             }
 
-            if (sessionId != DaapUtil.UNDEF_VALUE) {
+            if (sessionId != DaapUtil.NULL) {
 
                 if (queryMap.containsKey("revision-number")) {
                     revisionNumber = Integer.parseInt((String)queryMap.get("revision-number"));
@@ -253,11 +253,11 @@ public class DaapRequest {
                     metaString = (String)queryMap.get("meta");
                 }
 
-                isUpdateType = (delta != DaapUtil.UNDEF_VALUE) && (delta < revisionNumber);
+                isUpdateType = (delta != DaapUtil.NULL) && (delta < revisionNumber);
 
 
                 // "/databases/id/items"                3 tokens
-                // "/databases/id/containers"		3 tokens
+                // "/databases/id/containers"           3 tokens
                 // "/databases/id/items/id.format"      4 tokens
                 // "/databases/id/containers/id/items"  5 tokens
                 if (path.equals("/databases")) {
@@ -329,14 +329,14 @@ public class DaapRequest {
             metaString = null;
             isUpdateType = false;
             
-            requestType = DaapUtil.UNDEF_VALUE;
-            databaseId = DaapUtil.UNDEF_VALUE;
-            containerId = DaapUtil.UNDEF_VALUE;
-            itemId = DaapUtil.UNDEF_VALUE;
+            requestType = DaapUtil.NULL;
+            databaseId = DaapUtil.NULL;
+            containerId = DaapUtil.NULL;
+            itemId = DaapUtil.NULL;
             
-            sessionId = DaapUtil.UNDEF_VALUE;
-            revisionNumber = DaapUtil.UNDEF_VALUE;
-            delta = DaapUtil.UNDEF_VALUE;
+            sessionId = DaapUtil.NULL;
+            revisionNumber = DaapUtil.NULL;
+            delta = DaapUtil.NULL;
         }
     }
     
@@ -363,7 +363,7 @@ public class DaapRequest {
     }
     
     /**
-     * Adds <tt>header</tt> to the list
+     * Adds <code>header</code> to the list
      *
      * @return
      */
@@ -381,7 +381,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns a Header for the key or <tt>null</tt> if
+     * Returns a Header for the key or <code>null</code> if
      * no such Header is in the list
      *
      * @return
@@ -410,17 +410,17 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is an unknown
+     * Returns <code>true</code> if this is an unknown
      * request
      *
      * @return
      */
     public boolean isUnknownRequest() {
-        return (requestType==DaapUtil.UNDEF_VALUE);
+        return (requestType==DaapUtil.NULL);
     }
     
     /**
-     * Returns <tt>true</tt> if this is a server info
+     * Returns <code>true</code> if this is a server info
      * request
      *
      * <p><i>GET /server-info HTTP/1.1</i></p> 
@@ -432,7 +432,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a content
+     * Returns <code>true</code> if this is a content
      * codes request
      *
      * <p><i>GET /content-codes HTTP/1.1</i></p> 
@@ -444,7 +444,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a login
+     * Returns <code>true</code> if this is a login
      * request
      *
      * <p><i>GET /login HTTP/1.1</i></p> 
@@ -456,7 +456,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a logout
+     * Returns <code>true</code> if this is a logout
      * request
      *
      * <p><i>GET /logout HTTP/1.1</i></p> 
@@ -468,7 +468,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is an update
+     * Returns <code>true</code> if this is an update
      * request
      *
      * <p><i>GET /update HTTP/1.1</i></p> 
@@ -480,7 +480,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a resolve
+     * Returns <code>true</code> if this is a resolve
      * request <i>(not supported)</i>
      *
      * <p><i>GET /resolve HTTP/1.1</i></p> 
@@ -492,7 +492,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a databases
+     * Returns <code>true</code> if this is a databases
      * request
      *
      * <p><i>GET /databases HTTP/1.1</i></p> 
@@ -504,7 +504,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a database
+     * Returns <code>true</code> if this is a database
      * songs request
      *
      * <p><i>GET /databases/databaseId/items HTTP/1.1</i></p> 
@@ -516,7 +516,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a database
+     * Returns <code>true</code> if this is a database
      * playlists request
      *
      * <p><i>GET /databases/databaseId/containers HTTP/1.1</i></p> 
@@ -528,7 +528,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a playlist
+     * Returns <code>true</code> if this is a playlist
      * request
      *
      * <p><i>GET /databases/databaseId/containers/containerId/items HTTP/1.1</i></p> 
@@ -540,7 +540,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a song
+     * Returns <code>true</code> if this is a song
      * request (stream)
      *
      * <p><i>GET /databases/databaseId/items/itemId.format HTTP/1.1</i></p> 
@@ -637,33 +637,33 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if databaseId is set (i.e.
-     * something else than <tt>UNDEF_VALUE</tt>).
+     * Returns <code>true</code> if databaseId is set (i.e.
+     * something else than {@see DaapUtil.UNDEF_VALUE}).
      *
      * @return
      */
     public boolean isDatabaseIdSet() {
-        return (databaseId != DaapUtil.UNDEF_VALUE);
+        return (databaseId != DaapUtil.NULL);
     }
     
     /**
-     * Returns <tt>true</tt> if containerId is set (i.e.
-     * something else than <tt>UNDEF_VALUE</tt>).
+     * Returns <code>true</code> if containerId is set (i.e.
+     * something else than {@see DaapUtil.UNDEF_VALUE}).
      *
      * @return
      */
     public boolean isContainerIdSet() {
-        return (containerId != DaapUtil.UNDEF_VALUE);
+        return (containerId != DaapUtil.NULL);
     }
     
     /**
-     * Returns <tt>true</tt> if itemId is set (i.e.
-     * something else than <tt>UNDEF_VALUE</tt>).
+     * Returns <code>true</code> if itemId is set (i.e.
+     * something else than {@see DaapUtil.UNDEF_VALUE}).
      *
      * @return
      */
     public boolean isItemIdSet() {
-        return (itemId != DaapUtil.UNDEF_VALUE);
+        return (itemId != DaapUtil.NULL);
     }
     
     /**
@@ -686,7 +686,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this is a "fake" request 
+     * Returns <code>true</code> if this is a "fake" request 
      * generated by the server. It's needed to bypass some
      * security checks of DaapRequestProcessor.
      *
@@ -697,7 +697,7 @@ public class DaapRequest {
     }
     
     /**
-     * Returns <tt>true</tt> if this request is an update
+     * Returns <code>true</code> if this request is an update
      * request. Except for the first request it's always
      * update type request.
      *

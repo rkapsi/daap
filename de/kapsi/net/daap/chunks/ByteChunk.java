@@ -57,7 +57,7 @@ public class ByteChunk extends AbstractChunk {
     }
     
     /**
-     * Returns Chunk.BYTE_TYPE
+     * Returns {@see Chunk.BYTE_TYPE}
      */
     public int getType() {
         return Chunk.BYTE_TYPE;

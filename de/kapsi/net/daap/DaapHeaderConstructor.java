@@ -93,7 +93,7 @@ public class DaapHeaderConstructor {
             DaapConnection connection = request.getConnection();
             int version = connection.getProtocolVersion();
             
-            if (version == DaapUtil.UNDEF_VALUE)
+            if (version == DaapUtil.NULL)
                 throw new IOException("Client Protocol Version is unknown");
             
             String serverName = connection.getServer().getConfig().getServerName();

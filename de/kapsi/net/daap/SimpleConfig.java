@@ -57,51 +57,56 @@ public class SimpleConfig implements DaapConfig {
     
     private int maxConnections;
     
+    /** Creates a new SimpleConfig with default settings */
     public SimpleConfig() {
         this(DEFAULT_SERVER_NAME, new InetSocketAddress(DEFAULT_PORT), DEFAULT_BACKLOG);
     }
     
     /**
-     *
-     * @param serverName
+     * Create a new SimpleConfig with the server name
+     * 
+     * @param serverName the name of the server
      */    
     public SimpleConfig(String serverName) {
         this(serverName, new InetSocketAddress(DEFAULT_PORT), DEFAULT_BACKLOG);
     }
     
     /**
-     *
-     * @param port
+     * Creates a new SimpleConfig with the port
+     * 
+     * @param port a valid Port
      */    
     public SimpleConfig(int port) {
         this(DEFAULT_SERVER_NAME, new InetSocketAddress(port), DEFAULT_BACKLOG);
     }
     
     /**
-     *
-     * @param serverName
-     * @param port
+     * Creates a new SimpleConfig with the server name and Port
+     * 
+     * @param serverName a server name
+     * @param port a valid Port
      */    
     public SimpleConfig(String serverName, int port) {
         this(serverName, new InetSocketAddress(port), DEFAULT_BACKLOG);
     }
     
     /**
-     *
-     * @param serverName
-     * @param port
-     * @param backlog
+     * Creates a new SimpleConfig with the server name, Port and backlog
+     * 
+     * @param serverName a server name
+     * @param port a valid Port
+     * @param backlog the backlog for the {@see java.net.ServerSocket}
      */    
     public SimpleConfig(String serverName, int port, int backlog) {
         this(serverName, new InetSocketAddress(port), backlog);
     }
     
     /**
-     *
-     * @param serverName
-     * @param port
-     * @param backlog
-     * @param bindAddr
+     * Creates a new SimpleConfig with the server name, the bind address and backlog
+     * 
+     * @param serverName a server name
+     * @param bindAddr a valid IP/Port
+     * @param backlog the backlog for the {@see java.net.ServerSocket}
      */    
     public SimpleConfig(String serverName, InetSocketAddress bindAddr, int backlog) {
         this.serverName = serverName;
@@ -112,64 +117,73 @@ public class SimpleConfig implements DaapConfig {
     }
     
     /**
-     *
-     * @param serverName
+     * Sets the server name
+     * 
+     * @param serverName a server name
      */    
     public void setServerName(String serverName) {
         this.serverName = serverName;
     }
     
     /**
-     *
-     * @return
+     * Returns the server name
+     * 
+     * @return server name
      */    
     public String getServerName() {
         return serverName;
     }
     
     /**
-     *
-     * @param backlog
+     * Sets the backlog for the {@see java.net.ServerSocket}
+     * 
+     * @param backlog a backlog
      */    
     public void setBacklog(int backlog) {
         this.backlog = backlog;
     }
     
     /**
-     *
-     * @return
+     * Returns the backlog
+     * 
+     * @return backlog
      */    
     public int getBacklog() {
         return backlog;
     }
     
     /**
-     *
-     * @param bindAddr
+     * Sets the bind address
+     * 
+     * @param bindAddr a valid IP/Port
      */    
     public void setInetSocketAddress(InetSocketAddress bindAddr) {
         this.bindAddr = bindAddr;
     }
     
     /**
-     *
-     * @return
+     * Returns the bind address
+     * 
+     * @return bind address
      */    
     public InetSocketAddress getInetSocketAddress() {
         return bindAddr;
     }
     
     /**
-     *
-     * @param maxConnections
+     * Sets the maximum number of connections the server
+     * can have
+     * 
+     * @param maxConnections the maximum number of connections
      */    
     public void setMaxConnections(int maxConnections) {
         this.maxConnections = maxConnections;
     }
     
     /**
-     *
-     * @return
+     * Returns the maximum number of connections
+     * 
+     * @return maximum number of connections
      */    
     public int getMaxConnections() {
         return maxConnections;

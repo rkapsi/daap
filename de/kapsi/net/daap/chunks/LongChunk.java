@@ -79,7 +79,7 @@ public class LongChunk extends AbstractChunk {
     }
     
     /**
-     * Returns <tt>Chunk.LONG_TYPE</tt>
+     * Returns {@see Chunk.LONG_TYPE}
      */
     public int getType() {
         return Chunk.LONG_TYPE;

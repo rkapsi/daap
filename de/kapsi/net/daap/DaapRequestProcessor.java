@@ -61,7 +61,7 @@ public class DaapRequestProcessor {
      *
      * @param request
      * @throws IOException
-     * @return
+     * @return a DaapResponse for the request
      */    
     public DaapResponse process(DaapRequest request) throws IOException {
         

@@ -22,16 +22,24 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
- * This class describes if a song is either
- * a Radio stream or DAAP stream. 
+ * This class describes if a song is either a Radio stream 
+ * or DAAP stream. Radio streams have a different icon and
+ * and the data is usually streamed from an URL ({@see SongDataUrl}).
  *
  * @author  Roger Kapsi
  */
 public class SongDataKind extends ByteChunk {
     
+    /** Radio stream */
     public static final int RADIO_STREAM    = 1;
+    
+    /** DAAP stream (default) */
     public static final int DAAP_STREAM     = 2;
     
+    /**
+     * Creates a new SongDataKind with DAAP_STREAM
+     * as type.
+     */
     public SongDataKind() {
         this(DAAP_STREAM);
     }

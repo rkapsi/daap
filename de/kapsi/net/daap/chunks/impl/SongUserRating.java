@@ -22,8 +22,9 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
- * You can use this class to assign a rating to a song to indicate how much
- * you like it. iTunes displays this rating as a set of stars.
+ * You can use this class to assign a rating to a Song to indicate 
+ * how much you like or dislike a Song. iTunes displays this rating 
+ * as a set of stars.
  *
  * @author  Roger Kapsi
  */
@@ -70,7 +71,7 @@ public class SongUserRating extends ByteChunk {
     /**
      * Creates a new SongUserRating with the assigned rating.
      * You can change this value with {@see #setValue(int)}.
-     * @param <tt>rating</tt> the rating
+     * @param <code>rating</code> the rating
      */
     public SongUserRating(int rating) {
         super("asur", "daap.songuserrating", rating);

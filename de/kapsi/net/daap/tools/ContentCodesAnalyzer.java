@@ -29,8 +29,9 @@ import de.kapsi.net.daap.chunks.*;
 import de.kapsi.net.daap.chunks.impl.*;
 
 /**
- * This tool will help you to detect changes in the DAAP protocol.<p>
+ * This tool will help you to detect changes in the DAAP protocol.
  *
+ * <p>
  * <ol>
  * <li>install ethereal
  * <li>capture the /content-codes request between two iTunes hosts
@@ -38,7 +39,8 @@ import de.kapsi.net.daap.chunks.impl.*;
  * <li>run gzip -d foobar.gz
  * <li>open foobar with this tool and it will tell you what's new!
  * </ol>
- *
+ * </p>
+ * 
  * @author  Roger Kapsi
  */
 public class ContentCodesAnalyzer {
@@ -47,10 +49,10 @@ public class ContentCodesAnalyzer {
     public ContentCodesAnalyzer() {
     }
     
-    private static HashMap getKnownChunks(ChunkClasses chunkClasses) {
+    private static HashMap getKnownChunks(ChunkImpls chunkClasses) {
        HashMap map = new HashMap();
        
-       String[] names = ChunkClasses.names;
+       String[] names = ChunkImpls.classes;
 
         final Class[] arg1 = new Class[]{};
         final Object[] arg2 = new Object[]{};
@@ -150,7 +152,7 @@ public class ContentCodesAnalyzer {
         HashMap knownChnunks = null;
         
         if (chunkClasses != null) {
-            knownChnunks = getKnownChunks((ChunkClasses)chunkClasses);
+            knownChnunks = getKnownChunks((ChunkImpls)chunkClasses);
         } else {
             knownChnunks = new HashMap();
         }

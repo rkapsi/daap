@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * The comment of this song. You can maybe map this to an IDv2/IDv3 Tag.
+ * The comment of the Song.
  *
  * @author  Roger Kapsi
  */

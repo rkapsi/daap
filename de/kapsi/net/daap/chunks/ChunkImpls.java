@@ -1,26 +1,16 @@
-/* 
- * Digital Audio Access Protocol (DAAP)
- * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 package de.kapsi.net.daap.chunks;
 
-public final class ChunkClasses {
-    public static final String[] names = {
+/**
+ * This class is machine-made by {@see de.kapsi.net.daap.tools.ChunkImplsGenerator}!
+ * It is needed because Reflection cannot list the classes of a package so that we
+ * must pre-create a such list manually. This file must be rebuild whenever a class
+ * is removed or a class is added to the {@see de.kapsi.net.daap.chunks.impl} package.
+ */
+public final class ChunkImpls {
+   /**
+ * A list of all classes in the {@see de.kapsi.net.daap.chunks.impl} package.
+ */
+    public static final String[] classes = {
         "de.kapsi.net.daap.chunks.impl.AuthenticationMethod",
         "de.kapsi.net.daap.chunks.impl.AuthenticationSchemes",
         "de.kapsi.net.daap.chunks.impl.Bag",

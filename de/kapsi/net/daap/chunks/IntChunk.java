@@ -55,7 +55,7 @@ public class IntChunk extends AbstractChunk {
     }
     
     /**
-     * Returns <tt>Chunk.INT_TYPE</tt>
+     * Returns {@see Chunk.INT_TYPE}
      */
     public int getType() {
         return Chunk.INT_TYPE;

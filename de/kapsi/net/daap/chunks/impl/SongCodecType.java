@@ -23,8 +23,10 @@ import de.kapsi.net.daap.ByteUtil;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- *
+ * Unknown purpose.
+ * 
  * @author  Roger Kapsi
+ * @since iTunes 4.5
  */
 public class SongCodecType extends IntChunk {
     

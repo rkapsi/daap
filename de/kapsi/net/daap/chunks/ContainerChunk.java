@@ -84,7 +84,7 @@ public class ContainerChunk extends AbstractChunk {
     }
     
     /**
-     * Returns the length of this chunk <tt>sum(child[i].getSize())</tt>
+     * Returns the length of this chunk (size of all child Chunks)
      */
     public int getLength() {
         int length = 0;
@@ -99,7 +99,7 @@ public class ContainerChunk extends AbstractChunk {
     }
     
     /**
-     * Returns <tt>Chunk.CONTAINER_TYPE</tt>
+     * Returns {@see Chunk.CONTAINER_TYPE}
      */
     public int getType() {
         return Chunk.CONTAINER_TYPE;

@@ -22,8 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ShortChunk;
 
 /**
- * The number of discs this album has where this song belongs to.
- * You can maybe map this to an IDv2/IDv3 Tag.
+ * The total number of disks.
  *
  * @author  Roger Kapsi
  */

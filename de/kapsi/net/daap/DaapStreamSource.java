@@ -31,7 +31,7 @@ import java.io.FileInputStream;
 public interface DaapStreamSource {
     
     /**
-     * Returns an <tt>InputStream</tt> for the provided
+     * Returns an <code>InputStream</code> for the provided
      * Song.
      */
     public FileInputStream getSource(Song song) throws IOException;

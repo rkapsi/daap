@@ -29,91 +29,88 @@ import java.io.IOException;
 public interface DaapServer extends Runnable {
     
     /**
-     * Returns the assocciated Library
+     * Returns the Library of this server
      * 
-     * @return
-     */    
+     * @return Library
+     */  
     public Library getLibrary();
 
     /**
-     * Sets the DaapConfig (note: has no effect if DaapServer
-     * is running)
-     *
-     * @param config
-     */    
+     * Sets the DaapConfig for this server
+     * 
+     * @param config DaapConfig
+     */
     public void setConfig(DaapConfig config);
     
     /**
-     * Sets the DaapAuthenticator (note: use <tt>null</tt> null to
-     * disable the authenticator).
-     *
-     * @param authenticator
-     */    
-    public void setAuthenticator(DaapAuthenticator authenticator);
-    
-    /**
-     * Returns the DaapAuthenticator or <tt>null</tt> if 
-     * no authenticator is set.
-     *
-     * @return
-     */    
-    public DaapAuthenticator getAuthenticator();
-    
-    /**
-     * Sets the DaapStreamSource which maps the actual files
-     * to Songs.
-     *
-     * @param streamSource
-     */    
-    public void setStreamSource(DaapStreamSource streamSource);
-    
-    
-    /**
-     * Returns the DaapStreamSource
-     *
-     * @return
-     */    
-    public DaapStreamSource getStreamSource();
-    
-    /**
-     * Sets the DaapFilter.
-     *
-     * @param filter
-     */    
-    public void setFilter(DaapFilter filter);
-    
-    /**
-     * Returns the DaapFilter.
-     *
-     * @return
-     */    
-    public DaapFilter getFilter();
-    
-    /**
-     * A DaapThreadFactory enables you to create customized 
-     * Threads from outside of DaapServer (optional for the 
-     * BIO server!).
-     *  
-     * @param factory
-     */    
-    public void setThreadFactory(DaapThreadFactory factory);
-    
-    /**
-     * Returns the DaapConfig.
-     * @return
+     * Returns the DaapConfig of this server
+     * 
+     * @return DaapConfig of this server
      */    
     public DaapConfig getConfig();
     
     /**
-     * Binds the DaapServer.
-     *
+     * Sets the DaapAuthenticator for this server
+     * 
+     * @param authenticator a DaapAuthenticator
+     */   
+    public void setAuthenticator(DaapAuthenticator authenticator);
+    
+    /**
+     * Retrieves the DaapAuthenticator of this server
+     * 
+     * @return DaapAuthenticator or <code>null</code>
+     */   
+    public DaapAuthenticator getAuthenticator();
+    
+    /**
+     * Sets the DaapStreamSource for this server
+     * 
+     * @param streamSource a DaapStreamSource
+     */  
+    public void setStreamSource(DaapStreamSource streamSource);
+    
+    
+    /**
+     * Retrieves the DaapStreamSource of this server
+     * 
+     * @return DaapStreamSource or <code>null</code>
+     */  
+    public DaapStreamSource getStreamSource();
+    
+    /**
+     * Sets a DaapFilter for this server
+     * 
+     * @param filter a DaapFilter
+     */  
+    public void setFilter(DaapFilter filter);
+    
+    /**
+     * Returns a DaapFilter
+     * 
+     * @return a DaapFilter or <code>null</code>
+     */   
+    public DaapFilter getFilter();
+    
+    /**
+     * Sets the factory for Threads. Servers (NIO) that do not 
+     * support a Threaded moddel throw an {@see java.lang.UnsupportedOperationException}
+     * 
+     * @param factory a DaapThreadFactory
+     */
+    public void setThreadFactory(DaapThreadFactory factory);
+    
+    /**
+     * Binds this server to the SocketAddress supplied by DaapConfig
+     * 
      * @throws IOException
-     */    
+     */ 
     public void bind() throws IOException;
     
     /**
-     *
-     * @return <tt>true</tt> if DAAP Server is running
+     * Returns <code>true</code> if the server is running.
+     * 
+     * @return <code>true</code> if the server is running
      */
     public boolean isRunning();
     
@@ -123,7 +120,7 @@ public interface DaapServer extends Runnable {
     public void stop();
     
     /**
-     * Disconnects all DAAP and Stream connections
+     * Disconnects all from the server
      */
     public void disconnectAll();
         
@@ -143,7 +140,7 @@ public interface DaapServer extends Runnable {
     public int getNumberOfStreams();
     
     /**
-     * Returns <tt>true</tt> if sessionId is valid
+     * Returns <code>true</code> if sessionId is valid
      */
     public boolean isSessionIdValid(Integer sessionId);
     
@@ -156,7 +153,7 @@ public interface DaapServer extends Runnable {
      * Returns a DAAP connection from the "normal" connections
      * pool (i.e. a non audio stream) for the sessionId. The
      * primary purpose for this method is that Audio Streams
-     * can determinate their "normal" connection
+     * can determinate their "DAAP" connection
      */
     DaapConnection getConnection(Integer sessionId);
 }

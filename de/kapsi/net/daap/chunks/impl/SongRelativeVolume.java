@@ -22,23 +22,29 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
- * SongRelativeVolume is the volume balancer/adjuster.
+ * The relative loudness of the Song to the main volume
+ * adjuster. You can increase or decrease the loundness
+ * by +/- 100%.
  *
  * @author  Roger Kapsi
  */
-// TODO: It looks like that this isn't a ByteChunk anymore!
-// The new type is 2 which is at the moment Unknown.
 public class SongRelativeVolume extends ByteChunk {
     
-    /**
-     *
-     */
+    /** Decrease the volume by 100% */
+    public static final int MIN_VALUE = -128;
+    
+    /** Do not increase or decrease the sound volume */
+    public static final int NONE = 0;
+    
+    /** Increase the volume by 100% */
+    public static final int MAX_VALUE = 127;
+  
     public SongRelativeVolume() {
         this(0);
     }
     
     /**
-     * @param <tt>volume</tt> the volume
+     * @param <tt>volume</tt> the relative volume
      */
     public SongRelativeVolume(int volume) {
         super("asrv", "daap.songrelativevolume", volume);

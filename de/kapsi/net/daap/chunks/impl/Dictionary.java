@@ -22,9 +22,12 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ContainerChunk;
 
 /**
- * The name is a bit misleading, i.e. it is NOT a Dictionary or
- * Map like data structure. This is a List and it's used to create
- * a List of ContentCode capabilities (see Library for more information).
+ * The name is a bit misleading, it is NOT a java.util.Dictionary and
+ * it has nothing to do with the java.util.Dictionary data structure.
+ * This class is used to create a list of {@see de.kapsi.net.daap.chunks.ContentCode} 
+ * capabilities (see Library for more information) of a DAAP server and
+ * it describes essentially all the other Chunks in this package (their
+ * contentCode, name and type).
  *
  * @author  Roger Kapsi
  */

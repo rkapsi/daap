@@ -83,7 +83,7 @@ public class VersionChunk extends IntChunk {
     }
     
     /**
-     * Returns <tt>Chunk.VERSION_TYPE</tt>
+     * Returns {@see Chunk.VERSION_TYPE}
      */
     public int getType() {
         return Chunk.VERSION_TYPE;

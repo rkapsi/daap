@@ -22,47 +22,93 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * The selected equalizer for this song.
- *
- * @author  Roger Kapsi
+ * The equalizer for the Song.
+ * 
+ * @author Roger Kapsi
  */
 public class SongEqPreset extends StringChunk {
-    
-    public static final String NONE		= null;
-    public static final String ACOUSTIC		= "Acoustic";
-    public static final String BASS_BOOSTER	= "Bass Booster";
-    public static final String BASS_REDUCER	= "Bass Reducer";
-    public static final String CLASSICAL	= "Classical";
-    public static final String DANCE		= "Dance";
-    public static final String DEEP		= "Deep";
-    public static final String ELECTRONIC	= "Electronic";
-    public static final String FLAT		= "Flat";
-    public static final String HIP_HOP		= "Hip-Hop";
-    public static final String JAZZ		= "Jazz";
-    public static final String LATIN		= "Latin";
-    public static final String LOUDNESS		= "Loudness";
-    public static final String LOUNGE		= "Lounge";
-    public static final String PIANO		= "Piano";
-    public static final String POP		= "Pop";
-    public static final String RB		= "R&B";
-    public static final String ROCK             = "Rock";
-    public static final String SMALL_SPEAKERS   = "Small Speakers";
-    public static final String SPOKEN_WORD      = "Spoken Word";
-    public static final String TREBLE_BOOSTER   = "Treble Booster";
-    public static final String TREBLE_REDUCER   = "Treble Reducer";
-    public static final String VOCAL_BOOSTER    = "Vocal Booster";
-    
+
+    /** No equilizer selected */
+    public static final String NONE = null;
+
+    /** Acoustic */
+    public static final String ACOUSTIC = "Acoustic";
+
+    /** Bass Booster */
+    public static final String BASS_BOOSTER = "Bass Booster";
+
+    /** Bass Reducer */
+    public static final String BASS_REDUCER = "Bass Reducer";
+
+    /** Classical */
+    public static final String CLASSICAL = "Classical";
+
+    /** Dance */
+    public static final String DANCE = "Dance";
+
+    /** Deep */
+    public static final String DEEP = "Deep";
+
+    /** Electronic */
+    public static final String ELECTRONIC = "Electronic";
+
+    /** Flat */
+    public static final String FLAT = "Flat";
+
+    /** Hip-Hop */
+    public static final String HIP_HOP = "Hip-Hop";
+
+    /** Jazz */
+    public static final String JAZZ = "Jazz";
+
+    /** Latin */
+    public static final String LATIN = "Latin";
+
+    /** Loudness */
+    public static final String LOUDNESS = "Loudness";
+
+    /** Lounge */
+    public static final String LOUNGE = "Lounge";
+
+    /** Piano */
+    public static final String PIANO = "Piano";
+
+    /** Pop */
+    public static final String POP = "Pop";
+
+    /** R&amp;B */
+    public static final String RB = "R&B";
+
+    /** Rock */
+    public static final String ROCK = "Rock";
+
+    /** Small Speakers */
+    public static final String SMALL_SPEAKERS = "Small Speakers";
+
+    /** Spoken Word */
+    public static final String SPOKEN_WORD = "Spoken Word";
+
+    /** Treble Booster */
+    public static final String TREBLE_BOOSTER = "Treble Booster";
+
+    /** Treble Reducer */
+    public static final String TREBLE_REDUCER = "Treble Reducer";
+
+    /** Vocal Booster */
+    public static final String VOCAL_BOOSTER = "Vocal Booster";
+
     /**
-     * Creates a new SongEqPreset where no equalizer is selected.
-     * You can change this value with {@see #setValue(String)}.
+     * Creates a new SongEqPreset where no equalizer is selected. You can change
+     * this value with {@see #setValue(String)}.
      */
     public SongEqPreset() {
         this(NONE);
     }
-    
+
     /**
-     * Creates a new SongEqPreset with the assigned equalizer.
-     * You can change this value with {@see #setValue(String)}.
+     * Creates a new SongEqPreset with the assigned equalizer. You can change
+     * this value with {@see #setValue(String)}.
+     * 
      * @param <tt>equalizer</tt> the equalizer of this song.
      */
     public SongEqPreset(String preset) {

@@ -20,20 +20,24 @@
 package de.kapsi.net.daap;
 
 /**
+ * Called by Transaction to notify its listeners that
+ * it either commited or rolled back the transaction.
  * 
  * @author Roger Kapsi
  */
 public interface TransactionListener {
     
     /**
+     * Called by a Transaction at the end of a commit
      * 
-     * @param txn
+     * @param txn the Transaction that commited
      */
     public void commit(Transaction txn);
     
     /**
+     * Called by a Transaction at the end of a rollback
      * 
-     * @param txn
+     * @param txn the Transaction that rolled back
      */
     public void rollback(Transaction txn);
 }

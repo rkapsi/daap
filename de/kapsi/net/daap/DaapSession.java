@@ -51,7 +51,8 @@ public class DaapSession {
     }
     
     /**
-     *
+     * Returns the unique session id
+     * 
      * @return the sessionId of this DaapSession
      */    
     public Integer getSessionId() {
@@ -59,7 +60,9 @@ public class DaapSession {
     }
     
     /**
-     *
+     * Returns the time when this session was accessed last
+     * time. <p>NOTE: currently unused!</p>
+     * 
      * @return
      */    
     public synchronized long getLastAccessedTime() {
@@ -67,95 +70,116 @@ public class DaapSession {
     }
     
     /**
-     *
-     * @return
+     * Returns the creation time of this Session.
+     * 
+     * @return creation time
      */    
     public long getCreationTime() {
         return creationTime;
     }
     
     /**
-     *
-     * @return
+     * Returns the maximum inactive time.
+     * <p>NOTE: currently unused!</p>
+     * 
+     * @return maximum inactive time
      */    
     public synchronized int getMaxInactiveTime() {
         return maxInactiveTime;
     }
     
     /**
-     *
-     * @param maxInactiveTime
+     * Sets the maximum inactive time. 
+     * <p>NOTE: currently unused!</p>
+     * 
+     * @param maxInactiveTime the maximum inactive time
      */    
     public synchronized void setMaxInactiveTime(int maxInactiveTime) {
         this.maxInactiveTime = maxInactiveTime;
     }
     
     /**
-     *
-     * @return
+     * Retruns <code>true</code> if this session object
+     * is valid and <code>false</code> otherwise.
+     * 
+     * @return <code>true</code> if sesssion is valid
      */    
     public synchronized boolean isValid() {
         return valid;
     }
     
+    /**
+     * Invalidates this session object
+     */
     public synchronized void invalidate() {
         valid = false;
         attributes.clear();
     }
     
     /**
-     *
-     * @param key
-     * @return
+     * Returns an object that is associated with the key
+     * or <code>null</code> if nothing is associated with
+     * the key
+     * 
+     * @param key a key
+     * @return an object that is associated with the key or 
+     *      <code>null</code>
      */    
     public synchronized Object getAttribute(String key) {
         return attributes.get(key);
     }
     
     /**
-     *
-     * @param key
-     * @param value
-     * @return
+     * Attachs key/object to this Session
+     * 
+     * @param key a key
+     * @param value an arbitrary object
+     * @return <code>null</code> or the previous object that was
+     *  associated with the key
      */    
     public synchronized Object setAttribute(String key, Object value) {
         return attributes.put(key, value);
     }
     
     /**
-     *
-     * @param key
-     * @return
+     * Removes and returns an attribute that is associated with
+     * the key or <code>null</code> if key is unknown.
+     * 
+     * @param key a key
+     * @return the associated object or <code>null</code>
      */    
     public synchronized Object removeAttribute(String key) {
         return attributes.remove(key);
     }
     
     /**
-     *
-     * @return
+     * Returns an Iterator of all keys
+     * 
+     * @return an Iterator
      */    
     public synchronized Iterator getAttributeNames() {
         return attributes.keySet().iterator();
     }
     
     /**
-     *
-     * @param key
-     * @return
+     * Returs <code>true</code> if this Session object has a attribute
+     * associated with the key
+     * 
+     * @param key a key
+     * @return <code>true</code> if this Session has a such attribute
      */    
     public synchronized boolean hasAttribute(String key) {
         return attributes.containsKey(key);
     }
     
+    /**
+     * Sets lastAccesedTime to 'now'
+     *
+     */
     synchronized void update() {
         lastAccesedTime = System.currentTimeMillis();
     }
-    
-    /**
-     *
-     * @return
-     */    
+      
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         

@@ -29,20 +29,23 @@ import java.io.IOException;
 public interface DaapResponse {
     
     /**
-     * Returns <tt>true</tt> if some bytes were leftover
-     * or <tt>false</tt> all bytes were written.
+     * Returns <code>true</code> if there are more
+     * bytes to write.
+     * 
+     * @return <code>true</code> if response has remining
+     *  bytes in the buffer
      */
     public boolean hasRemainig();
     
     /**
-     * Returns <tt>true</tt> when the write() operation
-     * is complete and <tt>false</tt> when some bytes
+     * Returns <code>true</code> when the write() operation
+     * is complete and <code>false</code> when some bytes
      * were left which shall be written at the next
      * iteration (NIO view, classic I/O DaapRespones will
-     * always return <tt>true</tt>).
+     * always return <code>true</code>).
      *
      * @throws IOException
-     * @return <tt>true</tt> if write() operation is complete
+     * @return <code>true</code> if write() operation is complete
      */
     public boolean write() throws IOException;
 }

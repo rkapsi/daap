@@ -55,7 +55,7 @@ public class ShortChunk extends AbstractChunk {
     }
     
     /**
-     * Returns <tt>Chunk.SHORT_TYPE</tt>
+     * Returns {@see Chunk.SHORT_TYPE}
      */
     public int getType() {
         return Chunk.SHORT_TYPE;

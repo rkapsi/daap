@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The sample rate of this song in kHz.
+ * The sample rate of the Song in kHz.
  *
  * @author  Roger Kapsi
  */

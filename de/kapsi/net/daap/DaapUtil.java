@@ -46,7 +46,12 @@ import de.kapsi.net.daap.chunks.Chunk;
  */
 public final class DaapUtil {
     
-    public static final int UNDEF_VALUE = 0;
+    /**
+     * NULL value (Zero) is a forbidden value (in some cases) in 
+     * DAAP and means that a value is not initialized (basically 
+     * <code>null</code> for primitive types).
+     */
+    public static final int NULL = 0;
     
     private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
     private static final String ISO_8859_1 = "ISO-8859-1";
@@ -65,6 +70,9 @@ public final class DaapUtil {
         }
     }
     
+    /**
+     * A hard coded list of Song attributes.
+     */
     public static final String[] DATABASE_SONGS_META = {
         "dmap.itemkind",
         "daap.songalbum",
@@ -103,6 +111,9 @@ public final class DaapUtil {
         "daap.songdataurl"
     };
     
+    /**
+     * A hard coded list of Playlist attributes.
+     */
     public static final String[] DATABASE_PLAYLISTS_META = {
         "dmap.itemid",
         "dmap.persistentid",
@@ -111,14 +122,22 @@ public final class DaapUtil {
         "dmap.itemcount"
     };
     
+    /**
+     * A hard coded list of Playlist/Song attributes.
+     */
     public static final String[] PLAYLIST_SONGS_META = {
         "dmap.itemkind",
         "dmap.itemid",
         "dmap.containeritemid"
     };
     
+    /** 1.0.0 (iTunes 4.0) */
     public static final int VERSION_1 = 0x00010000; // 1.0.0
+    
+    /** 2.0.0 (iTunes 4.1, 4.2) */
     public static final int VERSION_2 = 0x00020000; // 2.0.0
+    
+    /** Version 3.0.0 (iTunes 4.5, 4.6) */
     public static final int VERSION_3 = 0x00030000; // 3.0.0
     
     private static final String CLIENT_DAAP_VERSION = "Client-DAAP-Version";
@@ -127,6 +146,14 @@ public final class DaapUtil {
     private DaapUtil() {
     }
     
+    /** 
+     * Returns <code>true</code> if version is a supported protocol
+     * version. At the moment only {@see #VERSION_3} and later are
+     * supported.
+     * 
+     * @param version a protocol version
+     * @return <code>true</code> if version is a supported
+     */
     public static boolean isSupportedProtocolVersion(int version) {
         if (version >= VERSION_3) {
             return true;
@@ -135,6 +162,12 @@ public final class DaapUtil {
         }
     }
     
+    /**
+     * Converts a four character content code to an int and returns it.
+     * 
+     * @param contentCode a four character content code
+     * @return content code
+     */
     public static int toContentCodeNumber(String contentCode) {
         if (contentCode.length() != 4) {
             throw new IllegalArgumentException("content code must have 4 characters!");
@@ -157,7 +190,7 @@ public final class DaapUtil {
     }
     
     /**
-     * Serializes the <tt>chunk</tt> and compresses it optionally.
+     * Serializes the <code>chunk</code> and compresses it optionally.
      * The serialized data is returned as a byte-Array.
      */
     public static final byte[] serialize(Chunk chunk, boolean compress) throws IOException {
@@ -178,6 +211,13 @@ public final class DaapUtil {
         return buffer.toByteArray();
     }
     
+    /**
+     * Splits a query String ("key1=value1&key2=value2...") and
+     * stores the data in a Map
+     * 
+     * @param queryString a query String
+     * @return the splitten query String as Map
+     */
     public static final Map parseQuery(String queryString) {
         
         Map map = new HashMap();
@@ -199,14 +239,26 @@ public final class DaapUtil {
         return map;
     }
     
+    /**
+     * Splits a meta String ("foo,bar,alice,bob") and stores the data
+     * in an ArrayList
+     * 
+     * @param meta a meta String
+     * @return the splitten meta String as ArrayList
+     */
     public static final ArrayList parseMeta(String meta) {
         StringTokenizer tok = new StringTokenizer(meta, ",");
         ArrayList list = new ArrayList(tok.countTokens());
+        boolean flag = false;
+        
         while(tok.hasMoreTokens()) {
             String token = tok.nextToken();
             
-            if (token.equals("dmap.itemkind")) {
-            	list.add(0, token);
+            // Must be te fist! See DAAP documentation 
+            // for more info!
+            if (!flag && token.equals("dmap.itemkind")) {
+                list.add(0, token);
+                flag = true;
             } else {
                 list.add(token);
             }
@@ -214,6 +266,12 @@ public final class DaapUtil {
         return list;
     }
     
+    /**
+     * Creates and returns an unique session ID
+     * 
+     * @param knownIDs all known session IDs
+     * @return a uniquie session id
+     */
     public static Integer createSessionId(Set knownIDs) {
         Integer sessionId = null;
         
@@ -232,17 +290,37 @@ public final class DaapUtil {
         return sessionId;
     }
     
+    /**
+     * Converts major, minor to a DAAP version.
+     * Version 2 is for example 0x00020000
+     * 
+     * @param major the major version (x)
+     * @return x.0.0
+     */
     public static int toVersion(int major) {
         return toVersion(major, 0, 0);
     }
     
+    /**
+     * Converts major, minor to a DAAP version.
+     * Version 2.1 is for example 0x00020100
+     * 
+     * @param major the major version (x)
+     * @param minor the minor version (y)
+     * @return x.y.0
+     */
     public static int toVersion(int major, int minor) {
         return toVersion(major, minor, 0);
     }
     
     /**
      * Converts major, minor and patch to a DAAP version.
-     * Version 2.0.0 is for example 0x00020000
+     * Version 2.1.3 is for example 0x00020103
+     * 
+     * @param major the major version (x)
+     * @param minor the minor version (y)
+     * @param patch the patch version (z)
+     * @return x.y.z
      */
     public static int toVersion(int major, int minor, int patch) {
         byte[] dst = new byte[4];
@@ -254,13 +332,13 @@ public final class DaapUtil {
     
     /**
      * This method tries the determinate the protocol version
-     * and returns it or UNDEF_VALUE if version could not be
+     * and returns it or {@see #NULL} if version could not be
      * estimated...
      */
     public static int getProtocolVersion(DaapRequest request) {
         
         if (request.isUnknownRequest())
-            return DaapUtil.UNDEF_VALUE;
+            return DaapUtil.NULL;
         
         Header header = request.getHeader(CLIENT_DAAP_VERSION);
         
@@ -269,7 +347,7 @@ public final class DaapUtil {
         }
         
         if (header == null)
-            return DaapUtil.UNDEF_VALUE;
+            return DaapUtil.NULL;
         
         String name = header.getName();
         String value = header.getValue();
@@ -280,7 +358,7 @@ public final class DaapUtil {
         // hosts...
         if ( request.isSongRequest() && name.equals(USER_AGENT)) {
             
-            // Note: the protocol version of a song request is estimated
+            // Note: the protocol version of a Song request is estimated
             // by the server with the aid of the sessionId, i.e. this block
             // is actually never touched...
             if (value.startsWith("iTunes/4.5") || value.startsWith("iTunes/4.6"))
@@ -290,7 +368,7 @@ public final class DaapUtil {
             else if (value.startsWith("iTunes/4.0"))
                 return DaapUtil.VERSION_1;
             else
-                return DaapUtil.UNDEF_VALUE;
+                return DaapUtil.NULL;
             
         } else {
             
@@ -300,9 +378,9 @@ public final class DaapUtil {
             if (count >= 2 && count <= 3) {
                 try {
 
-                    int major = DaapUtil.UNDEF_VALUE;
-                    int minor = DaapUtil.UNDEF_VALUE;
-                    int patch = DaapUtil.UNDEF_VALUE;
+                    int major = DaapUtil.NULL;
+                    int minor = DaapUtil.NULL;
+                    int patch = DaapUtil.NULL;
 
                     major = Integer.parseInt(tokenizer.nextToken());
                     minor = Integer.parseInt(tokenizer.nextToken());
@@ -317,6 +395,6 @@ public final class DaapUtil {
             }
         }
         
-        return DaapUtil.UNDEF_VALUE;
+        return DaapUtil.NULL;
     }
 }

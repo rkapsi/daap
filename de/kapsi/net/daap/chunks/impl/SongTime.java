@@ -22,8 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The length of this song in milliseconds. You can maybe
- * map this to an IDv2/IDv3 Tag.
+ * The length of the Song in milliseconds.
  *
  * @author  Roger Kapsi
  */

@@ -24,7 +24,7 @@ package de.kapsi.net.daap;
  * Miscellaneous Java primitive to byte array and vice versa
  * methods.
  *
- * Note: All values are in Big-Endian!
+ * <p>Note: All values are in Big-Endian!</p>
  *
  * @author  Roger Kapsi
  */

@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The total number of songs, databases or whatever the library
+ * The total number of Songs, Databases or whatever the Library
  * has. This chunk usually appears together with ReturnedCount.
  *
  * @see ReturnedCount

@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * The name of an item (e.g. song or playlist)
+ * The name of an item (e.g. Song or Playlist)
  * 
  * @author  Roger Kapsi
  */

@@ -20,33 +20,42 @@
 package de.kapsi.net.daap;
 
 /**
+ * A Txn is a internal implementation of a Transaction.
+ * As a user of these classes you can safely ignore this!
  * 
  * @author Roger Kapsi
  */
 interface Txn {
     
     /**
+     * Called by Transaction with a reference to
+     * itself
      * 
-     * @param txn
+     * @param txn a Transaction
      * @throws DaapException
      */
     void commit(Transaction txn) throws DaapException;
     
     /**
+     * Called by Transaction with a reference to
+     * itself
      * 
-     * @param txn
+     * @param txn a Transaction
      * @throws DaapException
      */
     void rollback(Transaction txn) throws DaapException;
     
     /**
+     * Called by Transaction with a reference to
+     * itself
      * 
-     * @param txn
+     * @param txn a Transaction
      * @throws DaapException
      */
     void cleanup(Transaction txn) throws DaapException;
     
     /**
+     * Join 'this' with value
      * 
      * @param value
      * @throws DaapException

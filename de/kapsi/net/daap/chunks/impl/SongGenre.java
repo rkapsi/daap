@@ -22,39 +22,89 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * The genre of this song. You can maybe map this to an IDv2/IDv3 Tag.
+ * The genre of the Song. You can either use the pre-defined
+ * genres like ALTERNATIVE, JAZZ etc. or you can use your
+ * custom genres.
  *
  * @author  Roger Kapsi
  */
 public class SongGenre extends StringChunk {
     
-    public static final String NONE		= null;
+    /** No genre */
+    public static final String NONE = null;
     
-    public static final String ALTERNATIVE	= "Alternative";
-    public static final String BLUES_RB		= "Blues/R&B";
-    public static final String BOOKS_SPOKEN	= "Books & Spoken";
-    public static final String CHILDRENS_MUSIC  = "Children's Music";
-    public static final String CLASSICAL	= "Classical";
-    public static final String COUNTRY		= "Country";
-    public static final String DANCE		= "Dance";
-    public static final String EASY_LISTENING   = "Easy Listening";
-    public static final String ELECTRONIC	= "Electronic";
-    public static final String FOLK             = "Folk";
-    public static final String HIP_HOP_RAP	= "Hip Hop/Rap";
-    public static final String HOLIDAY		= "Holiday";
-    public static final String HOUSE		= "House";
-    public static final String INDUSTRIAL	= "Industrial";
-    public static final String JAZZ     	= "Jazz";
-    public static final String NEW_AGE		= "New Age";
-    public static final String POP		= "Pop";
-    public static final String RELIGIOUS	= "Religious";
-    public static final String ROCK     	= "Rock";
-    public static final String SOUNDTRACK	= "Soundtrack";
-    public static final String TECHNO		= "Techno";
-    public static final String TRANCE		= "Trance";
-    public static final String UNCLASSIFIABLE   = "Unclassifiable";
-    public static final String WORLD		= "World";
+    /** Alternative */
+    public static final String ALTERNATIVE = "Alternative";
     
+    /** Blues/R&amp;B */
+    public static final String BLUES_RB = "Blues/R&B";
+    
+    /** Books &amp; Spoken */
+    public static final String BOOKS_SPOKEN = "Books & Spoken";
+    
+    /** Children's Music */
+    public static final String CHILDRENS_MUSIC = "Children's Music";
+    
+    /** Classical */
+    public static final String CLASSICAL = "Classical";
+    
+    /** Country */
+    public static final String COUNTRY = "Country";
+    
+    /** Dance */
+    public static final String DANCE = "Dance";
+    
+    /** Easy Listening */
+    public static final String EASY_LISTENING = "Easy Listening";
+    
+    /** Electronic */
+    public static final String ELECTRONIC = "Electronic";
+    
+    /** Folk */
+    public static final String FOLK = "Folk";
+    
+    /** Hip Hop/Rap */
+    public static final String HIP_HOP_RAP = "Hip Hop/Rap";
+    
+    /** Holiday */
+    public static final String HOLIDAY = "Holiday";
+    
+    /** House */
+    public static final String HOUSE = "House";
+    
+    /** Industrial */
+    public static final String INDUSTRIAL = "Industrial";
+    
+    /** Jazz */
+    public static final String JAZZ = "Jazz";
+    
+    /** New Age */
+    public static final String NEW_AGE = "New Age";
+    
+    /** Pop */
+    public static final String POP = "Pop";
+    
+    /** Religious */
+    public static final String RELIGIOUS = "Religious";
+    
+    /** Rock */
+    public static final String ROCK = "Rock";
+    
+    /** Soundtrack */
+    public static final String SOUNDTRACK = "Soundtrack";
+    
+    /** Techno */
+    public static final String TECHNO = "Techno";
+    
+    /** Trance */
+    public static final String TRANCE = "Trance";
+    
+    /** Unclassifiable */
+    public static final String UNCLASSIFIABLE = "Unclassifiable";
+    
+    /** World */
+    public static final String WORLD = "World";
+
     /**
      * Creates a new SongGenre where genre is not set.
      * You can change this value with {@see #setValue(String)}.
@@ -62,7 +112,7 @@ public class SongGenre extends StringChunk {
     public SongGenre() {
         this(NONE);
     }
-    
+
     /**
      * Creates a new SongGenre with the assigned genre.
      * You can change this value with {@see #setValue(String)}.

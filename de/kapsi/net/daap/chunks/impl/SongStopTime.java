@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * The stop time of this song in seconds. I.e. you can use it
+ * The stop time of the Song in seconds. I.e. you can use it
  * to stop playing this song n-seconds before end.
  *
  * @author  Roger Kapsi

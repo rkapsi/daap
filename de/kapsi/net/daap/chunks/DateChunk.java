@@ -33,7 +33,7 @@ public class DateChunk extends IntChunk {
     }
     
     /**
-     * Returns <tt>Chunk.DATE_TYPE</tt>
+     * Returns {@see Chunk.DATE_TYPE}
      */
     public int getType() {
         return Chunk.DATE_TYPE;

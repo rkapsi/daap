@@ -22,9 +22,8 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ShortChunk;
 
 /**
- * The number of the disc where this song is.
- * You can maybe map this to an IDv2/IDv3 Tag.
- *
+ * The disk number of the Song.
+ * 
  * @author  Roger Kapsi
  */
 public class SongDiscNumber extends ShortChunk {
@@ -42,7 +41,7 @@ public class SongDiscNumber extends ShortChunk {
      * You can change this value with {@see #setValue(int)}.
      * @param <tt>disc</tt> the disc of this song.
      */
-    public SongDiscNumber(int disc) {
-        super("asdn", "daap.songdiscnumber", disc);
+    public SongDiscNumber(int discNumber) {
+        super("asdn", "daap.songdiscnumber", discNumber);
     }
 }

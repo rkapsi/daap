@@ -22,8 +22,10 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- *
+ * Unknown purpose.
+ * 
  * @author  Roger Kapsi
+ * @since iTunes 4.5
  */
 public class ITMSSongId extends IntChunk {
     

@@ -35,10 +35,14 @@ public class DaapServerFactory {
     }
     
     /**
-     *
-     * @param library
-     * @param nio
-     * @return
+     * Creates either a blocking server with Threads or a NIO server
+     * 
+     * @param library an instance of Library
+     * @param nio if true the returned server will be an instance of 
+     *          {@see de.kapsi.net.daap.nio.DaapServerNIO} and 
+     *          {@see de.kapsi.net.daap.bio.DaapServerBIO} otherwise.
+     * @return either {@see de.kapsi.net.daap.nio.DaapServerNIO} or 
+     *                  {@see de.kapsi.net.daap.bio.DaapServerBIO}
      */    
     public static DaapServer createServer(Library library, boolean nio) {
         if (nio) {
@@ -49,11 +53,15 @@ public class DaapServerFactory {
     }
     
     /**
-     *
-     * @param library
-     * @param port
-     * @param nio
-     * @return
+     * Creates either a blocking server with Threads or a NIO server
+     * 
+     * @param library an instance of Library
+     * @param port the Port for the DAAP server
+     * @param nio if true the returned server will be an instance of 
+     *          {@see de.kapsi.net.daap.nio.DaapServerNIO} and 
+     *          {@see de.kapsi.net.daap.bio.DaapServerBIO} otherwise.
+     * @return either {@see de.kapsi.net.daap.nio.DaapServerNIO} or 
+     *                  {@see de.kapsi.net.daap.bio.DaapServerBIO}
      */    
     public static DaapServer createServer(Library library, int port, boolean nio) {
         if (nio) {
@@ -64,11 +72,15 @@ public class DaapServerFactory {
     }
     
     /**
-     *
-     * @param library
-     * @param config
-     * @param nio
-     * @return
+     * Creates either a blocking server with Threads or a NIO server
+     * 
+     * @param library an instance of Library
+     * @param config an instance of DaapConfig
+     * @param nio if true the returned server will be an instance of 
+     *          {@see de.kapsi.net.daap.nio.DaapServerNIO} and 
+     *          {@see de.kapsi.net.daap.bio.DaapServerBIO} otherwise.
+     * @return either {@see de.kapsi.net.daap.nio.DaapServerNIO} or 
+     *                  {@see de.kapsi.net.daap.bio.DaapServerBIO}
      */    
     public static DaapServer createServer(Library library, DaapConfig config, boolean nio) {
         if (nio) {
@@ -79,58 +91,64 @@ public class DaapServerFactory {
     }
     
     /**
-     *
-     * @param library
-     * @return
+     * Creates a blocking server with Threads
+     * 
+     * @param library an instance of Library
+     * @return {@see de.kapsi.net.daap.bio.DaapServerBIO} 
      */    
     public static DaapServer createBIOServer(Library library) {
         return new DaapServerBIO(library);
     }
     
     /**
-     *
-     * @param library
-     * @param port
-     * @return
+     * Creates either a blocking server with Threads
+     * 
+     * @param library an instance of Library
+     * @param port the Port of the DAAP server
+     * @return {@see de.kapsi.net.daap.bio.DaapServerBIO} 
      */    
     public static DaapServer createBIOServer(Library library, int port) {
         return new DaapServerBIO(library, port);
     }
     
     /**
-     *
-     * @param library
-     * @param config
-     * @return
+     * Creates either a blocking server with Threads
+     * 
+     * @param library an instance of Library
+     * @param config an instance of DaapConfig
+     * @return {@see de.kapsi.net.daap.bio.DaapServerBIO} 
      */    
     public static DaapServer createBIOServer(Library library, DaapConfig config) {
         return new DaapServerBIO(library, config);
     }
     
     /**
-     *
-     * @param library
-     * @return
+     * Creates a NIO server
+     * 
+     * @param library an instance of Library
+     * @return {@see de.kapsi.net.daap.nio.DaapServerNIO} 
      */    
     public static DaapServer createNIOServer(Library library) {
         return new DaapServerNIO(library);
     }
     
     /**
-     *
-     * @param library
-     * @param port
-     * @return
+     * Creates a NIO server
+     * 
+     * @param library an instance of Library
+     * @param port the Port of the DAAP server
+     * @return {@see de.kapsi.net.daap.nio.DaapServerNIO}
      */    
     public static DaapServer createNIOServer(Library library, int port) {
         return new DaapServerNIO(library, port);
     }
     
     /**
-     *
-     * @param library
-     * @param config
-     * @return
+     * Creates a NIO server
+     * 
+     * @param library an instance of Library
+     * @param config an instance of DaapConfig
+     * @return {@see de.kapsi.net.daap.nio.DaapServerNIO}
      */    
     public static DaapServer createNIOServer(Library library, DaapConfig config) {
         return new DaapServerNIO(library, config);

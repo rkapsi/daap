@@ -36,6 +36,11 @@ public class DaapResponseWriter {
         queue = new LinkedList();
     }
     
+    /**
+     * Adds <code>response</code> to the FIFO queue
+     * 
+     * @param response the object to be written
+     */
     public void add(DaapResponse response) {
         queue.add(response);
     }
@@ -56,7 +61,10 @@ public class DaapResponseWriter {
     }
     
     /**
-     * Returns <tt>true</tt> if queue is empty.
+     * Returns <code>true</code> if queue is empty and
+     * there is nothing more to send
+     * 
+     * @return <code>true</code> if queue is empty
      */
     public boolean isEmpty() {
         return queue.isEmpty();
@@ -71,9 +79,11 @@ public class DaapResponseWriter {
     }
     
     /**
-     * Writes <tt>out</tt> to the associated channel and 
-     * returns true if <tt>out</tt> was written fully or
-     * <tt>false</tt> if some bytes were left in <tt>out</tt>
+     * Writes DaapResponses from the internal queue to out 
+     * 
+     * @return <code>true</code> if everything was fully written and
+     *  the queue is empty.
+     * @throws IOException
      */ 
     public boolean write() throws IOException {
         if (!isEmpty()) {

@@ -25,7 +25,7 @@ import java.io.IOException;
 import de.kapsi.net.daap.ByteUtil;
 
 /**
- * An abstract base class Chunks 
+ * An abstract base class for Chunks.
  *
  * @author  Roger Kapsi
  */
@@ -49,24 +49,35 @@ public abstract class AbstractChunk implements Chunk {
     }
     
     /**
-     * Returns the 4 charecter content code
+     * Returns the 4 charecter content code of this Chunk as String
      */
     public String getContentCode() {
         return contentCode;
     }
     
     /**
-     * Returns the name of this chunk
+     * Returns the name of this Chunk
      */
     public String getName() {
         return name;
     }
     
+    /**
+     * Returns the size of this Chunk. The size is defined as
+     * header + payload in bytes.
+     */
     public int getSize() {
         return HEADER_SIZE + getLength();
     }
     
+    /**
+     * Returns the length of this Chunk's payload in bytes.
+     */
     public abstract int getLength();
+    
+    /**
+     * Returns the type of this Chunk. For example {@see #BOOLEAN_TYPE}.
+     */
     public abstract int getType();
     
     public void serialize(OutputStream out) throws IOException {

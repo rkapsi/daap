@@ -28,6 +28,7 @@ import de.kapsi.net.daap.chunks.ByteChunk;
  */
 public class ItemKind extends ByteChunk {
     
+    /** Default Kind (always 2) */
     public static final int KIND_2 = 2;
     
     public ItemKind() {

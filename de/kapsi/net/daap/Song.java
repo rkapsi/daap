@@ -60,10 +60,10 @@ import de.kapsi.net.daap.chunks.impl.SongUserRating;
 import de.kapsi.net.daap.chunks.impl.SongYear;
 
 /**
- * There isn't much to say: a Song is a Song.<p>
- * Note: although already mentioned in StringChunk I'd like to
- * point out that <tt>null</tt> is a valid value for DAAP. Use
- * it to reset Strings. See StringChunk for more information!
+ * There isn't much to say: a Song is a Song.
+ * <p>Note: although already mentioned in StringChunk I'd like to
+ * point out that <code>null</code> is a valid value for DAAP. Use
+ * it to reset Strings. See StringChunk for more information!</p>
  *
  * @author  Roger Kapsi
  */

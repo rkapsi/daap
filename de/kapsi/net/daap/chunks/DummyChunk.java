@@ -72,7 +72,7 @@ public final class DummyChunk extends AbstractChunk {
     }
     
     /**
-     * DummyChunk doesn't write anything to <tt>out</tt>!!!
+     * DummyChunk doesn't write anything to <code>out</code>!!!
      */
     public final void serialize(OutputStream out) throws IOException {
     }

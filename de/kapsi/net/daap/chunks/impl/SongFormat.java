@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * The format of this song. Note: the provided list of supported
+ * The format of the Song. Note: the provided list of supported
  * format fields is incomplete.
  *
  * @author  Roger Kapsi

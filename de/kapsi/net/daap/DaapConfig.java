@@ -29,26 +29,33 @@ import java.net.InetSocketAddress;
 public interface DaapConfig {
     
     /**
-     * Returns the HTTP style name of the Server (e.g. DaapServer/0.1)
-     * @return
+     * HTTP style name for the Server
+     * 
+     * @return the HTTP style name of the Server (e.g. DaapServer/0.1)
      */    
     public String getServerName();
     
     /**
-     *
-     * @return
+     * An InetSocketAddress (IP:Port) to which the DAAP server will be
+     * bound
+     * 
+     * @return an InetSocketAddress
      */    
     public InetSocketAddress getInetSocketAddress();
     
     /**
-     *
-     * @return
+     * The ServerSocket backlog
+     * 
+     * @return the Backlog for the ServerSocket
      */    
     public int getBacklog();
     
     /**
-     *
-     * @return
+     * The maximum number of simultaneous incoming connections. Keep
+     * in mind that there will be (in worst case) twice as many connections
+     * because each DAAP connection has a separate audio stream
+     * 
+     * @return the maximum number of connections
      */    
     public int getMaxConnections();
 }

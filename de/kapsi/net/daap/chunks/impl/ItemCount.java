@@ -22,6 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
+ * The number of items a container (Playlist, Database whatever) has.
  * 
  * @author  Roger Kapsi
  */

@@ -42,7 +42,7 @@ import de.kapsi.net.daap.DaapUtil;
 
 /**
  * This class is a cover for an incoming connection and is based 
- * on the classical BIO (Blocking I/O) pattern. An connection
+ * on the classical BIO (Blocking I/O) pattern. A connection
  * can either be a general DAAP connection or an Audio request.
  *
  * @author  Roger Kapsi
@@ -108,7 +108,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                     setProtocolVersion(connection.getProtocolVersion());
                         
                 } else if (request.isServerInfoRequest()) {
-                    setConnectionType(DaapConnection.NORMAL);
+                    setConnectionType(DaapConnection.DAAP);
                     setProtocolVersion(DaapUtil.getProtocolVersion(request));
                     
                 } else {
@@ -170,7 +170,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
     
     public synchronized void update() throws IOException {
         
-        if (isNormal()) {
+        if (isDaapConnection()) {
             DaapSession session = getSession(false);
 
             // Do not trigger new updates if an update for this connection

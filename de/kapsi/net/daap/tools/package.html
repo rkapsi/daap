@@ -1,3 +1,6 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
 /* 
  * Digital Audio Access Protocol (DAAP)
  * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
@@ -16,23 +19,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+</head>
+<body bgcolor="white">
 
-package de.kapsi.net.daap.chunks.impl;
+Some useful Tools you maybe need for DAAP protocol analysis.
 
-import de.kapsi.net.daap.chunks.IntChunk;
+<h2>Required Tools</h2>
+Tools you maybe need for your work:
+<ul>
+	<li><a href="http://www.ethereal.com" target="_blank">Ethereal</a></li>
+	<li><a href="http://molelog.molehill.org/blox/Computers/Macintosh/DAAP2.writeback" target="_blank">Todd Larason's dump Program</a></li>
+	<li>gzip, hex editor, etc.</li>
+</ul>
 
-/**
- * Unknown purpose.
- *
- * @author  Roger Kapsi
- */
-public class ParentContainerId extends IntChunk {
-    
-    public ParentContainerId() {
-        this(0);
-    }
-    
-    public ParentContainerId(int id) {
-        super("mpco", "dmap.parentcontainerid", id);
-    }
-}
+<!-- Put @see and @since tags down here. -->
+
+</body>
+</html>

@@ -22,17 +22,26 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * The artist of this song. You can maybe map this to an IDv2/IDv3 Tag.
+ * The artist of the Song.
  *
  * @author  Roger Kapsi
  */
 public class SongArtist extends StringChunk {
     
+    /** 
+     * Creates a new SongArtist where Artist is <tt>null</tt>
+     * (i.e. no artist)
+     */
     public SongArtist() {
         this(null);
     }
     
-    public SongArtist(String value) {
-        super("asar", "daap.songartist", value);
+    /**
+     * Creates a new SongArtist with the secified artist name.
+     * 
+     * @param artist the name of the artist (individual, a band or group)
+     */
+    public SongArtist(String artist) {
+        super("asar", "daap.songartist", artist);
     }
 }

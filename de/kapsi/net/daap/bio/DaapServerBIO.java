@@ -43,7 +43,7 @@ import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.SimpleConfig;
 
 /**
- * This DAAP server is written with the classical BIO pattern.
+ * This DAAP server is written with the classical I/O and multible Threads.
  *
  * @author  Roger Kapsi
  */
@@ -71,14 +71,32 @@ public class DaapServerBIO implements DaapServer {
     
     private boolean running = false;
     
+    /**
+     * Creates a new DAAP server with Library and {@see SimpleConfig}
+     * 
+     * @param library a Library
+     */  
     public DaapServerBIO(Library library) {
         this(library, new SimpleConfig());
     }
     
+    /**
+     * Creates new DAAP server with Library, a {@see SimpleConfig} and 
+     * the Port
+     * 
+     * @param library a Library
+     * @param port a Port used by SimpleConfig
+     */  
     public DaapServerBIO(Library library, int port) {
         this(library, new SimpleConfig(port));
     }
     
+    /**
+     * Creates a new DAAP server with Library and DaapConfig
+     * 
+     * @param library a Library
+     * @param config a DaapConfig
+     */  
     public DaapServerBIO(Library library, DaapConfig config) {
         
         this.library = library;
@@ -91,41 +109,91 @@ public class DaapServerBIO implements DaapServer {
         streams = new HashSet();
     }
     
+    /**
+     * Returns the Library of this server
+     * 
+     * @return Library
+     */  
     public Library getLibrary() {
         return library;
     }
     
+    /**
+     * Sets the DaapConfig for this server
+     * 
+     * @param config DaapConfig
+     */
     public void setConfig(DaapConfig config) {
         this.config = config;
     }
     
+    /**
+     * Returns the DaapConfig of this server
+     * 
+     * @return DaapConfig of this server
+     */  
+    public DaapConfig getConfig() {
+        return config;
+    }
+    
+    /**
+     * Sets the DaapAuthenticator for this server
+     * 
+     * @param authenticator a DaapAuthenticator
+     */ 
     public void setAuthenticator(DaapAuthenticator authenticator) {
         this.authenticator = authenticator;
     }
     
+    /**
+     * Retrieves the DaapAuthenticator of this server
+     * 
+     * @return DaapAuthenticator or <code>null</code>
+     */ 
     public DaapAuthenticator getAuthenticator() {
         return authenticator;
     }
     
+    /**
+     * Sets the DaapStreamSource for this server
+     * 
+     * @param streamSource a DaapStreamSource
+     */
     public void setStreamSource(DaapStreamSource streamSource) {
         this.streamSource = streamSource;
     }
     
+    /**
+     * Retrieves the DaapStreamSource of this server
+     * 
+     * @return DaapStreamSource or <code>null</code>
+     */
     public DaapStreamSource getStreamSource() {
         return streamSource;
     }
     
+    /**
+     * Sets a DaapFilter for this server
+     * 
+     * @param filter a DaapFilter
+     */ 
     public void setFilter(DaapFilter filter) {
         this.filter = filter;
     }
     
+    /**
+     * Returns a DaapFilter
+     * 
+     * @return a DaapFilter or <code>null</code>
+     */
     public DaapFilter getFilter() {
         return filter;
     }
     
     /**
-     *
-     * @return
+     * Sets the DaapThreadFactory for this DAAP server
+     * 
+     * @param fectory a DaapThreadFactory
      */
     public void setThreadFactory(DaapThreadFactory factory) {
         if (factory == null) {
@@ -135,17 +203,17 @@ public class DaapServerBIO implements DaapServer {
         }
     }
     
-    public DaapConfig getConfig() {
-        return config;
-    }
-    
+    /**
+     * Binds this server to the SocketAddress supplied by DaapConfig
+     * 
+     * @throws IOException
+     */
     public synchronized void bind() throws IOException {
         if (running)
             return;
         
         SocketAddress bindAddr = config.getInetSocketAddress();
         int backlog = config.getBacklog();
-        
         
         ssocket = new ServerSocket();
         ssocket.bind(bindAddr, backlog);
@@ -156,7 +224,7 @@ public class DaapServerBIO implements DaapServer {
     }
     
     /**
-     * Returns <tt>true</tt> if DAAP Server
+     * Returns <code>true</code> if DAAP Server
      * accepts incoming connections.
      */
     public synchronized boolean isRunning() {
@@ -335,14 +403,14 @@ public class DaapServerBIO implements DaapServer {
     }
     
     /**
-     * Returns <tt>true</tt> if sessionId is known and valid
+     * Returns <code>true</code> if sessionId is known and valid
      */
     public boolean isSessionIdValid(int sessionId) {
         return isSessionIdValid(new Integer(sessionId));
     }
     
     /**
-     * Returns <tt>true</tt> if sessionId is known and valid
+     * Returns <code>true</code> if sessionId is known and valid
      */
     public boolean isSessionIdValid(Integer sessionId) {
         synchronized(sessionIds) {
@@ -351,9 +419,10 @@ public class DaapServerBIO implements DaapServer {
     }
     
     /**
-     *
-     * @param sessionId
-     * @return
+     * Retrieves a DaapConnection for a session ID or <code>null</code>.
+     * 
+     * @param sessionId a session ID
+     * @return a DaapConnection or <code>null</code>
      */ 
     public DaapConnection getConnection(Integer sessionId) {
         synchronized(connections) {
@@ -408,8 +477,9 @@ public class DaapServerBIO implements DaapServer {
         }
     }
     
-    
-    
+    /**
+     * The run loop
+     */
     public void run() {
         
         threadNo = 0;
@@ -450,6 +520,9 @@ public class DaapServerBIO implements DaapServer {
         }
     }
     
+    /**
+     * The default DaapThreadFactory
+     */
     private static class DaapThreadFactoryImpl implements DaapThreadFactory {
         
         private DaapThreadFactoryImpl() {    

@@ -70,7 +70,7 @@ public class DaapConnectionNIO extends DaapConnection {
         if (isUndef()) {
             return SelectionKey.OP_READ;
         
-        } else if (isNormal()) {
+        } else if (isDaapConnection()) {
             
             int op = SelectionKey.OP_READ;
             
@@ -132,7 +132,7 @@ public class DaapConnectionNIO extends DaapConnection {
                         
                     } else if (request.isServerInfoRequest()) {
                         
-                        setConnectionType(DaapConnection.NORMAL);
+                        setConnectionType(DaapConnection.DAAP);
                         setProtocolVersion(DaapUtil.getProtocolVersion(request));
                         
                     } else {
@@ -174,7 +174,7 @@ public class DaapConnectionNIO extends DaapConnection {
      */    
     public void update() throws IOException {
         
-        if (isNormal()) {
+        if (isDaapConnection()) {
             DaapSession session = getSession(false);
 
             if (session != null && !session.hasAttribute("UPDATE_LOCK")) {

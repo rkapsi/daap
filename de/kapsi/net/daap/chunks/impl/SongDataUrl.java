@@ -22,7 +22,8 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * Unknown
+ * The stream source of the Song. Used together with {@see SongDataKind}
+ * if data kind is Radio stream.
  *
  * @author  Roger Kapsi
  */

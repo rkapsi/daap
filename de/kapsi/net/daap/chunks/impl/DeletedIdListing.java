@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ContainerChunk;
 
 /**
- * Container for deleted item IDs.
+ * List of deleted items (a list of {@see ItemId}).
  *
  * @see Listing
  * @author  Roger Kapsi
