@@ -2,7 +2,7 @@
 package com.limegroup.gnutella.settings;
 
 /**
- *
+ * Settings for Digital Audio Access Protocol (DAAP)
  */
 public class DaapSettings extends LimeProps {
     
@@ -92,4 +92,13 @@ public class DaapSettings extends LimeProps {
      */
     public static BooleanSetting DAAP_USE_NIO = 
         FACTORY.createBooleanSetting("DAAP_USE_NIO", false);
+    
+    /**
+     * With default JVM settings we start to run out of memory
+     * if the Library becomes greater than 16000 Songs (OSX 10.3,
+     * JVM 1.4.2_04, G5 with 2.5GB of RAM). Therefore I'm limiting
+     * the max size to 10000 Songs.
+     */
+    public static IntSetting DAAP_MAX_LIBRARY_SIZE =
+        FACTORY.createIntSetting("DAAP_MAX_LIBRARY_SIZE", 10000);
 }

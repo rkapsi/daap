@@ -242,9 +242,11 @@ public final class DaapMediator implements FinalizeListener {
      */
     private static boolean isSupportedFileType(String name) {
         String[] types = DaapSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();
-        for(int i = 0; i < types.length; i++)
-            if (name.endsWith(types[i]))
+        for(int i = 0; i < types.length; i++) {
+            if (name.endsWith(types[i])) {
                 return true;
+            }
+        }
         return false;
     }
     
@@ -916,8 +918,10 @@ public final class DaapMediator implements FinalizeListener {
                                         }
                                     }
                                     
+                                    final int MAX_SIZE = DaapSettings.DAAP_MAX_LIBRARY_SIZE.getValue();
+                                    
                                     Iterator it = add.keySet().iterator();
-                                    while(it.hasNext() && running) {
+                                    while(it.hasNext() && running && library.size() < MAX_SIZE) {
                                         Song song = (Song)it.next();
                                         Boolean bool = (Boolean)add.get(song);
                                         
