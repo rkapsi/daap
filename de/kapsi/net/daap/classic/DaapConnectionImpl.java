@@ -29,10 +29,6 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
     
     private static final Log LOG = LogFactory.getLog(DaapConnectionImpl.class);
     
-    private static final int UNDEF  = 0;
-    private static final int NORMAL = 1;
-    private static final int AUDIO  = 2;
-    
     private DaapServerImpl server;
     
     private Socket socket;
@@ -45,7 +41,7 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
     
     private DaapResponseWriter writer;
     
-    private int type = UNDEF;
+    private int type = DaapConnection.UNDEF;
     
     public DaapConnectionImpl(DaapServerImpl server, Socket socket) throws IOException {
         
@@ -67,18 +63,18 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
     
     
     public boolean isUndef() {
-        return (type == UNDEF);
+        return (type == DaapConnection.UNDEF);
     }
     
     /**
      * Returns true if this connection is an Audio stream
      */
     public boolean isAudioStream() {
-        return (type == AUDIO);
+        return (type == DaapConnection.AUDIO);
     }
     
     public boolean isNormal() {
-        return (type == NORMAL);
+        return (type == DaapConnection.NORMAL);
     }
     
     private boolean read() throws IOException {
@@ -88,24 +84,26 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
         if (!isAudioStream()) {
 
             if (isUndef()) {
-                type = (request.isSongRequest()) ? AUDIO : NORMAL;
-
-                if (!request.isSongRequest() &&
-                    !request.isServerInfoRequest()) {
-
-                    // disconnect as the first request must be
-                    // either a song or server-info request!
-                    throw new IOException("Illegal request: " + request);
-                }
-
-                // AudioStreams have a session-id and we must check the id
-                if (isAudioStream()) {
+                
+                if (request.isSongRequest()) {
+                    type = DaapConnection.AUDIO;
+                    
+                    // AudioStreams have a session-id and we must check the id
                     Integer sid = new Integer(request.getSessionId());
                     if (server.isSessionIdValid(sid) == false) {
                         throw new IOException("Unknown Session-ID: " + sid);
                     }
+                    
+                } else if (request.isServerInfoRequest()) {
+                    type = DaapConnection.NORMAL;
+                    
+                } else {
+                    
+                    // disconnect as the first request must be
+                    // either a song or server-info request!
+                    throw new IOException("Illegal first request: " + request);
                 }
-
+               
                 // add connection to the connection pool
                 if ( ! server.addConnection(this) ) {
                     throw new IOException("Server refused this connection");
@@ -248,13 +246,12 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
         } while(line != null && line.length() == 0);
         
         if(line == null) {
-            throw new IOException("Request is null");
+            throw new IOException("Request is null: " + this);
         }
         
         DaapRequest request = new DaapRequest(line);
         Header[] headers = HttpParser.parseHeaders(in);
         request.addHeaders(headers);
-        request.setConfig(server.getConfig());
         
         return request;
     }

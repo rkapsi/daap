@@ -65,7 +65,6 @@ public class DaapLineReader {
         
         if (len < 0) {
             lineBuf = null;
-            in = null;
             throw new IOException("Socket closed");
         }
         

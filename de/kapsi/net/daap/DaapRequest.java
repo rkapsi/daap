@@ -56,8 +56,6 @@ public class DaapRequest {
     private ArrayList headers;
     private boolean isServerSideRequest;
     private boolean isUpdateType;
-    
-    private DaapConfig config;
    
     /**
      * 
@@ -322,20 +320,6 @@ public class DaapRequest {
         }
         
         return null;
-    }
-    
-    /**
-     *
-     */
-    public void setConfig(DaapConfig config) {
-        this.config = config;
-    }
-    
-    /**
-     *
-     */
-    public DaapConfig getConfig() {
-        return config;
     }
     
     /**

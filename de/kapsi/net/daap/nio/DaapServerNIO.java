@@ -1,12 +1,21 @@
 package de.kapsi.net.daap.nio;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
 
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.channels.spi.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
+import java.util.Iterator;
+import java.util.Set;
+import java.util.HashSet;
+
+import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SelectableChannel;
+import java.nio.channels.SocketChannel;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedChannelException;
 
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Library;
@@ -42,8 +51,10 @@ public class DaapServerNIO implements DaapServer {
     private ServerInfoResponse serverInfo;
     private ContentCodesResponse contentCodes;
     
-    private HashSet sessionIds;
+    private HashSet streams;
     private HashSet connections;
+    
+    private HashSet sessionIds;
     
     private DaapConfig config;
     
@@ -183,7 +194,9 @@ public class DaapServerNIO implements DaapServer {
         InetAddress bindAddr = config.getBindAddress();
         int backlog = config.getBacklog();
         
+        streams = new HashSet();
         connections = new HashSet();
+        
         sessionIds = new HashSet();
         
         try {
@@ -290,25 +303,14 @@ public class DaapServerNIO implements DaapServer {
      * Returns the number of connections
      */
     public int getNumberOfConnections() {
-        if (connections == null)
-            return 0;
-        
-        synchronized(connections) {
-            return connections.size();
-        }
+        return (connections != null) ? connections.size() : 0;
     }
     
     /**
      * Returns the number of streams
      */
     public int getNumberOfStreams() {
-        /*if (streams == null)
-            return 0;
-        
-        synchronized(streams) {
-            return streams.size();
-        }*/
-        return 0;
+        return (streams != null) ? streams.size() : 0;
     }
     
     private void close() {
@@ -336,45 +338,82 @@ public class DaapServerNIO implements DaapServer {
         if (sessionIds != null)
             sessionIds.clear();
         
-        if (connections != null)
-            connections.clear();
-        
         sessionIds = null;
+        
+        if (streams != null) {
+            Iterator it = streams.iterator();
+            while(it.hasNext()) {
+                ((DaapConnectionImpl)it.next()).close();
+            }
+        }
+        
+        streams = null;
+        
+        if (connections != null) {
+            Iterator it = connections.iterator();
+            while(it.hasNext()) {
+                ((DaapConnectionImpl)it.next()).close();
+            }
+        }
+        
         connections = null;
     }
     
-    private SelectionKey register(DaapConnection connection, int op) 
-            throws ClosedChannelException {
-                
-        SocketChannel channel = ((DaapConnectionImpl)connection).getChannel();
-        SelectionKey sk = channel.register(selector, op, connection);
-        connections.add(connection);
-        return sk;
-    }
-    
+    /**
+     *
+     */
     private void cancel(SelectionKey sk) {
         
-        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
-        
-        if (connection != null)
-            connections.remove(connection);
+        SocketChannel channel = (SocketChannel)sk.channel();
         
         try {
-            sk.channel().close();
+            channel.close();
         } catch (IOException err) {
             LOG.error(err);
         }
         
         sk.cancel();
+        
+        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
+        
+        if (connection != null) {
+            connection.close();
+            
+            if (connection.isNormal()) {
+                connections.remove(connection);
+            } else if (connection.isAudioStream()) {
+                streams.remove(connection);
+            }
+        }
+    }
+    
+    /**
+     *
+     */
+    void registerConnection(DaapConnection connection) throws IOException {
+        
+        if (connection.isAudioStream()) {
+            
+            if (streams.size() < config.getMaxConnections()) {
+                streams.add(connection);
+                return;
+            }
+            
+        } else if (connection.isNormal()) {
+            
+            if (connections.size() < config.getMaxConnections()) {
+                connections.add(connection);
+                return;
+            }
+        }
+        
+        throw new IOException("Too many connections");
     }
     
     /**
      * 
      */
     private boolean accept(InetAddress addr) {
-        
-        /*if (connections.size() >= (config.getMaxConnections()*2))
-            return false;*/
         
         if (filter != null && filter.accept(addr) == false) {
             
@@ -403,7 +442,7 @@ public class DaapServerNIO implements DaapServer {
             DaapConnectionImpl connection 
                 = new DaapConnectionImpl(this, channel);
             
-            SelectionKey key = register(connection, SelectionKey.OP_READ);
+            SelectionKey key = channel.register(selector, SelectionKey.OP_READ, connection);
             
         } else {
             try {

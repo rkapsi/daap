@@ -28,10 +28,6 @@ import de.kapsi.net.daap.DaapResponseWriter;
  */
 public class DaapConnectionImpl implements DaapConnection {
     
-    private static final int UNDEF  = 0;
-    private static final int NORMAL = 1;
-    private static final int AUDIO  = 2;
-    
     private DaapServerNIO server;
     private SocketChannel channel;
     
@@ -40,7 +36,7 @@ public class DaapConnectionImpl implements DaapConnection {
     private DaapResponseWriter writer;
     private DaapSession session;
     
-    private int type = UNDEF;
+    private int type = DaapConnection.UNDEF;
     
     /** Creates a new instance of DaapConnection */
     public DaapConnectionImpl(DaapServerNIO server, SocketChannel channel) {
@@ -74,7 +70,7 @@ public class DaapConnectionImpl implements DaapConnection {
      * @return
      */    
     public boolean isAudioStream() {
-        return (type==AUDIO);
+        return (type==DaapConnection.AUDIO);
     }
     
     /**
@@ -82,9 +78,13 @@ public class DaapConnectionImpl implements DaapConnection {
      * @return
      */    
     public boolean isNormal() {
-        return (type==NORMAL);
+        return (type==DaapConnection.NORMAL);
     }
     
+    /**
+     *
+     * @return
+     */    
     public boolean isUndef() {
         return (type == UNDEF);
     }
@@ -142,7 +142,28 @@ public class DaapConnectionImpl implements DaapConnection {
             if (request != null) {
                 
                 if (isUndef()) {
-                    type = (request.isSongRequest()) ? AUDIO : NORMAL;
+                    
+                    if (request.isSongRequest()) {
+                        type = DaapConnection.AUDIO;
+                        
+                        // AudioStreams have a session-id and we must check the id
+                        Integer sid = new Integer(request.getSessionId());
+                        if (server.isSessionIdValid(sid) == false) {
+                            throw new IOException("Unknown Session-ID: " + sid);
+                        }
+                        
+                        server.registerConnection(this);
+                        
+                    } else if (request.isServerInfoRequest()) {
+                        type = DaapConnection.NORMAL;
+                        server.registerConnection(this);
+                    
+                    } else {
+                        
+                        // disconnect as the first request must be
+                        // either a song or server-info request!
+                        throw new IOException("Illegal first request: " + request);
+                    }
                 }
                 
                 DaapResponse response = processor.process(request);
@@ -204,6 +225,18 @@ public class DaapConnectionImpl implements DaapConnection {
                 }
             }
         }
+    }
+    
+    public void close() {
+        
+        if (session != null) {
+            session.invalidate();
+        }
+        
+        session = null;
+        processor = null;
+        reader = null;
+        writer = null;
     }
     
     /**
