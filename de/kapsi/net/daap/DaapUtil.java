@@ -16,7 +16,7 @@ public class DaapUtil {
 	private static final Log LOG = LogFactory.getLog(DaapUtil.class);
 	
 	private final static SimpleDateFormat formatter 
-		= new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z");
+		= new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z", Locale.US);
 	
 	public static final String[] DATABASE_SONGS_META = {
 			"dmap.itemkind",
@@ -171,7 +171,7 @@ public class DaapUtil {
 		out.close();
 	}
 	
-	public static void main(String[] args) throws IOException {
+	/*public static void main(String[] args) throws IOException {
 		
 		final String name = "ChunkClasses";
 		final String javaname = name + ".java";
@@ -219,5 +219,5 @@ public class DaapUtil {
 		
 		out.write(buffer.toString());
 		out.close();
-	}
+	}*/
 }

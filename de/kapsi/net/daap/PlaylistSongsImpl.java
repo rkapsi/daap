@@ -10,6 +10,8 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import de.kapsi.util.ArrayIterator;
+
 import de.kapsi.net.daap.chunks.Status;
 import de.kapsi.net.daap.chunks.UpdateType;
 import de.kapsi.net.daap.chunks.Listing;

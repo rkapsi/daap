@@ -12,7 +12,7 @@ import org.apache.commons.httpclient.*;
  */
 public class Main implements DaapAuthenticator, DaapAudioStream {
 	
-    private static final File SONG = new File("music/02 The Only One.mp3");
+    private static final File SONG = new File("music/American_Analog_Set_The_Only_One.mp3");
     
     private static final String LIBRARY = "My Library";
 	private static final int PORT = 5353;
@@ -188,8 +188,8 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
 			while(true) {
 			
 				Thread.sleep(3000);
-				app.update();
-                System.out.println("Update Library...");
+				//app.update();
+                //System.out.println("Update Library...");
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();

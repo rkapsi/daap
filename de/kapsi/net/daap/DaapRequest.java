@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.zip.*;
 import org.apache.commons.httpclient.*;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,7 +39,8 @@ public class DaapRequest {
 	private int delta = UNDEF_VALUE;
 	
 	private ArrayList meta;
-	
+	private String metaString;
+    
 	private int requestType = UNDEF_VALUE;
 	private int databaseId = UNDEF_VALUE;
 	private int containerId = UNDEF_VALUE;
@@ -139,7 +139,7 @@ public class DaapRequest {
 			}
 			
 			if (queryMap.containsKey("meta")) {
-				meta = DaapUtil.parseMeta((String)queryMap.get("meta"));
+                metaString = (String)queryMap.get("meta");
 			}
 			
             isUpdateType = (delta != UNDEF_VALUE) && (delta < revisionNumber);
@@ -288,6 +288,11 @@ public class DaapRequest {
 	}
 	
 	public List getMeta() {
+        if (meta == null && metaString != null) {
+            meta = DaapUtil.parseMeta(metaString);
+            metaString = null;
+        }
+        
 		return meta;
 	}
 	

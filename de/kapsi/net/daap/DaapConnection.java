@@ -19,16 +19,18 @@ public class DaapConnection implements Runnable {
 	private DaapServer server;
 	
 	private Socket socket;
+    
 	private InputStream in;
 	private OutputStream out;
-	
-	private boolean keepAlive = false;
-	private int requestNumber = 0;
-	
+	private ResponseWriter writer;
+    
+	private int keepAlive = 0;
+
 	private DaapSession session;
-	
 	private boolean audioStream;
 	
+    private DaapRequest request;
+    
 	public DaapConnection(DaapServer server, Socket socket) throws IOException {
 		
 		this.server = server;
@@ -36,9 +38,10 @@ public class DaapConnection implements Runnable {
 		
 		in = socket.getInputStream();
 		out = socket.getOutputStream();
+        writer = new ResponseWriter(out);
 	}
 	
-	private void setAudioStream(boolean audioStream) {
+	public void setAudioStream(boolean audioStream) {
 		this.audioStream = audioStream;
 	}
 	
@@ -47,41 +50,15 @@ public class DaapConnection implements Runnable {
 	}
 	
 	public void run() {
-		requestNumber = 0;
-		
+    
 		try {
 			
-			requestNumber++;
-			DaapRequest request = readRequest();
-			
-			if (request != null && !request.isUnknownRequest()) {
-				
-				if (request.isSongRequest()) {
-					
-					setAudioStream(true);
-					server.processRequest(this, request);
-					out.flush();
-					
-				} else {
-					
-					server.processRequest(this, request);
-					out.flush();
-			
-					do {
-					
-						keepAlive = false;
-						requestNumber++;
-						
-						request = readRequest();
-				
-						if (request != null) {
-							server.processRequest(this, request);
-							out.flush();
-						}
-				
-					} while(keepAlive);
-				}
-			}
+            do {
+        
+                server.processRequest(this, getDaapRequest());
+                setDaapRequest(null);
+                
+            } while(--keepAlive > 0);
 			
 		} catch (SocketException err) {
 			LOG.info(err);
@@ -90,30 +67,8 @@ public class DaapConnection implements Runnable {
 			LOG.error(err);
 			
 		} finally {
-			destroy();
+			close();
 		}
-	}
-	
-	private DaapRequest readRequest() throws IOException {
-		
-		DaapRequest request = null;
-		String line = null;
-		
-		do {
-			line = HttpParser.readLine(in);
-		} while(line != null && line.length() == 0);
-		
-		if(line == null) {
-			connectionClose();
-			return null;
-		}
-
-		
-		request = DaapRequest.parseRequest(line);
-		Header[] headers = HttpParser.parseHeaders(in);
-		request.setHeaders(headers);
-			
-		return request;
 	}
 	
 	public synchronized void update() throws IOException {
@@ -142,38 +97,35 @@ public class DaapConnection implements Runnable {
 		}
 	}
 	
+    public void setKeepAlive(int keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+    
 	public void connectionKeepAlive() {
-		keepAlive = true;
+		keepAlive++;
 	}
 	
 	public void connectionClose() {
-		keepAlive = false;
+		keepAlive = 0;
 	}
 	
-	void destroy() {
-	
-		if (socket != null) {
-			try {
+	public void close() {
+        
+        try {
+            if (socket != null)
 				socket.close();
-				socket = null;
-			} catch (IOException err) {
-				LOG.error("Error while closing connection", err);
-			}
-		}
-		
-		if (session != null) {
+        } catch (IOException err) {
+            LOG.error("Error while closing connection", err);
+        }
+    
+		if (session != null)
 			session.invalidate();
-		}
 		
 		server.removeConnection(this);
 	}
 	
 	public ResponseWriter getWriter() {
-        try {
-			return new ResponseWriter(out);
-		} catch (UnsupportedEncodingException err) {
-			throw new RuntimeException(err.toString());
-		}
+        return writer;
     }
 	
 	public DaapSession getSession(boolean create) {
@@ -193,4 +145,37 @@ public class DaapConnection implements Runnable {
 	public OutputStream getOutputStream() {
 		return out;
 	}
+    
+    public void setDaapRequest(DaapRequest request) {
+        this.request = request;
+    }
+    
+    public DaapRequest getDaapRequest() throws IOException {
+        
+        if (request == null)
+            request = readRequest();
+            
+        return request;
+    }
+    
+    private DaapRequest readRequest() 
+            throws IOException {
+    
+		String line = null;
+		
+		do {
+			line = HttpParser.readLine(in);
+		} while(line != null && line.length() == 0);
+		
+		if(line == null) {
+            connectionClose();
+            throw new IOException();
+		}
+
+		DaapRequest request = DaapRequest.parseRequest(line);
+		Header[] headers = HttpParser.parseHeaders(in);
+		request.setHeaders(headers);
+			
+		return request;
+    }
 }

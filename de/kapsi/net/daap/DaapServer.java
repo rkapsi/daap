@@ -11,7 +11,7 @@ import de.kapsi.net.daap.chunks.ContentCodesResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class DaapServer implements Runnable {
+public class DaapServer {
 	
 	private static final Log LOG = LogFactory.getLog(DaapServer.class);
 	
@@ -23,20 +23,21 @@ public class DaapServer implements Runnable {
 		}
 	}
 	
-	private boolean serve = false;
-	
+    private int threadNo = 0;
+    
 	private Library library;
 	private ServerInfoResponse serverInfo;
 	private ContentCodesResponse contentCodes;
 	
+    private Thread acceptThread;
+    private DaapAcceptor acceptor;
+    
 	private int port;
-	private ServerSocket serverSocket;
-	
+	private int maxConnections;
+    
 	private HashSet sessionIds;
 	private HashSet connections;
-	
-	private Thread acceptThread;
-	private ThreadGroup group;
+    private HashSet streams;
 	
 	private DaapRequestHandler requestHandler;
 	private DaapAudioRequestHandler audioRequestHandler;
@@ -49,11 +50,15 @@ public class DaapServer implements Runnable {
 		
 		serverInfo = new ServerInfoResponseImpl(library.getName());
 		contentCodes = new ContentCodesResponseImpl();
-	
-		this.group = new ThreadGroup("DaapServer Thread Group");
 		
 		requestHandler = new DaapRequestHandler(serverInfo, contentCodes, library);
 		audioRequestHandler = new DaapAudioRequestHandler(library);
+        
+        sessionIds = new HashSet();
+        connections = new HashSet();
+        streams = new HashSet();
+        
+        maxConnections = 1;
 	}
 
 	public int getLocalPort() {
@@ -76,109 +81,130 @@ public class DaapServer implements Runnable {
 		return audioRequestHandler.getAudioStream();
 	}
 	
-	public void run() {
-		
-		try {
-			
-			serverSocket = new ServerSocket(port);
-			
-			if (LOG.isInfoEnabled()) {
-				LOG.info("New DaapServer bound to port: " + port);
-			}
-			
-			sessionIds = new HashSet();
-			connections = new HashSet();
-			
-			while(serve && !Thread.interrupted()) {
-			
-				Socket socket = serverSocket.accept();
-				socket.setSoTimeout(1800*1000); 
-                
-				DaapConnection conn = new DaapConnection(this, socket);
-				
-				synchronized(connections) {
-					connections.add(conn);
-				}
-
-				Thread connThread = new Thread(group, conn, "DaapConnection");
-				connThread.setDaemon(true);
-				connThread.start();
-				
-				Thread.sleep(100);
-			}
-			
-		} catch (InterruptedException err) {
-        } catch (SocketException err) {
-            
-			if (!serve) {
-                LOG.error("DaapServer error", err);
-                throw new RuntimeException(err.getMessage());
-            }
-			
-        } catch (IOException err) {
-            
-			LOG.error("DaapServer error", err);
-            throw new RuntimeException(err.getMessage());
+    public void setMaxConnections(int maxConnections) {
+        this.maxConnections = maxConnections;
+    }
+    
+    public int getMaxConnections() {
+        return maxConnections;
+    }
+    
+    public boolean isRunning() {
+        return (acceptor != null && acceptor.isRunning());
+    }
+    
+    public void start() throws IOException {
         
-		} finally {
-			destroy();
-			
-			if (LOG.isInfoEnabled()) {
-				LOG.info("DaapServer stoped");
-			}
+        if (isRunning())
+            return;
+        
+        acceptor = new DaapAcceptor(this, port, 0, InetAddress.getLocalHost());
+        
+        acceptThread = new Thread(acceptor, "DaapAcceptorThread");
+        acceptThread.start();
+    }
+    
+    public void stop() {
+        
+        if (!isRunning())
+            return;
+        
+        acceptor.stop();
+        
+        synchronized(connections) {
+            Iterator it = connections.iterator();
+            while(it.hasNext()) {
+                ((DaapConnection)it.next()).close();
+            }
+            connections.clear();
         }
-	}
-	
+        
+        synchronized(streams) {
+            Iterator it = streams.iterator();
+            while(it.hasNext()) {
+                ((DaapConnection)it.next()).close();
+            }
+            streams.clear();
+        }
+        
+        synchronized(sessionIds) {
+            sessionIds.clear();
+        }
+        
+        acceptor = null;
+        acceptThread = null;
+    }
+    
+    public boolean accept(Socket socket) 
+            throws IOException {
+        
+        DaapConnection connection = new DaapConnection(this, socket);
+        
+        // 
+        int soTimeout = socket.getSoTimeout();
+        socket.setSoTimeout(10*1000); // 10 seconds timeout
+        DaapRequest request = connection.getDaapRequest();
+        socket.setSoTimeout(soTimeout);
+        
+        if (!request.isSongRequest() && 
+                !request.isServerInfoRequest()) {
+                
+            // disconnect as the first request must be
+            // either a song or server-info request!
+            return false;
+        }
+        
+        if (request.isSongRequest()) {
+            connection.setAudioStream(true);
+        }
+        
+        if (connection.isAudioStream()) {
+            
+            synchronized(streams) {
+                if (streams.size() < maxConnections) {
+                    streams.add(connection);
+                } else {
+                    return false;
+                }
+            }
+            
+        } else {
+            
+            synchronized(connections) {
+                
+                if (connections.size() < maxConnections) {
+                    connection.connectionKeepAlive();
+                    connections.add(connection);
+                } else {
+                
+                    // process /server-info (nice exit)
+                    // and then close the connection
+                    connection.setKeepAlive(-1);
+                }
+            }
+        }
+        
+        Thread connThread = new Thread(connection, "DaapConnectorThread-" + (++threadNo));
+        connThread.setDaemon(true);
+        connThread.start();
+        
+        return true;
+    }
+    
 	public void update() {
-		if (connections != null) {
-			synchronized(connections) {
-				Iterator it = connections.iterator();
-				while(it.hasNext()) {
-					
-					DaapConnection conn = (DaapConnection)it.next();
-					
-					if (!conn.isAudioStream()) {
-						try {
-							conn.update();
-						} catch (IOException err) {
-							LOG.error(err);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	void destroy() {
-		
-		if (serverSocket != null) {
-			try {
-				serverSocket.close();
-				serverSocket = null;
-			} catch (IOException err) {
-				LOG.error("Error while closing connection", err);
-			}
-		}
-		
-		if (connections != null && connections.size() != 0) {
-			
-			Iterator it = connections.iterator();
-			while(it.hasNext()) {
-				
-				DaapConnection conn = (DaapConnection)it.next();
-				conn.destroy();
-			}
-			
-			connections.clear();
-			connections = null;
-		}
-		
-		if (sessionIds != null) {
-			sessionIds.clear();
-			sessionIds = null;
-		}
-		
-		serve = false;
+        synchronized(connections) {
+            Iterator it = connections.iterator();
+            while(it.hasNext()) {
+                
+                DaapConnection conn = (DaapConnection)it.next();
+                
+                try {
+                    conn.update();
+                } catch (IOException err) {
+                    LOG.error(err);
+                }
+            }
+        }
 	}
 	
 	void processRequest(DaapConnection conn, DaapRequest request) throws IOException {
@@ -188,7 +214,6 @@ public class DaapServer implements Runnable {
 		if (request.isSongRequest()) {
 		
 			if (isSessionIdValid(new Integer(request.getSessionId()))) {
-				//conn.setAudioStream(true);
 				audioRequestHandler.processRequest(conn, request);
 			}
 			
@@ -205,12 +230,20 @@ public class DaapServer implements Runnable {
 	}
 	
 	void removeConnection(DaapConnection conn) {
-		synchronized(connections) {
-			connections.remove(conn);
-		}
-		
-		if (conn.isAudioStream()==false) {
-			DaapSession session = conn.getSession(false);
+    
+        if (conn.isAudioStream()) {
+            
+            synchronized(streams) {
+                streams.remove(conn);
+            }
+        
+        } else {
+            
+            synchronized(connections) {
+                connections.remove(conn);
+            }
+            
+            DaapSession session = conn.getSession(false);
 			if (session != null) {
 				session.invalidate();
 				
@@ -218,7 +251,7 @@ public class DaapServer implements Runnable {
 					sessionIds.remove(session.getSessionId());
 				}
 			}
-		}
+        }
 	}
 	
 	private boolean isSessionIdValid(Integer sessionId) {
@@ -256,34 +289,5 @@ public class DaapServer implements Runnable {
 
 	public int getNumberOfConnections() {
 		return (connections != null) ? connections.size() : 0;
-	}
-
-	public boolean isRunning() {
-        if(acceptThread == null) {
-            return false;
-        }
-        return acceptThread.isAlive();
-    }
-	
-	public void start() {
-		if (!serve) {
-		
-			serve = true;
-			acceptThread = new Thread(group, this, "DaapServer");
-			acceptThread.setDaemon(true);
-			acceptThread.start();
-			
-		} else if (LOG.isInfoEnabled()) {
-			LOG.info("Server is already running");
-		}
-	}
-	
-	public void stop() {
-		
-		if (serve) {
-			acceptThread = null;
-		}
-		
-		serve = false;
 	}
 }
