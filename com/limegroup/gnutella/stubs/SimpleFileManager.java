@@ -6,6 +6,7 @@ import com.limegroup.gnutella.FileDesc;
 import com.limegroup.gnutella.FileManager;
 import com.limegroup.gnutella.Response;
 import com.limegroup.gnutella.messages.QueryRequest;
+import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.sun.java.util.collections.List;
 
 /**
@@ -24,6 +25,10 @@ public class SimpleFileManager extends FileManager {
     
     protected FileDesc addFileIfShared(File f, List docs, boolean notify) {
         return addFileIfShared(f, notify);
+    }
+    
+    public boolean isValidXMLMatch(Response r, LimeXMLDocument doc) {
+        return true;
     }
 }
 

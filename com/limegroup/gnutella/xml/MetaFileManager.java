@@ -32,11 +32,18 @@ public class MetaFileManager extends FileManager {
             if( doc != null ) {
                 Response[] metas = RichQueryHandler.instance().query(doc);
                 if (metas != null) // valid query & responses.
-                    result = union(result, metas);
+                    result = union(result, metas, doc);
             }
         }
         
         return result;
+    }
+    
+    /**
+     * Determines if this file has a valid XML match.
+     */
+    protected boolean isValidXMLMatch(Response r, LimeXMLDocument doc) {
+        return LimeXMLUtils.match(r.getDocument(), doc, true);
     }
     
     /**
@@ -349,10 +356,11 @@ public class MetaFileManager extends FileManager {
      * Creates a new array, the size of which is less than or equal
      * to normals.length + metas.length.
      */
-    private Response[] union(Response[] normals, Response[] metas){       
-        if(normals == null)
+    private Response[] union(Response[] normals, Response[] metas,
+                             LimeXMLDocument requested) {
+        if(normals == null || normals.length == 0)
             return metas;
-        if(metas == null)
+        if(metas == null || metas.length == 0)
             return normals;
             
             

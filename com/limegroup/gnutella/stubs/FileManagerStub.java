@@ -7,6 +7,7 @@ import com.limegroup.gnutella.FileDesc;
 import com.limegroup.gnutella.FileManager;
 import com.limegroup.gnutella.Response;
 import com.limegroup.gnutella.messages.QueryRequest;
+import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.sun.java.util.collections.*;
 
 import java.io.IOException;
@@ -55,6 +56,10 @@ public class FileManagerStub extends FileManager {
     
     public void addXMLToResponse(Response r, FileDesc fd) {
         ;
+    }
+    
+    public boolean isValidXMLMatch(Response r, LimeXMLDocument doc) {
+        return true;
     }
     
     public FileManagerStub(Map urns,List descs) {

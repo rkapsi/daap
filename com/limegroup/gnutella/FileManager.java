@@ -18,6 +18,7 @@ import com.limegroup.gnutella.util.StringUtils;
 import com.limegroup.gnutella.util.Trie;
 import com.limegroup.gnutella.util.I18NConvert;
 import com.limegroup.gnutella.util.ManagedThread;
+import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.sun.java.util.collections.ArrayList;
 import com.sun.java.util.collections.Arrays;
 import com.sun.java.util.collections.Comparator;
@@ -1412,6 +1413,7 @@ public abstract class FileManager {
     public synchronized Response[] query(QueryRequest request) {
         String str = request.getQuery();
         boolean includeXML = shouldIncludeXMLInResponse(request);
+        LimeXMLDocument doc = request.getRichQuery();
 
         //Special case: return up to 3 of your 'youngest' files.
         if (request.isWhatIsNewRequest()) 
@@ -1449,22 +1451,28 @@ public abstract class FileManager {
         for (IntSet.IntSetIterator iter=matches.iterator(); iter.hasNext();) { 
             int i = iter.next();
             FileDesc desc = (FileDesc)_files.get(i);
-            if(desc == null) {
+            if(desc == null)
                 Assert.that(false, 
                             "unexpected null in FileManager for query:\n"+
                             request);
-            } 
-            if ((filter != null) && !filter.allow(desc.getName())) continue;
+
+            if ((filter != null) && !filter.allow(desc.getName()))
+                continue;
 
             desc.incrementHitCount();
-            
             RouterService.getCallback().handleSharedFileUpdate(desc.getFile());
+
             Response resp = new Response(desc);
-            if(includeXML)
+            if(includeXML) {
                 addXMLToResponse(resp, desc);
+                if(doc != null && resp.getDocument() != null &&
+                   !isValidXMLMatch(resp, doc))
+                    continue;
+            }
             responses.add(resp);
         }
-        if (responses.size() == 0) return EMPTY_RESPONSES;
+        if (responses.size() == 0)
+            return EMPTY_RESPONSES;
         else 
             return (Response[])responses.toArray(new Response[responses.size()]);
     }
@@ -1547,6 +1555,11 @@ public abstract class FileManager {
      * This implementation does nothing.
      */
     protected abstract void addXMLToResponse(Response res, FileDesc desc);
+    
+    /**
+     * Determines whether we should include the response based on XML.
+     */
+    protected abstract boolean isValidXMLMatch(Response res, LimeXMLDocument doc);
 
 
     /**
