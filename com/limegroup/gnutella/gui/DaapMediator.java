@@ -764,8 +764,7 @@ public final class DaapMediator implements FinalizeListener {
         private final Object LOCK = new Object();
         
         private String name = null;
-        private HashSet /* of Song */ add = new HashSet();
-        private HashSet /* of Song */ addNew = new HashSet();
+        private HashMap /* of Song -> Boolean */ add = new HashMap();
         private HashSet /* of Song */ remove = new HashSet();
         private HashSet /* of Song */ update = new HashSet();
         
@@ -783,12 +782,7 @@ public final class DaapMediator implements FinalizeListener {
         
         public void add(Song song, boolean isNew) {
             synchronized(LOCK) {
-                
-                if (isNew)
-                    addNew.add(song);
-                else
-                    add.add(song);
-                
+                add.put(song, new Boolean(isNew));
                 remove.remove(song);
                 update.remove(song);
             }
@@ -798,16 +792,14 @@ public final class DaapMediator implements FinalizeListener {
             synchronized(LOCK) {
                 remove.add(song);
                 add.remove(song);
-                addNew.remove(song);
                 update.remove(song);
             }
         }
         
         public void update(Song song) {
             synchronized(LOCK) {
-                if (!add.contains(song) &&
-                    !remove.contains(song) &&
-                    !addNew.contains(song)) {
+                if (!add.containsKey(song) &&
+                    !remove.contains(song)) {
                     
                     update.add(song);
                 }
@@ -830,7 +822,6 @@ public final class DaapMediator implements FinalizeListener {
                         
                         synchronized(LOCK) {
                             if (add.size() != 0 ||
-                                addNew.size() != 0 ||
                                 remove.size() != 0 ||
                                 update.size() != 0 ||
                                 name != null) {
@@ -858,15 +849,20 @@ public final class DaapMediator implements FinalizeListener {
                                         }
                                     }
                                     
-                                    Iterator it = add.iterator();
+                                    Iterator it = add.keySet().iterator();
                                     while(it.hasNext() && running) {
-                                        library.add((Song)it.next());
+                                        Song song = (Song)it.next();
+                                        Boolean bool = (Boolean)add.get(song);
+                                        
+                                        if (bool.booleanValue()) {
+                                            // add to What's New playlist
+                                            whatsNew.add(song);
+                                        } else {
+                                            // add to master playlist
+                                            library.add(song);
+                                        }
                                     }
                                     
-                                    it = addNew.iterator();
-                                    while(it.hasNext() && running) {
-                                        whatsNew.add((Song)it.next());
-                                    }
                                     
                                     library.close();
                                 }
@@ -875,7 +871,6 @@ public final class DaapMediator implements FinalizeListener {
                                     server.update();
                                 
                                 add.clear();
-                                addNew.clear();
                                 remove.clear();
                                 update.clear();
                                 
@@ -910,7 +905,6 @@ public final class DaapMediator implements FinalizeListener {
         public void clear() {
             synchronized(LOCK) {
                 add.clear();
-                addNew.clear();
                 remove.clear();
                 update.clear();
                 name = null;

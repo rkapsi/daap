@@ -225,7 +225,7 @@ public class DaapRequest {
 
                 } else if (path.startsWith("/databases")) {
 
-                    PathTokenizer tok = new PathTokenizer(path);
+                    StringTokenizer tok = new StringTokenizer(path, "/");
                     int count = tok.countTokens();
 
                     if (count >= 3) {
@@ -595,7 +595,7 @@ public class DaapRequest {
      * @return
      */
     public boolean isDatabaseIdSet() {
-        return (databaseId != 0);
+        return (databaseId != UNDEF_VALUE);
     }
     
     /**
@@ -605,7 +605,7 @@ public class DaapRequest {
      * @return
      */
     public boolean isContainerIdSet() {
-        return (containerId != 0);
+        return (containerId != UNDEF_VALUE);
     }
     
     /**
