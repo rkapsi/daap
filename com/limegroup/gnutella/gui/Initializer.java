@@ -155,6 +155,12 @@ public final class Initializer {
             
             SplashWindow.setStatusText(
                 GUIMediator.getStringResource("SPLASH_STATUS_USER_SETTINGS"));
+                
+            // Load up the HTML engine.
+            String html =
+                GUIMediator.getStringResource("SPLASH_STATUS_HTML_ENGINE");
+            SplashWindow.setStatusText(html);
+            SplashWindow.setHTMLStatusText(html);
             
             // TODO: Initialize SettingsHandler things?
             
