@@ -34,25 +34,33 @@ public class DaapResponse {
 	
 	public static DaapResponse createResponse(DaapRequest request, Chunk chunk) throws IOException {
 		
-        boolean compress = false;
+        // iTunes uses always compression... I leave the code here
+        // as it's maybe useful for debuging
+        
+        /*boolean compress = false;
         
         Header[] headers = request.getHeaders();
-        for(int i = 0; i < headers.length; i++) {
-            
-            Header h = headers[i];
-            String name = h.getName();
-            String value = h.getValue();
-            
-            if (name.equals("Accept-Encoding")) {
-                compress = value.equals("gzip");
-                break;
+        if (headers != null) {
+            for(int i = 0; i < headers.length; i++) {
+                
+                Header h = headers[i];
+                String name = h.getName();
+                String value = h.getValue();
+                
+                if (name.equals("Accept-Encoding")) {
+                    compress = value.equals("gzip");
+                    break;
+                }
             }
         }
         
         byte[] body = DaapUtil.serialize(chunk, compress);
         String encoding = (compress) ? "gzip" : "binary";
-        
 		return createResponse(request, body, encoding);
+        */
+    
+        byte[] body = DaapUtil.serialize(chunk, true);
+		return createResponse(request, body, "gzip");
 	}
 	
 	public static DaapResponse createAuthResponse(DaapRequest request) {

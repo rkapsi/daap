@@ -188,8 +188,8 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
 			while(true) {
 			
 				Thread.sleep(3000);
-				//app.update();
-                //System.out.println("Update Library...");
+				app.update();
+                System.out.println("Update Library...");
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();

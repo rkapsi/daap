@@ -96,7 +96,8 @@ public class DaapConnection implements Runnable {
                         revisionNumber.intValue(), delta.intValue());
 				
 				request.setHeaders(null);
-				
+				request.setConfig(server.getConfig());
+                
 				server.processRequest(this, request);
 			}
 		}
