@@ -11,7 +11,7 @@
     <property name="lib" value="${basedir}/../lib"/>
     <property name="jars" value="${lib}/jars"/>
   
-	<property name="DEBUG" value="false"/>
+	<property name="DEBUG" value="true"/>
 	
     <path id="default.classpath">
         <pathelement location="${basedir}"/>
