@@ -50,7 +50,7 @@ public class DaapConnection implements Runnable {
      * A <tt>friendly</tt> Method to set if this connection is
      * an Audio stream
      */
-    void setAudioStream(boolean audioStream) {
+    private void setAudioStream(boolean audioStream) {
         this.audioStream = audioStream;
     }
     
@@ -61,19 +61,62 @@ public class DaapConnection implements Runnable {
         return audioStream;
     }
     
+    /**
+     * Processes the first Request as we have to know
+     * which type of connection this is...
+     */
+    private boolean init() throws IOException {
+        
+        DaapRequest request = getDaapRequest();
+        
+        if (!request.isSongRequest() &&
+            !request.isServerInfoRequest()) {
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Illegal first request: " + request);
+            }
+            
+            // disconnect as the first request must be
+            // either a song or server-info request!
+            return false;
+        }
+        
+        // a connection can be either a song request (a audio stream)
+        // or a standart DAAP connection.
+        setAudioStream(request.isSongRequest());
+        
+        // AudioStreams have a session-id and we must check the id
+        if (isAudioStream()) {
+            
+            if (server.isSessionIdValid(request.getSessionId()) == false) {
+                return false;
+            }
+        }
+        
+        // add connection to the connection pool
+        if ( ! server.addConnection(this) ) {
+            return false;
+        }
+        
+        return true;
+    }
+    
     public void run() {
         
         try {
             
-            do {
+            if (init()) {
                 
-                server.processRequest(this, getDaapRequest());
-                
-                // enforce getDaapRequest() to read a new
-                // request on the next cycle
-                setDaapRequest(null);
-                
-            } while(--keepAlive > 0 && !audioStream);
+                do {
+                    
+                    server.processRequest(this, getDaapRequest());
+                    
+                    // enforce getDaapRequest() to read a new
+                    // request on the next cycle
+                    setDaapRequest(null);
+                    
+                } while(--keepAlive > 0 && !audioStream);
+            }
             
         } catch (SocketException err) {
             //LOG.info(err);
@@ -107,8 +150,8 @@ public class DaapConnection implements Runnable {
             if (delta != null && revisionNumber != null) {
                 
                 DaapRequest request =
-                DaapRequest.createUpdateRequest(sessionId.intValue(),
-                revisionNumber.intValue(), delta.intValue());
+                    DaapRequest.createUpdateRequest(sessionId.intValue(),
+                        revisionNumber.intValue(), delta.intValue());
                 
                 request.setHeaders(null);
                 request.setConfig(server.getConfig());
