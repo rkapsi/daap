@@ -31,9 +31,11 @@
 	
     <target name="checkgui" unless="gui.present">
         <echo message="*******************************************************"/>
+        <echo message="*******************************************************"/>
         <echo message="*******  YOU MUST CHECKOUT THE gui MODULE *************"/>
         <echo message="**** and place it as a sibling to this daap module ****"/>
         <echo message="*******************************************************"/>
+        <echo message="*******************************************************"/>        
     </target>
     
     <target name="checkcore" unless="core.present">
