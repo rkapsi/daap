@@ -29,9 +29,9 @@ import java.util.TimerTask;
 /**
  * A Transaction collects operations you perform on Libraries, 
  * Databases and Playlists and brings them into a suitable order
- * so that the operations can be processed. A DAAP Transaction
- * does not guarantee full ACID (Atomicy, Consistency, Isolation
- * and Durability).
+ * so that the operations can be commited and processed. A DAAP 
+ * Transaction does not guarantee full ACID (Atomicy, Consistency, 
+ * Isolation and Durability).
  * 
  * <p><b>Atomicy:</b> A commit failure will leave the target object in
  *  an undefined state. A rollback failure has no effect.</p>
@@ -47,7 +47,7 @@ import java.util.TimerTask;
  * 
  * <p><b>Durability:</b> Yep, we have durability. The changes of
  *  a successfully commited Transaction can neither disappear
- *  or can be undone.</p>
+ *  nor can be undone.</p>
  * 
  * @author Roger Kapsi
  */
