@@ -2,7 +2,7 @@
 REM NOTE:  If you are using a local core project, replace lib/core.jar
 REM        with ../core
 
-set CLASSPATH=.;../core;../lib/messagebundles/;../lib/jars/collections.jar;../lib/jars/xerces.jar;../lib/jars/jl011.jar;../lib/jars/themes.jar;../lib/jars/logicrypto.jar;../lib/jars/mp3sp14.jar;../lib/jars/commons-httpclient.jar;../lib/jars/commons-logging.jar;../lib/jars/i18n.jar;../lib/jars/icu4j.jar;../lib/jars/ProgressTabs.jar;lib/jars/jmdns.jar;../gui;../core
+set CLASSPATH=.;../core;../lib/messagebundles/;../lib/jars/collections.jar;../lib/jars/xerces.jar;../lib/jars/jl011.jar;../lib/jars/themes.jar;../lib/jars/logicrypto.jar;../lib/jars/mp3sp14.jar;../lib/jars/commons-httpclient.jar;../lib/jars/commons-logging.jar;../lib/jars/i18n.jar;../lib/jars/icu4j.jar;../lib/jars/ProgressTabs.jar;../lib/jars/id3v2.jar;lib/jars/jmdns.jar;../gui;../core
 
 @set OLDPATH=%PATH%
 @set PATH=%PATH%;../lib/native
