@@ -220,12 +220,7 @@ public class DaapServerNIO implements DaapServer {
         
         SocketAddress bindAddr = config.getInetSocketAddress();
         int backlog = config.getBacklog();
-        
-        streams = new HashSet();
-        connections = new HashSet();
-        
-        sessionIds = new HashSet();
-        
+      
         try {
 
             ssc = ServerSocketChannel.open();
@@ -245,11 +240,13 @@ public class DaapServerNIO implements DaapServer {
             
             ssc.configureBlocking(false);
             
-            selector = Selector.open();
-            
             if (LOG.isInfoEnabled()) {
                 LOG.info("DaapServerNIO bound to " + bindAddr);
             }
+            
+            streams = new HashSet();
+            connections = new HashSet();
+            sessionIds = new HashSet();
             
         } catch (IOException err) {
             close();
@@ -267,25 +264,31 @@ public class DaapServerNIO implements DaapServer {
     /**
      * Returns <code>true</code> if sessionId is known and valid
      */
-    public synchronized boolean isSessionIdValid(int sessionId) {
+    synchronized boolean isSessionIdValid(int sessionId) {
         return isSessionIdValid(new Integer(sessionId));
     }
     
     /**
-     *
-     * @param sessionId
-     * @return
+     * Returns <code>true</code> if sessionId is known and valid
+     * 
+     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
+     * DUE TO SOME DESIGN ISSUES!</p>
      */    
     public synchronized boolean isSessionIdValid(Integer sessionId) {
-        return sessionIds.contains(sessionId);
+        return (sessionIds != null) ? sessionIds.contains(sessionId) : false;
     }
     
     /**
-     *
-     * @param sessionId
-     * @return
+     * Returns a DaapConnection for sessionId or <code>null</code>
+     * if sessionId is unknown.
+     * 
+     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
+     * DUE TO SOME DESIGN ISSUES!</p>
      */ 
     public DaapConnection getConnection(Integer sessionId) {
+        if (connections == null)
+            return null;
+        
         Iterator it = connections.iterator();
         while(it.hasNext()) {
             DaapConnection connection = (DaapConnection)it.next();
@@ -301,10 +304,15 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     *
-     * @return
+     * Creates an unique sessionId and retuns it.
+     * 
+     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
+     * DUE TO SOME DESIGN ISSUES!</p>
      */    
     public Integer createSessionId() {
+        if (sessionIds == null)
+            return null;
+        
         Integer sid = DaapUtil.createSessionId(sessionIds);
         sessionIds.add(sid);
         return sid;
@@ -704,6 +712,8 @@ public class DaapServerNIO implements DaapServer {
                 LOG.error("DaapServerNIO is already running.");
                 return;
             }
+            
+            selector = Selector.open();
             
             SelectionKey sk = ssc.register(selector, SelectionKey.OP_ACCEPT);
             

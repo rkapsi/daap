@@ -66,7 +66,6 @@ public class DaapServerBIO implements DaapServer {
     private DaapStreamSource streamSource;
     private DaapThreadFactory threadFactory;
     
-    private DaapServer server;
     private ServerSocket ssocket;
     
     private boolean running = false;
@@ -282,7 +281,7 @@ public class DaapServerBIO implements DaapServer {
      * on success. False is retuned in the following cases: Max connections
      * reached or server is down.
      */
-    public synchronized boolean addConnection(DaapConnectionBIO connection) {
+    synchronized boolean addConnection(DaapConnectionBIO connection) {
         
         if (!isRunning()) {
             
@@ -332,26 +331,25 @@ public class DaapServerBIO implements DaapServer {
     }
     
     /**
-     * Called by DaapAcceptor
+     * Accepts an incoming connection.
      */
-    public boolean accept(Socket socket)
-        throws IOException {
-        
-        
+    private boolean accept(Socket socket) throws IOException {
+
         if (filter != null && !filter.accept(socket.getInetAddress())) {
-            
+
             if (LOG.isInfoEnabled()) {
                 LOG.info("DaapFilter refused connection from " + socket);
             }
-            
+
             return false;
         }
-        
+
         DaapConnectionBIO connection = new DaapConnectionBIO(this, socket);
-        
-        Thread connThread = threadFactory.createDaapThread(connection, "DaapConnectionThread-" + (++threadNo));
+
+        Thread connThread = threadFactory.createDaapThread(connection,
+                "DaapConnectionThread-" + (++threadNo));
         connThread.start();
-        
+
         return true;
     }
     
@@ -377,7 +375,7 @@ public class DaapServerBIO implements DaapServer {
     /**
      * Removes connection from the internal connection pool
      */
-    public void removeConnection(DaapConnectionBIO connection) {
+    void removeConnection(DaapConnectionBIO connection) {
         
         if (connection.isAudioStream()) {
             
@@ -405,12 +403,15 @@ public class DaapServerBIO implements DaapServer {
     /**
      * Returns <code>true</code> if sessionId is known and valid
      */
-    public boolean isSessionIdValid(int sessionId) {
+    boolean isSessionIdValid(int sessionId) {
         return isSessionIdValid(new Integer(sessionId));
     }
     
     /**
      * Returns <code>true</code> if sessionId is known and valid
+     * 
+     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
+     * DUE TO SOME DESIGN ISSUES!</p>
      */
     public boolean isSessionIdValid(Integer sessionId) {
         synchronized(sessionIds) {
@@ -420,6 +421,9 @@ public class DaapServerBIO implements DaapServer {
     
     /**
      * Retrieves a DaapConnection for a session ID or <code>null</code>.
+     * 
+     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
+     * DUE TO SOME DESIGN ISSUES!</p>
      * 
      * @param sessionId a session ID
      * @return a DaapConnection or <code>null</code>
@@ -442,10 +446,12 @@ public class DaapServerBIO implements DaapServer {
     }
     
     /**
-     * Returns an unique session-id
+     * Creates and unique sessionId and returns it
+     * 
+     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
+     * DUE TO SOME DESIGN ISSUES!</p>
      */
     public Integer createSessionId() {
-        
         synchronized(sessionIds) {
             Integer sid = DaapUtil.createSessionId(sessionIds);
             sessionIds.add(sid);
