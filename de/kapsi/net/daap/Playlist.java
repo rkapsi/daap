@@ -84,7 +84,25 @@ public class Playlist implements Cloneable {
     private boolean notifyMasterPlaylistOnRemove = false;
     private boolean notifyMasterPlaylistOnUpdate = true;
     
+    /**
+     * Creates a new Playlist
+     * 
+     * @param name the Name of the Playlist
+     */
     public Playlist(String name) {
+        this(name, true);
+    }
+    
+    /**
+     * Creates a new Playlist with the name and preloads the
+     * Playlist with an empty Playlist data strcture if emptyPlaylist
+     * is true.
+     * 
+     * @param name the Name of the Playlist
+     * @param emptyPlaylist if <code>true</code> the Playlist
+     *  will be preloaded with an empty Playlist data structure
+     */
+    public Playlist(String name, boolean emptyPlaylist) {
         
         synchronized(Playlist.class) {
             itemId = new ItemId(++PLAYLIST_ID);
@@ -104,6 +122,11 @@ public class Playlist implements Cloneable {
         add(persistentId);
         add(IS_NOT_SMART_PLAYLIST);
         add(itemCount);
+        
+        if (emptyPlaylist) {
+            playlistSongs = new PlaylistSongsImpl(this, false).getBytes();
+            playlistSongsUpdate = new PlaylistSongsImpl(this, true).getBytes();
+        }
     }
     
     private Playlist(Playlist orig) {
