@@ -67,17 +67,28 @@ public final class DaapSupportPaneItem extends AbstractPaneItem {
 	 * @throws IOException if the options could not be applied for some reason
 	 */
 	public boolean applyOptions() throws IOException {
-	
-		boolean changed = CHECK_BOX.isSelected() != iTunesSettings.DAAP_SUPPORT_ENABLED.getValue();
-		
-		iTunesSettings.DAAP_SUPPORT_ENABLED.setValue(CHECK_BOX.isSelected());
-		
-		String text = TEXT_FIELD.getText().trim();
+        
+		boolean enabledChanged = CHECK_BOX.isSelected() != iTunesSettings.DAAP_SUPPORT_ENABLED.getValue();
+        
+        String text = TEXT_FIELD.getText().trim();
+		boolean textChanged = text.equals(iTunesSettings.DAAP_SERVICE_NAME.getValue()) == false;
+        
 		if (text.length()==0 && CHECK_BOX.isSelected()) { 
 			throw new IOException(); 
 		}
 		
-		iTunesSettings.DAAP_SERVICE_NAME.setValue(text);
-        return changed;
+        if (enabledChanged) {
+            iTunesSettings.DAAP_SUPPORT_ENABLED.setValue(CHECK_BOX.isSelected());
+        }
+        
+        if (enabledChanged) {
+            
+            iTunesSettings.DAAP_SERVICE_NAME.setValue(text);
+            iTunesSettings.DAAP_LIBRARY_NAME.setValue(text);
+		}
+        
+        System.out.println("SupportPanel");
+        
+        return enabledChanged;
 	}
 }

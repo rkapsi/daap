@@ -1,6 +1,6 @@
 package com.limegroup.gnutella.gui;
 
-import javax.swing.*;
+import javax.swing.JPasswordField;
 import java.awt.Dimension;
 
 /**

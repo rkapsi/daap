@@ -125,6 +125,7 @@ public final class OptionsConstructor {
 		final String CHAT_KEY           = "OPTIONS_CHAT_MAIN_TITLE";
 		final String PLAYER_KEY         = "OPTIONS_PLAYER_MAIN_TITLE";
         final String ITUNES_KEY			= "OPTIONS_ITUNES_MAIN_TITLE";
+        final String ITUNES_DAAP_KEY    = "OPTIONS_ITUNES_DAAP_MAIN_TITLE";
 		final String POPUPS_KEY         = "OPTIONS_POPUPS_MAIN_TITLE";
 		final String BUGS_KEY           = "OPTIONS_BUGS_MAIN_TITLE";
 		final String APPS_KEY           = "OPTIONS_APPS_MAIN_TITLE";
@@ -208,16 +209,24 @@ public final class OptionsConstructor {
 		}
 		
 		if (CommonUtils.isJava14OrLater()) {
-			final OptionsPane playerPane2 = new OptionsPaneImpl(ITUNES_KEY);
+        
+            if (CommonUtils.isMacOSX()) {
+                addGroupTreeNode(OptionsMediator.ROOT_NODE_KEY, ITUNES_KEY);
+                
+                final OptionsPane itunesPane = new OptionsPaneImpl(ITUNES_KEY);
+                itunesPane.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
+                addOption(ITUNES_KEY, itunesPane);
+            }
+            
+			final OptionsPane daapPane = new OptionsPaneImpl(ITUNES_DAAP_KEY);
+			daapPane.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
+			daapPane.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
 			
-			if (CommonUtils.isMacOSX()) {
-				playerPane2.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
-			}
-			
-			playerPane2.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
-			playerPane2.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
-			
-			addOption(OptionsMediator.ROOT_NODE_KEY, playerPane2);
+            if (CommonUtils.isMacOSX()) {
+                addOption(ITUNES_KEY, daapPane);
+            } else {
+                addOption(OptionsMediator.ROOT_NODE_KEY, daapPane);
+            }
 		}
 
 		if (CommonUtils.isUnix()) {

@@ -8,6 +8,7 @@ import com.limegroup.gnutella.gui.SizedPasswordField;
 
 import com.limegroup.gnutella.gui.LabeledComponent;
 import com.limegroup.gnutella.settings.iTunesSettings;
+import com.limegroup.gnutella.gui.DaapMediator;
 
 public final class DaapPasswordPaneItem extends AbstractPaneItem {
 
@@ -69,6 +70,10 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
 	 * @throws IOException if the options could not be applied for some reason
 	 */
 	public boolean applyOptions() throws IOException {
+    
+        boolean changed = CHECK_BOX.isSelected() != 
+                                iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
+        
 		iTunesSettings.DAAP_REQUIRES_PASSWORD.setValue(CHECK_BOX.isSelected());
 		
 		String text = TEXT_FIELD.getText().trim();
@@ -78,7 +83,11 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
 		}
 		
 		iTunesSettings.DAAP_PASSWORD.setValue(text);
-		
+        
+        if (changed) {// && iTunesSettings.) {
+            DaapMediator.instance().updateService();
+        }
+        
         return false;
 	}
 }
