@@ -9,12 +9,12 @@ import de.kapsi.net.daap.BooleanChunk;
  * this chunk
  */
 public class LoginRequired extends BooleanChunk {
-	
-	public LoginRequired() {
-		this(false);
-	}
-	
-	public LoginRequired(boolean required) {
-		super("mslr", "dmap.loginrequired", required);
-	}
+    
+    public LoginRequired() {
+        this(false);
+    }
+    
+    public LoginRequired(boolean required) {
+        super("mslr", "dmap.loginrequired", required);
+    }
 }

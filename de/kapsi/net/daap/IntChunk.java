@@ -5,7 +5,8 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 /**
- *
+ * This class is an implementation of an 4 byte
+ * int chnunk.
  */
 public class IntChunk extends AbstractChunk {
     

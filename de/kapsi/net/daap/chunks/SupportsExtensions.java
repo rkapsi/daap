@@ -7,12 +7,12 @@ import de.kapsi.net.daap.BooleanChunk;
  * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfoResponseImpl ServerInfoResponseImpl}
  */
 public class SupportsExtensions extends BooleanChunk {
-		
-	public SupportsExtensions() {
-		this(false);
-	}
-	
-	public SupportsExtensions(boolean supports) {
-		super("msex", "dmap.supportsextensions", supports);
-	}
+    
+    public SupportsExtensions() {
+        this(false);
+    }
+    
+    public SupportsExtensions(boolean supports) {
+        super("msex", "dmap.supportsextensions", supports);
+    }
 }

@@ -8,12 +8,12 @@ import de.kapsi.net.daap.IntChunk;
  * the current revisionNumber of the Library.
  */
 public class ServerRevision extends IntChunk {
-	
-	public ServerRevision() {
-		this(0);
-	}
-	
-	public ServerRevision(int count) {
-		super("musr", "dmap.serverrevision", count);
-	}
+    
+    public ServerRevision() {
+        this(0);
+    }
+    
+    public ServerRevision(int count) {
+        super("musr", "dmap.serverrevision", count);
+    }
 }

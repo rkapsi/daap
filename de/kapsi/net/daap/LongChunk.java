@@ -6,7 +6,8 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 /**
- *
+ * A long chunk is a 8 byte value encoded as Hex String.
+ * The greatest number is "FFFFFFFFFFFFFFFF".
  */
 public class LongChunk extends AbstractChunk {
     
@@ -50,10 +51,16 @@ public class LongChunk extends AbstractChunk {
         this.value = value;
     }
     
+    /**
+     * Length is 8 byte
+     */
     public int getLength() {
         return 8;
     }
     
+    /**
+     * Returns <tt>Chunk.LONG_TYPE</tt>
+     */
     public int getType() {
         return Chunk.LONG_TYPE;
     }

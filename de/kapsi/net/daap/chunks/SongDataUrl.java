@@ -7,18 +7,18 @@ import de.kapsi.net.daap.*;
  * Unknown
  */
 public class SongDataUrl extends StringChunk {
-	
-	/**
-	 *
-	 */
-	public SongDataUrl() {
-		this(null);
-	}
-	
-	/**
-	 * @param url
-	 */
-	public SongDataUrl(String url) {
-		super("asul", "daap.songdataurl", url);
-	}
+    
+    /**
+     *
+     */
+    public SongDataUrl() {
+        this(null);
+    }
+    
+    /**
+     * @param url
+     */
+    public SongDataUrl(String url) {
+        super("asul", "daap.songdataurl", url);
+    }
 }

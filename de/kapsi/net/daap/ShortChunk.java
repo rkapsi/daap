@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 
 /**
- *
+ * A short is a 16bit value
  */
 public class ShortChunk extends AbstractChunk {
     
@@ -25,10 +25,16 @@ public class ShortChunk extends AbstractChunk {
         this.value = (value & 0xFFFF);
     }
     
+    /**
+     * Length is 2 bytes
+     */
     public int getLength() {
         return 2;
     }
     
+    /**
+     * Returns <tt>Chunk.SHORT_TYPE</tt>
+     */
     public int getType() {
         return Chunk.SHORT_TYPE;
     }

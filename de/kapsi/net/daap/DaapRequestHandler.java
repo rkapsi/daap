@@ -13,7 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Handles all request except streaming
+ * Handles all request
  */
 public class DaapRequestHandler {
     

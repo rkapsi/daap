@@ -4,18 +4,31 @@ package de.kapsi.net.daap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.*;
+import de.kapsi.net.daap.chunks.ItemId;
+import de.kapsi.net.daap.chunks.ItemName;
+import de.kapsi.net.daap.chunks.PersistentId;
+import de.kapsi.net.daap.chunks.PlaylistSongs;
+//import de.kapsi.net.daap.chunks.ItemCount;
+//import de.kapsi.net.daap.chunks.SmartPlaylist;
+//import de.kapsi.net.daap.chunks.ContainerItemId;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
- *
+ * The name is self explaining.
  */
 public class Playlist implements SongListener {
     
     private static final Log LOG = LogFactory.getLog(Playlist.class);
     
     private static int PLAYLIST_ID = 1;
+    
+    private static final boolean notifyMasterPlaylistAddSong = true;
+    private static final boolean notifyMasterPlaylistRemoveSong = false;
+    private static final boolean notifyMasterPlaylistUpdateSong = true;
     
     private ItemId itemId;
     private ItemName itemName;
@@ -36,9 +49,6 @@ public class Playlist implements SongListener {
     
     private Playlist masterPlaylist;
     
-    private boolean notifyMasterPlaylistAddSong = true;
-    private boolean notifyMasterPlaylistRemoveSong = false;
-    private boolean notifyMasterPlaylistUpdateSong = true;
     private boolean isclone = true;
     
     public Playlist(String name) {
@@ -116,7 +126,12 @@ public class Playlist implements SongListener {
         return smartPlaylist.getValue();
     }*/
     
-    public Song getSong(int songId) {
+    /**
+     * Returns a Song for the provided songId or
+     * <tt>null</tt> if this id is unknown for
+     * this Playlist
+     */
+    Song getSong(int songId) {
         Iterator it = items.iterator();
         while(it.hasNext()) {
             Song song = (Song)it.next();
@@ -128,22 +143,37 @@ public class Playlist implements SongListener {
         return null;
     }
     
+    /**
+     * Returns the number of Songs in this Playlist
+     */
     public int size() {
         return items.size();
     }
     
-    public List getSongs() {
+    /**
+     * Used internally by Database
+     */
+    List getSongs() {
         return items;
     }
     
-    public List getNewSongs() {
+    /**
+     * Used internally by Database
+     */
+    List getNewSongs() {
         return newItems;
     }
     
-    public List getDeletedSongs() {
+    /**
+     * Used internally by Database
+     */
+    List getDeletedSongs() {
         return deletedItems;
     }
     
+    /**
+     * Adds <tt>song</tt> to this Playlist
+     */
     public void add(Song song) {
         
         if (items.contains(song)==false) {
@@ -161,6 +191,10 @@ public class Playlist implements SongListener {
         }
     }
     
+    /**
+     * Removes <tt>song</tt> from this Playlist
+     * and returns <tt>true</tt>
+     */
     public boolean remove(Song song) {
         
         if (items.remove(song)) {
@@ -193,6 +227,10 @@ public class Playlist implements SongListener {
         }
     }
     
+    /**
+     * Returns <tt>true</tt> if the provided
+     * <tt>song</tt> is in this Playlist.
+     */
     public boolean contains(Song song) {
         return items.contains(song);
     }
@@ -217,6 +255,10 @@ public class Playlist implements SongListener {
         return null;
     }
     
+    /**
+     * Destroys this Playlist. Used internally 
+     * to speed up destruction
+     */
     void destroy() {
         
         if (items != null) {
@@ -243,15 +285,24 @@ public class Playlist implements SongListener {
         playlistSongsUpdate = null;
     }
     
+    /**
+     * Used internally. See Library.open()
+     */
     void open() {
         newItems.clear();
         deletedItems.clear();
     }
     
+    /**
+     * Used internally. See Library.close()
+     */
     void close() {
         
-        playlistSongs = new PlaylistSongsImpl(items, newItems, deletedItems, false);
-        playlistSongsUpdate = new PlaylistSongsImpl(items, newItems, deletedItems, true);
+        playlistSongs 
+            = new PlaylistSongsImpl(items, newItems, deletedItems, false);
+        
+        playlistSongsUpdate 
+            = new PlaylistSongsImpl(items, newItems, deletedItems, true);
     }
     
     Playlist createSnapshot() {
@@ -261,7 +312,7 @@ public class Playlist implements SongListener {
         clone.playlistSongs = this.playlistSongs;
         clone.playlistSongsUpdate = this.playlistSongsUpdate;
         
-        //
+        // Clones do not need this information...
         //clone.items = null;
         //clone.newItems = null;
         //clone.deletedItems = null;

@@ -2,7 +2,8 @@
 package de.kapsi.net.daap;
 
 /**
- *
+ * Used internally by Playlist and Song to notify 
+ * each other about updates. 
  */
 interface SongListener {
     

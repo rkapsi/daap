@@ -9,20 +9,20 @@ import java.math.BigInteger;
  * for the <tt>/resolve</tt> request.
  */
 public class PersistentId extends LongChunk {
-	
-	public PersistentId() {
-		this(0L);
-	}
-	
-	public PersistentId(long id) {
-		super("mper", "dmap.persistentid", id);
-	}
-	
-	public PersistentId(String id) {
-		super("mper", "dmap.persistentid", id);
-	}
-	
-	public PersistentId(BigInteger id) {
-		super("mper", "dmap.persistentid", id);
-	}
+    
+    public PersistentId() {
+        this(0L);
+    }
+    
+    public PersistentId(long id) {
+        super("mper", "dmap.persistentid", id);
+    }
+    
+    public PersistentId(String id) {
+        super("mper", "dmap.persistentid", id);
+    }
+    
+    public PersistentId(BigInteger id) {
+        super("mper", "dmap.persistentid", id);
+    }
 }

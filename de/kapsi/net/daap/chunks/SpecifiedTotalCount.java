@@ -10,12 +10,12 @@ import de.kapsi.net.daap.IntChunk;
  * @see ReturnedCount
  */
 public class SpecifiedTotalCount extends IntChunk {
-	
-	public SpecifiedTotalCount() {
-		this(0);
-	}
-	
-	public SpecifiedTotalCount(int count) {
-		super("mtco", "dmap.specifiedtotalcount", count);
-	}
+    
+    public SpecifiedTotalCount() {
+        this(0);
+    }
+    
+    public SpecifiedTotalCount(int count) {
+        super("mtco", "dmap.specifiedtotalcount", count);
+    }
 }

@@ -11,21 +11,21 @@ import de.kapsi.net.daap.BooleanChunk;
  * an update (a diff between client's and server's library).
  */
 public class UpdateType extends BooleanChunk {
-	
-	/**
-	 * Creates a new UpdateType which is initialized with <tt>false</tt>.
-	 * You can change this value with {@see #setValue(boolean)}.
-	 */
-	public UpdateType() {
-		this(false);
-	}
-	
-	/**
-	 * Creates a new UpdateType with the assigned rating.
-	 * You can change this value with {@see #setValue(boolean)}.
-	 * @param <tt>updatetype</tt> either false or true
-	 */
-	public UpdateType(boolean updatetype) {
-		super("muty", "dmap.updatetype", updatetype);
-	}
+    
+    /**
+     * Creates a new UpdateType which is initialized with <tt>false</tt>.
+     * You can change this value with {@see #setValue(boolean)}.
+     */
+    public UpdateType() {
+        this(false);
+    }
+    
+    /**
+     * Creates a new UpdateType with the assigned rating.
+     * You can change this value with {@see #setValue(boolean)}.
+     * @param <tt>updatetype</tt> either false or true
+     */
+    public UpdateType(boolean updatetype) {
+        super("muty", "dmap.updatetype", updatetype);
+    }
 }

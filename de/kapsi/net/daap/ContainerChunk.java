@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.ArrayList;
 
 /**
- * 
+ * A container contains a series of other chunks.
  */
 public class ContainerChunk extends AbstractChunk {
     

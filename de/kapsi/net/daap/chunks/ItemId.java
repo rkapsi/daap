@@ -8,12 +8,12 @@ import de.kapsi.net.daap.IntChunk;
  * of items (e.g. songs) and != 0
  */
 public class ItemId extends IntChunk {
-	
-	public ItemId() {
-		this(0);
-	}
-	
-	public ItemId(int itemId) {
-		super("miid", "dmap.itemid", itemId);
-	}
+    
+    public ItemId() {
+        this(0);
+    }
+    
+    public ItemId(int itemId) {
+        super("miid", "dmap.itemid", itemId);
+    }
 }

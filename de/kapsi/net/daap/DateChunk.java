@@ -2,7 +2,9 @@
 package de.kapsi.net.daap;
 
 /**
- * 
+ * This class is an implementation of a date chunk.
+ * The date is an integer with seconds since 1970
+ * (standard UNIX time).
  */
 public class DateChunk extends IntChunk {
     

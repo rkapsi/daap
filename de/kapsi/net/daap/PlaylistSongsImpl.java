@@ -23,7 +23,7 @@ import de.kapsi.net.daap.chunks.ItemId;
 import de.kapsi.net.daap.chunks.PlaylistSongs;
 
 /**
- *
+ * This class implements the PlaylistSongs
  */
 public final class PlaylistSongsImpl extends PlaylistSongs {
     

@@ -2,7 +2,10 @@
 package de.kapsi.net.daap;
 
 /**
- *
+ * This class implements a Version chunk. A Version chunk is 
+ * a 32bit int where the two upper 2 bytes are the major version,
+ * the 3rd byte minor and the last byte is the patch level.
+ * <code>0x00020000 = 2.0.0</code>
  */
 public class VersionChunk extends IntChunk {
     
@@ -14,7 +17,9 @@ public class VersionChunk extends IntChunk {
         super(type, name, value);
     }
     
-    protected VersionChunk(String type, String name, int majorVersion, byte minorVersion, byte patchlevel) {
+    protected VersionChunk(String type, String name, int majorVersion, 
+            byte minorVersion, byte patchlevel) {
+                
         super(type, name, 0);
         
         this.majorVersion = majorVersion;
@@ -59,6 +64,9 @@ public class VersionChunk extends IntChunk {
         return this.patchlevel;
     }
     
+    /**
+     * Returns <tt>Chunk.VERSION_TYPE</tt>
+     */
     public int getType() {
         return Chunk.VERSION_TYPE;
     }

@@ -8,17 +8,17 @@ import de.kapsi.net.daap.IntChunk;
  * changing even if an error occurs.
  */
 public class Status extends IntChunk {
-	
-	/**
-	 * The default status
-	 */
-	public static final int STATUS_200 = 200;
-	
-	public Status() {
-		this(STATUS_200);
-	}
-	
-	public Status(int status) {
-		super("mstt", "dmap.status", status);
-	}
+    
+    /**
+     * The default status
+     */
+    public static final int STATUS_200 = 200;
+    
+    public Status() {
+        this(STATUS_200);
+    }
+    
+    public Status(int status) {
+        super("mstt", "dmap.status", status);
+    }
 }

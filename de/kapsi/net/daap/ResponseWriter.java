@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 /**
- *
+ * A custom PrintWriter
  */
 public class ResponseWriter extends FilterWriter {
     

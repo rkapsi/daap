@@ -9,7 +9,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- *
+ * This class implements a String chunk. DAAP Strings are
+ * encoded in UTF-8.<p>
+ * Note: <tt>null</tt> is valid value for DAAP and should
+ * be favored over "" for empty Strings as this saves 
+ * 1 byte per String.
  */
 public class StringChunk extends AbstractChunk {
     
@@ -45,10 +49,16 @@ public class StringChunk extends AbstractChunk {
         }
     }
     
+    /**
+     * Length is <tt>String.getBytes("UTF-8").length</tt>
+     */
     public int getLength() {
         return (bytes != null) ? bytes.length : 0;
     }
     
+    /**
+     * Returns <tt>Chunk.STRING_TYPE</tt>
+     */
     public int getType() {
         return Chunk.STRING_TYPE;
     }
