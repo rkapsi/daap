@@ -66,10 +66,10 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
  * modifiying operations must be performed as a "transaction" on the Library. 
  * 
  * <p><code>
- * Transaction txn = library.open(false);
- * library.setName(txn, "New Name");
- * library.add(txn, new Database("Foobar"));
- * ...
+ * Transaction txn = library.open(false);<br>
+ * library.setName(txn, "New Name");<br>
+ * library.add(txn, new Database("Foobar"));<br>
+ * ...<br>
  * txn.commit();
  * </code></p>
  * 

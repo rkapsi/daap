@@ -27,6 +27,27 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
+ * A Transaction collects operations you perform on Libraries, 
+ * Databases and Playlists and brings them into a suitable order
+ * so that the operations can be processed. A DAAP Transaction
+ * does not guarantee full ACID (Atomicy, Consistency, Isolation
+ * and Durability).
+ * 
+ * <p><b>Atomicy:</b> A commit failure will leave the target object in
+ *  an undefined state. A rollback failure has no effect.</p>
+ * 
+ * <p><b>Consistency:</b> Yep, we have consistency if no failures
+ *  happen (see Atomicy). A Transaction transfers the system
+ *  from a consitent state into a different consistent state.</p>
+ * 
+ * <p><b>Isolation:</b> No isolation in sense of the definition of
+ *  transactions. Transactions are synchronized but as we
+ *  join multible Transations to a single Transaction they
+ *  may overwrite their attributes, but that is designedly so!</p>
+ * 
+ * <p><b>Durability:</b> Yep, we have durability. The changes of
+ *  a successfully commited Transaction can neither disappear
+ *  or can be undone.</p>
  * 
  * @author Roger Kapsi
  */
@@ -49,6 +70,13 @@ public class Transaction {
     private final long txnCreated;
     private long lastModified;
     
+    /**
+     * Creates a new Transaction
+     * 
+     * @param library the Library to which this Transaction is associated
+     * @param rootTxn a root Txn
+     * @param autoCommit auto commit
+     */
     Transaction(Library library, Txn rootTxn, boolean autoCommit) {
         this.library = library;
         this.rootTxn = rootTxn;

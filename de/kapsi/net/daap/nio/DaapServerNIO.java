@@ -53,7 +53,7 @@ import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.SimpleConfig;
 
 /**
- * A DAAP server written with NIO and a singe Thread.
+ * A DAAP server written with NIO and a single Thread.
  *
  * @author  Roger Kapsi
  */
@@ -197,7 +197,7 @@ public class DaapServerNIO implements DaapServer {
     
     /**
      * Throws an {@see java.lang.UnsupportedOperationException} as
-     * the NIO server is implemented with a singe Thread.
+     * the NIO server is implemented with a single Thread.
      */
     public void setThreadFactory(DaapThreadFactory factory) {
         throw new UnsupportedOperationException();
@@ -332,7 +332,7 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     *
+     * Cloeses the server and releases all resources
      */
     private synchronized void close() {
         
@@ -694,7 +694,7 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     * 
+     * The run loop
      */
     public void run() {
 
