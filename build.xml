@@ -50,13 +50,13 @@
         <echo message="*******************************************************"/>
     </target>
     
-	<target name="build" depends="init">
+	<target name="build" depends="init,copy">
 		<javac srcdir="${basedir}" destdir="${basedir}" deprecation="yes">
             <classpath refid="default.classpath"/>
         </javac>
 	</target>
     
-	<target name="run" depends="init,copy">
+	<target name="run" depends="init">
         <java classname="de.kapsi.net.daap.Main">
             <classpath refid="default.classpath"/>
         </java>
