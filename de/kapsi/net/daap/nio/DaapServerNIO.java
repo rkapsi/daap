@@ -407,8 +407,6 @@ public class DaapServerNIO implements DaapServer {
         
         SelectableChannel channel = (SelectableChannel)sk.channel();
         
-        sk.cancel();
-        
         try {
             channel.close();
         } catch (IOException err) {
