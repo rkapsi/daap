@@ -25,14 +25,14 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class AuthenticationSchemas extends IntChunk {
+public class AuthenticationSchemes extends IntChunk {
     
-    /** Creates a new instance of AuthenticationSchemas */
-    public AuthenticationSchemas() {
+    /** Creates a new instance of AuthenticationSchemes */
+    public AuthenticationSchemes() {
         this(0);
     }
     
-    public AuthenticationSchemas(int schemas) {
+    public AuthenticationSchemes(int schemas) {
         super("msas", "dmap.authenticationschemes", schemas);
     }
 }

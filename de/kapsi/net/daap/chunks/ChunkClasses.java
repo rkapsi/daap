@@ -22,7 +22,7 @@ package de.kapsi.net.daap.chunks;
 public final class ChunkClasses {
     public static final String[] names = {
         "de.kapsi.net.daap.chunks.impl.AuthenticationMethod",
-        "de.kapsi.net.daap.chunks.impl.AuthenticationSchemas",
+        "de.kapsi.net.daap.chunks.impl.AuthenticationSchemes",
         "de.kapsi.net.daap.chunks.impl.Bag",
         "de.kapsi.net.daap.chunks.impl.BasePlaylist",
         "de.kapsi.net.daap.chunks.impl.BrowseAlbumListing",
