@@ -163,7 +163,7 @@ public final class DaapMediator implements FinalizeListener {
     
     /**
      * Shutdown the DAAP service properly. In this case
-     * is the main focus on mDNS (Rendezsvous) as in
+     * is the main focus on mDNS (Rendezvous) as in
      * some rare cases iTunes doesn't recognize that
      * LimeWire/DAAP is no longer online.
      */
@@ -379,11 +379,6 @@ public final class DaapMediator implements FinalizeListener {
             song.setFormat(ext);
             
             updateSongMeta(song, desc);
-            
-            if (ext.equals("mp3"))
-                song.setCompilation(true);
-            else
-                song.setCompilation(false);
         }
         
         return song;
@@ -686,9 +681,10 @@ public final class DaapMediator implements FinalizeListener {
             
             java.util.Hashtable props = new java.util.Hashtable();
             props.put(MACHINE_NAME, name);
-            props.put(PASSWORD, Boolean.toString(password)); // shows the small lock
-            // if Service is protected
+            
+            // shows the small lock if Service is protected
             // by a password!
+            props.put(PASSWORD, Boolean.toString(password)); 
             
             String qualifiedName = null;
             
@@ -758,9 +754,9 @@ public final class DaapMediator implements FinalizeListener {
         private final Object LOCK = new Object();
         
         private String name = null;
-        private HashSet add = new HashSet();
-        private HashSet remove = new HashSet();
-        private HashSet update = new HashSet();
+        private HashSet /* of Song */ add = new HashSet();
+        private HashSet /* of Song */ remove = new HashSet();
+        private HashSet /* of Song */ update = new HashSet();
         
         private boolean running = false;
         private boolean enabled = true;
@@ -910,8 +906,8 @@ public final class DaapMediator implements FinalizeListener {
      */
     private final class SongURNMap {
         
-        private HashMap songToUrn = new HashMap();
-        private HashMap urnToSong = new HashMap();
+        private HashMap /* Song -> URN */ songToUrn = new HashMap();
+        private HashMap /* URN -> Song */ urnToSong = new HashMap();
         
         public SongURNMap() {
         }
