@@ -1,6 +1,7 @@
 package com.limegroup.gnutella.xml;
 
 import com.limegroup.gnutella.*;
+import com.limegroup.gnutella.util.*;
 import com.limegroup.gnutella.messages.*;
 import com.limegroup.gnutella.mp3.ID3Reader;
 import java.io.*;
@@ -94,21 +95,21 @@ public class MetaFileManager extends FileManager {
         if( fd == null )
             return null;
         // store the creation time for later re-input
-        // *----
         CreationTimeCache ctCache = CreationTimeCache.instance();
         Long cTime = ctCache.getCreationTime(fd.getSHA1Urn());
-        // ----*
-        List xmlDocs = new LinkedList();
-        if( LimeXMLUtils.isMP3File(f) ) {
+
+        List xmlDocs = fd.getLimeXMLDocuments();        
+        if(LimeXMLUtils.isMP3File(f)) {
             try {
-                xmlDocs.add(ID3Reader.readDocument(f));
+                LimeXMLDocument diskID3Doc = ID3Reader.readDocument(f);
+                xmlDocs = resolveAudioDocs(xmlDocs,diskID3Doc);
             } catch(IOException e) {
                 // if we were unable to read this document,
                 // then simply add the file without metadata.
                 return super.fileChanged(f);
             }
         }
-        xmlDocs.addAll(fd.getLimeXMLDocuments());
+
         FileDesc removed = removeFile(f);        
         Assert.that(fd == removed, "did not remove valid fd.");
         _needRebuild = true;
@@ -116,13 +117,11 @@ public class MetaFileManager extends FileManager {
         // file may not be shared anymore or may be installer file
         if ((fd != null) && (cTime != null)) { 
             //re-populate the ctCache
-            // *----
             synchronized (ctCache) {
-                ctCache.removeTime(fd.getSHA1Urn()); //addFile() put lastModified
+                ctCache.removeTime(fd.getSHA1Urn());//addFile() put lastModified
                 ctCache.addTime(fd.getSHA1Urn(), cTime.longValue());
                 ctCache.commitTime(fd.getSHA1Urn());
             }
-            // ----*
         }
         
         // Notify the GUI about the changes...
@@ -143,6 +142,56 @@ public class MetaFileManager extends FileManager {
         return fd;
     }        
     
+    /**
+     * Finds the audio metadata document in allDocs, and makes it's id3 fields
+     * identical with the fields of id3doc (which are only id3).
+     */
+    private List resolveAudioDocs(List allDocs, LimeXMLDocument id3Doc) {
+        LimeXMLDocument audioDoc = null;
+        LimeXMLSchema audioSchema = 
+        LimeXMLSchemaRepository.instance().getSchema(ID3Reader.schemaURI);
+        
+        for(Iterator iter = allDocs.iterator(); iter.hasNext() ;) {
+            LimeXMLDocument doc = (LimeXMLDocument)iter.next();
+            if(doc.getSchema() == audioSchema) {
+                audioDoc = doc;
+                break;
+            }
+        }
+        if(id3Doc.equals(audioDoc)) //No issue -- both documents are the same
+            return allDocs; //did not modify list, keep using it
+        
+        List retList = new ArrayList();
+        retList.addAll(allDocs);
+        
+        if(audioDoc == null) {//nothing to resolve
+            retList.add(id3Doc);
+            return retList;
+        }
+        
+        //OK. audioDoc exists, remove it
+        retList.remove(audioDoc);
+        
+        //now add the non-id3 tags from audioDoc to id3doc
+        List audioList = null;
+        List id3List = null;
+        try {
+            audioList = audioDoc.getOrderedNameValueList();
+            id3List = id3Doc.getOrderedNameValueList();
+        } catch (SchemaNotFoundException snfx) {
+            ErrorService.error(snfx);
+        }
+        for(int i = 0; i < audioList.size(); i++) {
+            NameValue nameVal = (NameValue)audioList.get(i);
+            if(ID3Reader.isNonID3Field(nameVal.getName()))
+                id3List.add(nameVal);
+        }
+        audioDoc = new LimeXMLDocument(id3List, ID3Reader.schemaURI);
+        retList.add(audioDoc);
+        return retList;
+    }
+
+
     /**
      * Removes the LimeXMLDocuments associated with the removed
      * FileDesc from the various LimeXMLReplyCollections.
@@ -214,7 +263,7 @@ public class MetaFileManager extends FileManager {
                 int now = (newDoc != null) ? newDoc.size() : 0;
 
                 if (before < now && oldURN.equals(fd2.getSHA1Urn()) == true) {
-                
+                    
                     FileManagerEvent evt = new FileManagerEvent(this, 
                                                     FileManagerEvent.CHANGE, 
                                                     new FileDesc[]{fd1, fd2});
