@@ -183,7 +183,72 @@ public class MetaFileManager extends FileManager {
      *
      * @return The FileDesc that was added, or null if nothing added.
      */
-    protected FileDesc addFile(File file, FileDesc fd, List metadata) {
+    public FileDesc addFileIfShared(File file, List metadata) {
+        
+        // kicks off a FileManagerEvent.ADD event
+        FileDesc fd1 = super.addFileIfShared(file);
+        
+        if (fd1 != null) {
+            
+            URN oldURN = fd1.getSHA1Urn();
+            List oldDoc = fd1.getLimeXMLDocuments();
+            int before = (oldDoc != null) ? oldDoc.size() : 0;
+            
+            // There's an loopback from LimeXMLReplyCollection.commitID3Data()
+            // to MetaFileManager.fileChanged(). It's called whenever the URN 
+            // changes (e.g. if the metadata list had more or better meta 
+            // than the actual file)
+            
+            FileDesc fd2 = this.addFile(file, fd1, metadata);
+            
+            // OK, the URN didn't changed (i.e. no event through fileChanged())
+            // but as we appended metadata to the FileDesc it changed from our
+            // perspective ...
+            
+            if (fd2 != null) { // Note: cannot be null as fd1 == fd2
+                
+                // ... and only if meatadata was actually added (before should
+                // be always 0 and now >= 0)
+                
+                List newDoc = fd2.getLimeXMLDocuments();
+                int now = (newDoc != null) ? newDoc.size() : 0;
+
+                if (before < now && oldURN.equals(fd2.getSHA1Urn()) == true) {
+                
+                    FileManagerEvent evt = new FileManagerEvent(this, 
+                                                    FileManagerEvent.CHANGE, 
+                                                    new FileDesc[]{fd1, fd2});
+
+                    RouterService.getCallback().handleFileManagerEvent(evt);
+                }
+            }
+            
+            return fd2;
+        }
+        
+        return fd1;
+    }
+    
+    /**
+     * 
+     * @return The FileDesc that was added, or null if nothing added.
+     */
+    protected FileDesc addFile(File file, List metadata) {
+        
+        FileDesc fd = super.addFile(file);
+        
+        if (fd != null) {
+            return addFile(file, fd, metadata);
+        }
+        
+        return fd;
+    }
+    
+    /**
+     * 
+     * @return The FileDesc that was added, or null if nothing added.
+     */
+    private FileDesc addFile(File file, FileDesc fd, List metadata) {
         
         // if not added, exit.
         if( fd == null )

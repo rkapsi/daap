@@ -838,47 +838,21 @@ public abstract class FileManager {
 
     /**
      * @modifies this
-     * @effects calls addFile(file), then optionally stores any metadata
+     * @effects calls addFileIfShared(file), then optionally stores any metadata
      *  in the given XML documents.  metadata may be null if there is no data.
-     *  Returns the value from addFile. <b>WARNING: this is a potential
+     *  Returns the value from addFileIfShared. <b>WARNING: this is a potential
      *  security hazard.</b> 
      *
      * @return the <tt>FileDesc</tt> for the new file if it was successfully 
      *  added, otherwise <tt>null</tt>
      */
-    public FileDesc addFileIfShared(File file, List metadata) {
-       
-        FileDesc fd = addFile(file);
-        
-        // Notify the GUI...
-        if (fd != null) {
-            FileManagerEvent evt = new FileManagerEvent(this, 
-                                            FileManagerEvent.ADD, 
-                                            new FileDesc[]{fd});
-                                            
-            RouterService.getCallback().handleFileManagerEvent(evt);
-            
-            return addFile(file, fd, metadata);
-        }
-        
-        return fd;
-    }
-   
-    protected FileDesc addFile(File file, List metadata) {
-        
-        FileDesc fd = addFile(file);
-        
-        if (fd != null) {
-            return addFile(file, fd, metadata);
-        }
-        
-        return fd;
-    }
+    public abstract FileDesc addFileIfShared(File file, List metadata);
     
     /**
-     * The actual implementation of addFileIfShared(File,List)
+     * The actual implemenation of addFileIfShared(File file, List metadata)
      */
-    protected abstract FileDesc addFile(File file, FileDesc fd, List metadata);
+    protected abstract FileDesc addFile(File file, List metadata);
+    
     
     /**
      * @requires the given file exists and is in a shared directory

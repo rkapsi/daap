@@ -233,8 +233,6 @@ public final class DaapMediator implements FinalizeListener {
      */
     public void handleFileManagerEvent(FileManagerEvent evt) {
         
-        System.out.println(evt);
-        
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
               
             if (evt.isChangeEvent()) {
