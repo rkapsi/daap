@@ -501,7 +501,7 @@ public class DaapServerBIO implements DaapServer {
                     LOG.error(err);
                     try {
                         socket.close();
-                    catch(IOException ignored) {}
+                    } catch(IOException ignored) {}
                 }
                 
                 Thread.sleep(100);
