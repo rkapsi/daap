@@ -8,7 +8,7 @@ import java.util.*;
 import org.apache.commons.httpclient.*;
 
 /**
- * Test and Sample envoronment for DAAP
+ * Test and Sample environment for DAAP
  */
 public class Main implements DaapAuthenticator, DaapAudioStream {
 	

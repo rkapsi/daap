@@ -4,7 +4,7 @@ package de.kapsi.net.daap.chunks;
 import de.kapsi.net.daap.BooleanChunk;
 
 /**
- * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfo ServerInfo}
+ * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfoResponseImpl ServerInfoResponseImpl}
  */
  public class SupportsAutoLogout extends BooleanChunk {
 	

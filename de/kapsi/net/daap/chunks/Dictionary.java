@@ -5,7 +5,7 @@ import de.kapsi.net.daap.ContainerChunk;
 import java.util.ArrayList;
 
 /**
- * Used by {@link de.kapsi.net.daap.ContentCodes ContentCodes}
+ * Used by {@link de.kapsi.net.daap.ContentCodesImpl ContentCodesImpl}
  */
 public class Dictionary extends ContainerChunk {
 	
