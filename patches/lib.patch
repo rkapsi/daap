@@ -4,7 +4,7 @@ RCS file: /usr/local/tigris/data/helm/cvs/repository/lib/messagebundles/Messages
 retrieving revision 1.96
 diff -u -r1.96 MessagesBundle.properties
 --- messagebundles/MessagesBundle.properties	2004/05/27 19:35:17	1.96
-+++ messagebundles/MessagesBundle.properties	2004/05/27 20:06:48
++++ messagebundles/MessagesBundle.properties	2004/05/27 20:15:30
 @@ -1037,6 +1037,7 @@
  OPTIONS_CHAT_MAIN_TITLE=Chat
  OPTIONS_PLAYER_MAIN_TITLE=Player
