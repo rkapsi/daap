@@ -1,7 +1,7 @@
 
 package de.kapsi.net.daap;
 
-import java.net.InetAddress;
+import java.net.SocketAddress;
 
 /**
  * Interface for DaapServer Settings
@@ -9,7 +9,7 @@ import java.net.InetAddress;
 public interface DaapConfig {
     
     /**
-     *
+     * Returns the HTTP style name of the Server (e.g. DaapServer/0.1)
      * @return
      */    
     public String getServerName();
@@ -18,12 +18,8 @@ public interface DaapConfig {
      *
      * @return
      */    
-    public InetAddress getBindAddress();
-    /**
-     *
-     * @return
-     */    
-    public int getPort();
+    public SocketAddress getSocketAddress();
+    
     /**
      *
      * @return

@@ -9,9 +9,8 @@ package de.kapsi.net.daap;
 import java.io.IOException;
 import java.util.LinkedList;
 
-import de.kapsi.net.daap.DaapResponse;
-
 /**
+ * FIFO based queue to write DaapResponses.
  *
  * @author  roger
  */

@@ -41,19 +41,33 @@ public class FileManagerEvent extends EventObject {
     public FileDesc[] getFileDesc() {
         return files;
     }
-
+    
+    /**
+     * Returns true if this event is an ADD event
+     */
     public boolean isAddEvent() {
         return (kind==ADD);
     }
     
+    /**
+     * Returns true if this event is a REMOVE event
+     */
     public boolean isRemoveEvent() {
         return (kind==REMOVE);
     }
     
+    /**
+     * Returns true if this event is a RENAME (MOVE) 
+     * event
+     */
     public boolean isRenameEvent() {
         return (kind==RENAME);
     }
     
+    /**
+     * Returns true if this event is a CHANGE (i.e.
+     * when ID3 Tags changed) event.
+     */
     public boolean isChangeEvent() {
         return (kind==CHANGE);
     }

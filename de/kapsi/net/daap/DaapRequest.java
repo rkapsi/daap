@@ -15,7 +15,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- *
+ * A DAAP request. This class gets data from the client (iTunes)
+ * to the DAAP server for use in <tt>DaapRequestProcessor.process</tt>
+ * method.
+ * 
+ * @author  roger
  */
 public class DaapRequest {
     
@@ -58,14 +62,18 @@ public class DaapRequest {
     private boolean isUpdateType;
    
     /**
-     * 
+     * Create a new DaapRequest
      */
     private DaapRequest() {
         headers = new ArrayList();
     }
     
     /**
-     * Creates a server side fake update request to issue an update
+     * Creates a server side fake update DaapRequest to issue an update
+     *
+     * @param sessionId
+     * @param revisionNumber
+     * @param delta
      */
     public DaapRequest(int sessionId, int revisionNumber, int delta) {
         this();
@@ -80,7 +88,10 @@ public class DaapRequest {
     }
     
     /**
-     * Creates a DAAP request from the the requestLine
+     * Creates a DaapRequest from the the requestLine
+     *
+     * @param requestLine
+     * @throw URIException
      */
     public DaapRequest(String requestLine) throws URIException {
         this();
@@ -117,7 +128,12 @@ public class DaapRequest {
     }
     
     /**
+     * Creates a new DaapRequest
      *
+     * @param method
+     * @param uri
+     * @param protocol
+     * @throw URIException
      */
     public DaapRequest(String method, URI uri, String protocol) throws URIException {
         this();
@@ -131,19 +147,30 @@ public class DaapRequest {
     }
     
     /**
+     * Sets the request method (GET)
      *
+     * @param method
      */
     public void setMethod(String method) {
         this.method = method;
     }
     
     /**
+     * Sets the protocol of the request (HTTP/1.1)
      *
+     * @param protocol
      */
     public void setProtocol(String protocol) {
         this.protocol = protocol;
     }
     
+    /**
+     * Sets and parses the URI. Note: if URIException is
+     * thrown then is this Request in an inconsistent state!
+     *
+     * @param uri
+     * @throws URIException
+     */    
     public void setURI(URI uri) throws URIException {
         
         this.uri = uri;
@@ -204,8 +231,8 @@ public class DaapRequest {
                     if (count >= 3) {
                         String token = tok.nextToken();
 
-                        if (token.equals("databases")==false && LOG.isWarnEnabled()) {
-                            LOG.warn("Unknown token in path: " + path + " [" + token + "]@1");
+                        if (token.equals("databases")==false) {
+                            throw new URIException("Unknown token in path: " + path + " [" + token + "]@1");
                         }
 
                         databaseId = Integer.parseInt((String)tok.nextToken());
@@ -215,8 +242,8 @@ public class DaapRequest {
                             requestType = DATABASE_SONGS;
                         } else if (token.equals("containers")) {
                             requestType = DATABASE_PLAYLISTS;
-                        } else if (LOG.isWarnEnabled()) {
-                            LOG.warn("Unknown token in path: " + path + " [" + token + "]@2");
+                        } else {
+                            throw new URIException("Unknown token in path: " + path + " [" + token + "]@2");
                         }
 
                         if (count == 3) {
@@ -232,8 +259,8 @@ public class DaapRequest {
                                 itemId = Integer.parseInt(fileTokenizer.nextToken());
                                 requestType = SONG;
 
-                            } else if(LOG.isWarnEnabled()) {
-                                LOG.warn("Unknown token in path: " + path + " [" + token + "]@3");
+                            } else {
+                                throw new URIException("Unknown token in path: " + path + " [" + token + "]@3");
                             }
 
                         } else if (count == 5) {
@@ -243,15 +270,15 @@ public class DaapRequest {
                             if (token.equals("items")) {
                                 requestType = PLAYLIST_SONGS;
 
-                            } else if (LOG.isWarnEnabled()) {
-                                LOG.warn("Unknown token in path: " + path + " [" + token + "@4");
+                            } else {
+                                throw new URIException("Unknown token in path: " + path + " [" + token + "@4");
                             }
 
-                        } else if (LOG.isWarnEnabled()) {
-                            LOG.warn("Unknown token in path: " + path + " [" + token + "]@5");
+                        } else {
+                            throw new URIException("Unknown token in path: " + path + " [" + token + "]@5");
                         }
-                    } else  if (LOG.isWarnEnabled()) {
-                        LOG.warn("Unknown token in path: " + path);
+                    } else {
+                        throw new URIException("Unknown token in path: " + path);
                     }
                 }
             }
@@ -276,7 +303,10 @@ public class DaapRequest {
     }
     
     /**
+     * Adds an array of Headers to this requests
+     * list of Headers
      *
+     * @return
      */
     public void addHeaders(Header[] headers) {
         for(int i = 0; i < headers.length; i++)
@@ -284,30 +314,39 @@ public class DaapRequest {
     }
     
     /**
+     * Adds a list of headers to this requests
+     * list
      *
+     * @return
      */
     public void addHeaders(List headers) {
-        this.headers.addAll(headers);
+        if (this.headers != headers)
+            this.headers.addAll(headers);
     }
     
     /**
+     * Adds <tt>header</tt> to the list
      *
+     * @return
      */
     public void addHeader(Header header) {
-        if (header != null) {
-            this.headers.add(header);
-        }
+        this.headers.add(header);
     }
     
     /**
+     * Returns the entire list of Headers
      *
+     * @return
      */
     public List getHeaders() {
         return headers;
     }
     
     /**
+     * Returns a Header for the key or <tt>null</tt> if
+     * no such Header is in the list
      *
+     * @return
      */
     public Header getHeader(String key) {
         
@@ -323,119 +362,194 @@ public class DaapRequest {
     }
     
     /**
+     * Returns <tt>true</tt> if this is an unknown
+     * request
      *
+     * @return
      */
     public boolean isUnknownRequest() {
         return (requestType==UNDEF_VALUE);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a server info
+     * request
      *
+     * <p><i>GET /server-info HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isServerInfoRequest() {
         return (requestType==SERVER_INFO);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a content
+     * codes request
      *
+     * <p><i>GET /content-codes HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isContentCodesRequest() {
         return (requestType==CONTENT_CODES);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a login
+     * request
      *
+     * <p><i>GET /login HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isLoginRequest() {
         return (requestType==LOGIN);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a logout
+     * request
      *
+     * <p><i>GET /logout HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isLogoutRequest() {
         return (requestType==LOGOUT);
     }
     
     /**
+     * Returns <tt>true</tt> if this is an update
+     * request
      *
+     * <p><i>GET /update HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isUpdateRequest() {
         return (requestType==UPDATE);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a resolve
+     * request <i>(not supported)</i>
      *
+     * <p><i>GET /resolve HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isResolveRequest() {
         return (requestType==RESOLVE);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a databases
+     * request
      *
+     * <p><i>GET /databases HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isDatabasesRequest() {
         return (requestType==DATABASES);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a database
+     * songs request
      *
+     * <p><i>GET /databases/databaseId/items HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isDatabaseSongsRequest() {
         return (requestType==DATABASE_SONGS);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a database
+     * playlists request
      *
+     * <p><i>GET /databases/databaseId/containers HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isDatabasePlaylistsRequest() {
         return (requestType==DATABASE_PLAYLISTS);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a playlist
+     * request
      *
+     * <p><i>GET /databases/databaseId/containers/containerId/items HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isPlaylistSongsRequest() {
         return (requestType==PLAYLIST_SONGS);
     }
     
     /**
+     * Returns <tt>true</tt> if this is a song
+     * request (stream)
      *
+     * <p><i>GET /databases/databaseId/items/itemId.format HTTP/1.1</i></p> 
+     *
+     * @return
      */
     public boolean isSongRequest() {
         return (requestType==SONG);
     }
     
     /**
+     * Returns the URI
      *
+     * @return
      */
     public URI getUri() {
         return uri;
     }
     
     /**
+     * Returns the sessionId
      *
+     * @return
      */
     public int getSessionId() {
         return sessionId;
     }
     
     /**
+     * Returns the revision-number
      *
+     * @return
      */
     public int getRevisionNumber() {
         return revisionNumber;
     }
     
     /**
+     * What's delta? Delta is the difference between
+     * the current revision of the Library (Server) 
+     * and the latest revision of which iTunes (Client) 
+     * knows.
      *
+     * @return
      */
     public int getDelta() {
         return delta;
     }
     
     /**
+     * Returns the keys of the requested meta data
+     * as List. Note: this data isn't used to generate
+     * a response. iTunes is very fussy about the return
+     * order of some items and it would be to expensive 
+     * bring the List into the correct order.
      *
+     * @return
      */
     public List getMeta() {
         // parse only if required...
@@ -448,70 +562,98 @@ public class DaapRequest {
     }
     
     /**
+     * Returns the databaseId
      *
+     * @return
      */
     public int getDatabaseId() {
         return databaseId;
     }
     
     /**
+     * Returns the containerId
      *
+     * @return
      */
     public int getContainerId() {
         return containerId;
     }
     
     /**
+     * Returns the itemId
      *
+     * @return
      */
     public int getItemId() {
         return itemId;
     }
     
     /**
+     * Returns <tt>true</tt> if databaseId is set (i.e.
+     * something else than <tt>UNDEF_VALUE</tt>).
      *
+     * @return
      */
     public boolean isDatabaseIdSet() {
         return (databaseId != 0);
     }
     
     /**
+     * Returns <tt>true</tt> if containerId is set (i.e.
+     * something else than <tt>UNDEF_VALUE</tt>).
      *
+     * @return
      */
     public boolean isContainerIdSet() {
         return (containerId != 0);
     }
     
     /**
+     * Returns <tt>true</tt> if itemId is set (i.e.
+     * something else than <tt>UNDEF_VALUE</tt>).
      *
+     * @return
      */
     public boolean isItemIdSet() {
-        return (itemId != 0);
+        return (itemId != UNDEF_VALUE);
     }
     
     /**
+     * Returns the raw request time.
      *
+     * @return
      */
     public int getRequestType() {
         return requestType;
     }
     
     /**
+     * Returns the query of this requests URI as
+     * a Map
      *
+     * @return
      */
     public Map getQueryMap() {
         return queryMap;
     }
     
     /**
+     * Returns <tt>true</tt> if this is a "fake" request 
+     * generated by the server. It's needed to bypass some
+     * security checks of DaapRequestProcessor.
      *
+     * @return
      */
     public boolean isServerSideRequest() {
         return isServerSideRequest;
     }
     
     /**
+     * Returns <tt>true</tt> if this request is an update
+     * request. Except for the first request it's always
+     * update type request.
      *
+     * @return
      */
     public boolean isUpdateType() {
         return isUpdateType;

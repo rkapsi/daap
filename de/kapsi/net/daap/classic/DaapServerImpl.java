@@ -1,9 +1,15 @@
 
 package de.kapsi.net.daap.classic;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.IOException;
+
+import java.net.SocketAddress;
+import java.net.Socket;
+import java.net.ServerSocket;
+import java.net.SocketException;
+
+import java.util.Iterator;
+import java.util.HashSet;
 
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Library;
@@ -125,18 +131,15 @@ public class DaapServerImpl implements DaapServer {
         if (running)
             return;
         
-        int port = config.getPort();
+        SocketAddress bindAddr = config.getSocketAddress();
         int backlog = config.getBacklog();
-        InetAddress bindAddr = config.getBindAddress();
         
-        ssocket = new ServerSocket(port, backlog, bindAddr);
+        
+        ssocket = new ServerSocket();
+        ssocket.bind(bindAddr, backlog);
         
         if (LOG.isInfoEnabled()) {
-            if (bindAddr == null) {
-                LOG.info("DaapServer bound to port: " + port);
-            } else {
-                LOG.info("DaapServer bound to " + bindAddr + ":" + port);
-            }
+            LOG.info("DaapServer bound to " + bindAddr);
         }
     }
     

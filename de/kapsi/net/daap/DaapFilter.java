@@ -4,7 +4,7 @@ package de.kapsi.net.daap;
 import java.net.InetAddress;
 
 /**
- * This interface enables you to accept ot refuse incoming
+ * This interface enables you to accept or refuse incoming
  * connection from certaint machines.
  */
 public interface DaapFilter {

@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.net.InetAddress;
+import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.net.BindException;
 import javax.swing.SwingUtilities;
 
@@ -180,8 +182,7 @@ public final class DaapMediator implements FinalizeListener {
     /**
      * Updates the multicast-DNS servive info
      */
-    public synchronized void updateService()
-    throws IOException {
+    public synchronized void updateService() throws IOException {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
             rendezvous.updateService();
@@ -219,11 +220,11 @@ public final class DaapMediator implements FinalizeListener {
     }
     
     /**
-     * Called by VisualConnectionCallback/MetaFileManager.
+     * Called by VisualConnectionCallback
      */
-    public synchronized void handleFileManagerEvent(FileManagerEvent evt) {
+    public void handleFileManagerEvent(FileManagerEvent evt) {
         
-        //System.out.println(evt);
+        System.out.println(evt);
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
               
@@ -633,21 +634,18 @@ public final class DaapMediator implements FinalizeListener {
             return CommonUtils.getHttpServer();
         }
         
-        public int getPort() {
-            return iTunesSettings.DAAP_PORT.getValue();
-        }
-        
         public void nextPort() {
-            iTunesSettings.DAAP_PORT.setValue(
-            iTunesSettings.DAAP_PORT.getValue()+1);
+            int port = iTunesSettings.DAAP_PORT.getValue();
+            iTunesSettings.DAAP_PORT.setValue(port+1);
         }
         
         public int getBacklog() {
             return 0;
         }
         
-        public InetAddress getBindAddress() {
-            return null;
+        public SocketAddress getSocketAddress() {
+            int port = iTunesSettings.DAAP_PORT.getValue();
+            return new InetSocketAddress(port);
         }
         
         public int getMaxConnections() {

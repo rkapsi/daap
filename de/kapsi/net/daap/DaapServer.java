@@ -7,7 +7,7 @@ import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
 import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
 
 /**
- * The famous DaapServer.
+ * Interface of the DaapServer
  */
 public interface DaapServer extends Runnable {
     
@@ -112,7 +112,7 @@ public interface DaapServer extends Runnable {
     public int getNumberOfStreams();
     
     /**
-     * Returns <tt>true</tt> if sessionId is known and valid
+     * Returns <tt>true</tt> if sessionId is valid
      */
     public boolean isSessionIdValid(Integer sessionId);
     

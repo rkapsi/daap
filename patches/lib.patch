@@ -1,11 +1,11 @@
 Index: messagebundles/MessagesBundle.properties
 ===================================================================
 RCS file: /usr/local/tigris/data/helm/cvs/repository/lib/messagebundles/MessagesBundle.properties,v
-retrieving revision 1.51
-diff -u -r1.51 MessagesBundle.properties
---- messagebundles/MessagesBundle.properties	2004/03/12 00:37:26	1.51
-+++ messagebundles/MessagesBundle.properties	2004/03/21 23:36:01
-@@ -935,6 +935,7 @@
+retrieving revision 1.58
+diff -u -r1.58 MessagesBundle.properties
+--- messagebundles/MessagesBundle.properties	2004/04/01 15:39:01	1.58
++++ messagebundles/MessagesBundle.properties	2004/04/06 15:01:20
+@@ -953,6 +953,7 @@
  OPTIONS_CHAT_MAIN_TITLE=Chat
  OPTIONS_PLAYER_MAIN_TITLE=Player
  OPTIONS_ITUNES_MAIN_TITLE=iTunes
@@ -13,7 +13,7 @@ diff -u -r1.51 MessagesBundle.properties
  OPTIONS_APPS_MAIN_TITLE=Helper Apps
  OPTIONS_BUGS_MAIN_TITLE=Bug Reports
  OPTIONS_GUI_MAIN_TITLE=View
-@@ -1122,6 +1123,19 @@
+@@ -1141,6 +1142,19 @@
  OPTIONS_ITUNES_SUPPORT_ACTIVE_CHECK_BOX_LABEL=Enable iTunes support:
  OPTIONS_ITUNES_PREFERENCE_TITLE=iTunes options
  OPTIONS_ITUNES_PREFERENCE_LABEL=You can enable iTunes support.

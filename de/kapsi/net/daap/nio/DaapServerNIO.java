@@ -3,7 +3,7 @@ package de.kapsi.net.daap.nio;
 import java.io.IOException;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -185,13 +185,20 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
+     * Returns <tt>true</tt> if DAAP Server
+     * accepts incoming connections.
+     */
+    public boolean isRunning() {
+        return running;
+    }
+    
+    /**
      *
      * @throws IOException
      */    
     public void bind() throws IOException {
         
-        int port = config.getPort();
-        InetAddress bindAddr = config.getBindAddress();
+        SocketAddress bindAddr = config.getSocketAddress();
         int backlog = config.getBacklog();
         
         streams = new HashSet();
@@ -204,57 +211,16 @@ public class DaapServerNIO implements DaapServer {
             ssc = ServerSocketChannel.open();
             ssc.configureBlocking(false);
 
-            if (bindAddr == null)
-                bindAddr = InetAddress.getLocalHost();
-
-            InetSocketAddress addr = new InetSocketAddress(bindAddr, port);
-
-            ssc.socket().bind(addr, backlog);
+            ssc.socket().bind(bindAddr, backlog);
             selector = Selector.open();
 
             if (LOG.isInfoEnabled()) {
-                LOG.info("DaapServerNIO bound to " + addr);
+                LOG.info("DaapServerNIO bound to " + bindAddr);
             }
             
         } catch (IOException err) {
             close();
             throw err;
-        }
-    }
-    
-    /**
-     * Returns <tt>true</tt> if DAAP Server
-     * accepts incoming connections.
-     */
-    public boolean isRunning() {
-        return running;
-    }
-    
-    /**
-     * Stops the DAAP Server
-     */
-    public void stop() {
-        running = false;
-    }
-    
-    /**
-     * Disconnects all DAAP and Stream connections
-     */
-    public void disconnectAll() {
-        if (selector != null) {
-            
-            Set keys = selector.keys();
-            
-            synchronized(keys) {
-                Iterator it = keys.iterator();
-                while(it.hasNext()) {
-                    SelectionKey sk = (SelectionKey)it.next();
-                    SelectableChannel channel = (SelectableChannel)sk.channel();
-                    if (channel instanceof SocketChannel) {
-                        cancel(sk);
-                    }
-                }
-            }
         }
     }
     
@@ -308,12 +274,22 @@ public class DaapServerNIO implements DaapServer {
         return (streams != null) ? streams.size() : 0;
     }
     
+   /**
+    * Stops the DAAP Server
+    */
+    public void stop() {
+        running = false;
+    }
+    
+    /**
+     *
+     */
     private void close() {
-        
-        disconnectAll();
         
         running = false;
         update = false;
+        
+        disconnectAll();
         
         try {
             if (ssc != null)
@@ -342,7 +318,7 @@ public class DaapServerNIO implements DaapServer {
         if (streams != null) {
             Iterator it = streams.iterator();
             while(it.hasNext()) {
-                ((DaapConnectionImpl)it.next()).close();
+                ((DaapConnection)it.next()).close();
             }
         }
         
@@ -351,13 +327,34 @@ public class DaapServerNIO implements DaapServer {
         if (connections != null) {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
-                ((DaapConnectionImpl)it.next()).close();
+                ((DaapConnection)it.next()).close();
             }
         }
         
         connections = null;
     }
     
+    /**
+     * Disconnects all DAAP and Stream connections
+     */
+    public void disconnectAll() {
+        if (selector != null) {
+            
+            Set keys = selector.keys();
+            
+            synchronized(keys) {
+                Iterator it = keys.iterator();
+                while(it.hasNext()) {
+                    SelectionKey sk = (SelectionKey)it.next();
+                    SelectableChannel channel = (SelectableChannel)sk.channel();
+                    if (channel instanceof SocketChannel) {
+                        cancel(sk);
+                    }
+                }
+            }
+        }
+    }
+   
     /**
      *
      */
@@ -373,7 +370,7 @@ public class DaapServerNIO implements DaapServer {
         
         sk.cancel();
         
-        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
+        DaapConnection connection = (DaapConnection)sk.attachment();
         
         if (connection != null) {
             connection.close();
@@ -388,6 +385,7 @@ public class DaapServerNIO implements DaapServer {
     
     /**
      *
+     * @throws IOException
      */
     void registerConnection(DaapConnection connection) throws IOException {
         
@@ -411,6 +409,7 @@ public class DaapServerNIO implements DaapServer {
     
     /**
      * 
+     * @throws IOException
      */
     private boolean accept(InetAddress addr) {
         
@@ -426,6 +425,10 @@ public class DaapServerNIO implements DaapServer {
         return true;
     }
     
+    /**
+     *
+     * @throws IOException
+     */
     private void processAccept(SelectionKey sk) throws IOException {
         
         if (!sk.isValid())
@@ -438,7 +441,7 @@ public class DaapServerNIO implements DaapServer {
 
             channel.configureBlocking(false);
 
-            DaapConnectionImpl connection 
+            DaapConnection connection 
                 = new DaapConnectionImpl(this, channel);
             
             SelectionKey key = channel.register(selector, SelectionKey.OP_READ, connection);
@@ -452,6 +455,10 @@ public class DaapServerNIO implements DaapServer {
         }
     }
     
+    /**
+     *
+     * @throws IOException
+     */
     private void processRead(SelectionKey sk) throws IOException {
         
         if (!sk.isValid())
@@ -471,6 +478,10 @@ public class DaapServerNIO implements DaapServer {
         }
     }
     
+    /**
+     *
+     * @throws IOException
+     */
     private void processWrite(SelectionKey sk) throws IOException {
         
         if (!sk.isValid())
@@ -491,6 +502,10 @@ public class DaapServerNIO implements DaapServer {
         }
     }
     
+    /**
+     *
+     * @throws IOException
+     */
     private void processUpdate() {
         
         Set keys = selector.keys();
@@ -503,7 +518,7 @@ public class DaapServerNIO implements DaapServer {
                 
                 if (channel instanceof SocketChannel) {
                     
-                    DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
+                    DaapConnection connection = (DaapConnection)sk.attachment();
                     
                     if (connection.isNormal()) {
                         try {
@@ -522,6 +537,10 @@ public class DaapServerNIO implements DaapServer {
         }
     }
     
+    /**
+     *
+     * @throws IOException
+     */
     private void process() throws IOException {
        
         int n = -1;

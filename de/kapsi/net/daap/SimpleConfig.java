@@ -1,6 +1,7 @@
 package de.kapsi.net.daap;
 
-import java.net.InetAddress;
+import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 /**
  * A simple implementation of DaapConfig
@@ -31,14 +32,13 @@ public class SimpleConfig implements DaapConfig {
     
     private String serverName;
     
-    private InetAddress bindAddr;
-    private int port;
+    private SocketAddress bindAddr;
     private int backlog;
     
     private int maxConnections;
     
     public SimpleConfig() {
-        this(DEFAULT_SERVER_NAME, DEFAULT_PORT, DEFAULT_BACKLOG, null);
+        this(DEFAULT_SERVER_NAME, new InetSocketAddress(DEFAULT_PORT), DEFAULT_BACKLOG);
     }
     
     /**
@@ -46,7 +46,7 @@ public class SimpleConfig implements DaapConfig {
      * @param serverName
      */    
     public SimpleConfig(String serverName) {
-        this(serverName, DEFAULT_PORT, DEFAULT_BACKLOG, null);
+        this(serverName, new InetSocketAddress(DEFAULT_PORT), DEFAULT_BACKLOG);
     }
     
     /**
@@ -54,7 +54,7 @@ public class SimpleConfig implements DaapConfig {
      * @param port
      */    
     public SimpleConfig(int port) {
-        this(DEFAULT_SERVER_NAME, port, DEFAULT_BACKLOG, null);
+        this(DEFAULT_SERVER_NAME, new InetSocketAddress(port), DEFAULT_BACKLOG);
     }
     
     /**
@@ -63,7 +63,7 @@ public class SimpleConfig implements DaapConfig {
      * @param port
      */    
     public SimpleConfig(String serverName, int port) {
-        this(serverName, port, DEFAULT_BACKLOG, null);
+        this(serverName, new InetSocketAddress(port), DEFAULT_BACKLOG);
     }
     
     /**
@@ -73,7 +73,7 @@ public class SimpleConfig implements DaapConfig {
      * @param backlog
      */    
     public SimpleConfig(String serverName, int port, int backlog) {
-        this(serverName, port, backlog, null);
+        this(serverName, new InetSocketAddress(port), backlog);
     }
     
     /**
@@ -83,11 +83,10 @@ public class SimpleConfig implements DaapConfig {
      * @param backlog
      * @param bindAddr
      */    
-    public SimpleConfig(String serverName, int port, int backlog, InetAddress bindAddr) {
+    public SimpleConfig(String serverName, SocketAddress bindAddr, int backlog) {
         this.serverName = serverName;
-        this.port = port;
-        this.backlog = backlog;
         this.bindAddr = bindAddr;
+        this.backlog = backlog;
         
         this.maxConnections = DEFAULT_MAX_CONNECTIONS;
     }
@@ -110,22 +109,6 @@ public class SimpleConfig implements DaapConfig {
     
     /**
      *
-     * @param port
-     */    
-    public void setPort(int port) {
-        this.port = port;
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public int getPort() {
-        return port;
-    }
-    
-    /**
-     *
      * @param backlog
      */    
     public void setBacklog(int backlog) {
@@ -144,7 +127,7 @@ public class SimpleConfig implements DaapConfig {
      *
      * @param bindAddr
      */    
-    public void setBindAddress(InetAddress bindAddr) {
+    public void setSocketAddress(SocketAddress bindAddr) {
         this.bindAddr = bindAddr;
     }
     
@@ -152,7 +135,7 @@ public class SimpleConfig implements DaapConfig {
      *
      * @return
      */    
-    public InetAddress getBindAddress() {
+    public SocketAddress getSocketAddress() {
         return bindAddr;
     }
     

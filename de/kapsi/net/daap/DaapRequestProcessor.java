@@ -40,6 +40,8 @@ import de.kapsi.net.daap.chunks.impl.DatabaseSongs;
 import de.kapsi.net.daap.chunks.impl.DatabasePlaylists;
 
 /**
+ * DaapRequestProcessor processes a DaapRequest and generates
+ * the appropriate DaapResponse.
  *
  * @author  roger
  */
@@ -56,6 +58,12 @@ public class DaapRequestProcessor {
         this.factory = factory;
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     public DaapResponse process(DaapRequest request) throws IOException {
         
         if (request == null || request.isUnknownRequest()) {
@@ -76,7 +84,6 @@ public class DaapRequestProcessor {
 
             if ( ! isAuthenticated(request)) {
 
-                //return new DaapAuthResponse(connection);
                 return factory.createAuthResponse();
             }
 
@@ -86,6 +93,8 @@ public class DaapRequestProcessor {
             } else if (request.isLoginRequest()) {
                 return processLoginRequest(request);
 
+            // The following requests require a vaild 
+            // session id
             } else if (validateSessionId(request)) {
 
                 if (request.isUpdateRequest()) {
@@ -168,17 +177,27 @@ public class DaapRequestProcessor {
         return authenticated;
     }
     
+    /**
+     * Checks if the SessionId of the request is valid
+     */
     private boolean validateSessionId(DaapRequest request) {
         
         DaapSession session = connection.getSession(false);
         
         if (session != null) {
+            
             return session.getSessionId().intValue() == request.getSessionId();
         }
         
         return false;
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processServerInfoRequest(DaapRequest request) 
             throws IOException {
         
@@ -187,6 +206,12 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(data);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processContentCodesRequest(DaapRequest request)
             throws IOException {
                 
@@ -195,6 +220,12 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(data);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processLoginRequest(DaapRequest request)
             throws IOException {
         
@@ -205,12 +236,24 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(data);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processLogoutRequest(DaapRequest request)
             throws IOException {
         
         throw new IOException("Logout");
     }
     
+    /**
+     *
+     * @return
+     * @param request
+     * @throws IOException
+     */    
     protected DaapResponse processUpdateRequest(DaapRequest request)
             throws IOException {
         
@@ -241,6 +284,12 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(data);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processDatabasesRequest(DaapRequest request)
             throws IOException {
         
@@ -258,6 +307,12 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(serverDatabases);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processDatabaseSongsRequest(DaapRequest request)
             throws IOException {
         
@@ -273,6 +328,12 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(databaseSongs);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processDatabasePlaylistsRequest(DaapRequest request)
             throws IOException {
         
@@ -288,6 +349,12 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(databasePlaylists);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processPlaylistSongsRequest(DaapRequest request)
             throws IOException {
         
@@ -303,24 +370,32 @@ public class DaapRequestProcessor {
         return factory.createChunkResponse(playlistSongs);
     }
     
+    /**
+     *
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processResolveRequest(DaapRequest request)
             throws IOException {
        
         throw new IOException("Resolve is not implemented");
     }
     
-    // BEGIN AUDIO
     
     /**
      *
-     */
+     * @param request
+     * @throws IOException
+     * @return
+     */    
     protected DaapResponse processSongRequest(DaapRequest request)
             throws IOException {
         
         DaapServer server = connection.getServer();      
         DaapStreamSource streamSource = server.getStreamSource();
          
-        if (streamSource != null && request.isSongRequest()) {
+        if (streamSource != null) {
          
             int[] range = getRange(request);
          
@@ -353,8 +428,14 @@ public class DaapRequestProcessor {
         return null;
     }
     
-    /**
-     * Returns a range from where to where shall be played
+    
+    
+    /*
+     * Returns the range which should be streamed.
+     *
+     * @param request
+     * @throws IOException
+     * @return
      */
     private int[] getRange(DaapRequest request)
             throws IOException {
@@ -368,7 +449,7 @@ public class DaapRequestProcessor {
                 
                 if (key.equals("bytes")==false) {
                     if (LOG.isInfoEnabled())
-                        LOG.info("unknown type: " + key);
+                        LOG.info("Unknown range type: " + key);
                     return null;
                 }
                 
@@ -377,24 +458,30 @@ public class DaapRequestProcessor {
                 int q = 0;
                 for(;q<range.length && range[q] != '-';q++);
                 
-                int begin = Integer.parseInt(new String(range,0,q));
-                
-                q++;
+                int pos = -1;
                 int end = -1;
                 
+                    
+                pos = Integer.parseInt(new String(range,0,q));
+
+                q++;
                 if (range.length-q != 0) {
                     end = Integer.parseInt(new String(range,q,range.length-q));
                 }
-                
-                return (new int[]{begin, end});
+
+                return (new int[]{pos, end});
                 
             } catch (NoSuchElementException err) {
+                // not critical, we can recover...
                 LOG.error(err);
+                
             } catch (NumberFormatException err) {
+                // not critical, we can recover...
                 LOG.error(err);
             }
         }
         
+        // play from begin to end
         return (new int[]{0,-1});
     }
 }

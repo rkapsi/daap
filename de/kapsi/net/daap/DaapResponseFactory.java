@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.FileInputStream;
 
 /**
+ * This Factory interface is used to create either NIO
+ * or classic OutputStream based DaapResponses.
  *
  * @author  roger
  */

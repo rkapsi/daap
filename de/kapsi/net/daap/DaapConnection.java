@@ -9,7 +9,7 @@ package de.kapsi.net.daap;
 import java.io.IOException;
 
 /**
- *
+ * 
  * @author  roger
  */
 public interface DaapConnection {
@@ -38,7 +38,7 @@ public interface DaapConnection {
     public DaapServer getServer();
     
     /**
-     * Returns true if this connection is an audio
+     * Returns <tt>true</tt> if this connection is an audio
      * stream.
      *
      * @return
@@ -46,7 +46,7 @@ public interface DaapConnection {
     public boolean isAudioStream();
     
     /**
-     * Returns true if this connection is a normal
+     * Returns <tt>true</tt> if this connection is a normal
      * connection (handles Requests/Respones).
      *
      * @return
@@ -54,15 +54,16 @@ public interface DaapConnection {
     public boolean isNormal();
     
     /**
-     * Returns true if the type of this connection
+     * Returns <tt>true</tt> if the type of this connection
      * is currently indetermined.
      * 
-     * @return true if connection is indetermined
+     * @return <tt>true</tt> if connection is indetermined
      */    
     public boolean isUndef();
     
     /**
-     *
+     * Called when a DaapConnection is beeing removed
+     * from the connection pool.
      */
     public void close();
 }
