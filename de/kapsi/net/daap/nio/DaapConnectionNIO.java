@@ -36,12 +36,17 @@ import de.kapsi.net.daap.DaapResponseFactory;
 import de.kapsi.net.daap.DaapRequestProcessor;
 import de.kapsi.net.daap.DaapResponseWriter;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A NIO based implementation of DaapConnection.
  *
  * @author  Roger Kapsi
  */
 public class DaapConnectionNIO extends DaapConnection {
+    
+    private static final Log LOG = LogFactory.getLog(DaapConnectionNIO.class);
     
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
@@ -151,6 +156,9 @@ public class DaapConnectionNIO extends DaapConnection {
                 }
                 
                 DaapResponse response = PROCESSOR.process(request);
+                
+                LOG.trace(request);
+                LOG.trace(response);
                 
                 if (response != null) {
                     writer.add(response);

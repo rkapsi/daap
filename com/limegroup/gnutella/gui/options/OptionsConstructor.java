@@ -211,23 +211,23 @@ public final class OptionsConstructor {
         
 		if (CommonUtils.isJava14OrLater() || CommonUtils.isMacOSX()) {
         
-            addGroupTreeNode(OptionsMediator.ROOT_NODE_KEY, ITUNES_KEY);
-            
-            // Auto import of newly downloaded files is only 
-            // available on Mac OS X
-            if (CommonUtils.isMacOSX()) {
-                final OptionsPane itunesPane = new OptionsPaneImpl(ITUNES_KEY);
-                itunesPane.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
-                addOption(ITUNES_KEY, itunesPane);
-            }
-            
-            if (CommonUtils.isJava14OrLater()) {
-                final OptionsPane daapPane = new OptionsPaneImpl(ITUNES_DAAP_KEY);
-                daapPane.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
-                daapPane.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
-                addOption(ITUNES_KEY, daapPane);
-            }
-        }
+                    addGroupTreeNode(OptionsMediator.ROOT_NODE_KEY, ITUNES_KEY);
+
+                    // Auto import of newly downloaded files is only 
+                    // available on Mac OS X
+                    if (CommonUtils.isMacOSX()) {
+                        final OptionsPane itunesPane = new OptionsPaneImpl(ITUNES_KEY);
+                        itunesPane.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
+                        addOption(ITUNES_KEY, itunesPane);
+                    }
+
+                    if (CommonUtils.isJava14OrLater()) {
+                        final OptionsPane daapPane = new OptionsPaneImpl(ITUNES_DAAP_KEY);
+                        daapPane.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
+                        daapPane.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
+                        addOption(ITUNES_KEY, daapPane);
+                    }
+                }
         
 		if (CommonUtils.isUnix()) {
 			final OptionsPane browserPane = new OptionsPaneImpl(APPS_KEY);

@@ -54,18 +54,18 @@ import de.kapsi.net.daap.DaapThreadFactory;
 import de.kapsi.net.daap.DaapUtil;
 
 /**
- *
+ * This class handles the mDNS registration and acts as an
+ * interface between LimeWire and DAAP.
  */
 public final class DaapMediator implements FinalizeListener {
     
     private static final Log LOG = LogFactory.getLog(DaapMediator.class);
-    
     private static final DaapMediator INSTANCE = new DaapMediator();
     
     public static DaapMediator instance() {
         return INSTANCE;
     }
-    
+
     private SongURNMap map;
     
     private Library library;
@@ -77,8 +77,9 @@ public final class DaapMediator implements FinalizeListener {
     private boolean annotateEnabled = false;
     
     private DaapMediator() {
-        if (CommonUtils.isJava14OrLater())
+        if (isSupportedPlatform()) {
             GUIMediator.addFinalizeListener(this);
+        }
     }
     
     /**
@@ -86,7 +87,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void init() {
         
-        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
+        if (isSupportedPlatform() && isServerRunning()) {
             setAnnotateEnabled(annotateEnabled);
         }
     }
@@ -96,7 +97,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void start() throws IOException {
         
-        if (CommonUtils.isJava14OrLater() && !isServerRunning()) {
+        if (isSupportedPlatform() && !isServerRunning()) {
             
             try {
                 
@@ -123,14 +124,14 @@ public final class DaapMediator implements FinalizeListener {
                     server.setThreadFactory(new LimeThreadFactory());
                 }
                 
-                final int attempts = 10;
+                final int maxAttempts = 10;
                 
-                for(int i = 0; i < attempts; i++) {
+                for(int i = 0; i < maxAttempts; i++) {
                     try {
                         server.bind();
                         break;
                     } catch (BindException bindErr) {
-                        if (i == attempts-1)
+                        if (i == maxAttempts-1)
                             throw bindErr;
                         else
                             config.nextPort();
@@ -161,7 +162,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void stop() {
         
-        if (CommonUtils.isJava14OrLater()) {
+        if (isSupportedPlatform()) {
             
             if (updateWorker != null)
                 updateWorker.stop();
@@ -185,10 +186,17 @@ public final class DaapMediator implements FinalizeListener {
     }
     
     /**
+     * Restarts the DAAP server and re-registers it via mDNS.
+     * This is equivalent to:<p>
      *
+     * <code>
+     * stop();
+     * start();
+     * init();
+     * </code>
      */
     public synchronized void restart() throws IOException {
-        if (CommonUtils.isJava14OrLater()) {
+        if (isSupportedPlatform()) {
             
             if (isServerRunning())
                 stop();
@@ -213,7 +221,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void updateService() throws IOException {
         
-        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
+        if (isSupportedPlatform() && isServerRunning()) {
             rendezvous.updateService();
             updateWorker.setName(DaapSettings.DAAP_LIBRARY_NAME.getValue());
         }
@@ -223,7 +231,7 @@ public final class DaapMediator implements FinalizeListener {
      * Disconnects all clients
      */
     public synchronized void disconnectAll() {
-        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
+        if (isSupportedPlatform() && isServerRunning()) {
             server.disconnectAll();
         }
     }
@@ -239,9 +247,16 @@ public final class DaapMediator implements FinalizeListener {
     }
     
     /**
+     * A helper method.
+     */
+    private static boolean isSupportedPlatform() {
+        return CommonUtils.isJava14OrLater();
+    }
+    
+    /**
      * Returns true if the extension of name is a supported file type.
      */
-    private static boolean isSupportedFileType(String name) {
+    private static boolean isSupportedFormat(String name) {
         String[] types = DaapSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();
         for(int i = 0; i < types.length; i++) {
             if (name.endsWith(types[i])) {
@@ -255,8 +270,8 @@ public final class DaapMediator implements FinalizeListener {
      * Called by VisualConnectionCallback
      */
     public void handleFileManagerEvent(FileManagerEvent evt) {
-        System.out.println(evt);
-        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
+        
+        if (isSupportedPlatform() && isServerRunning()) {
               
             if (evt.isChangeEvent()) {
                 
@@ -282,7 +297,7 @@ public final class DaapMediator implements FinalizeListener {
                 
                 if (!(file instanceof IncompleteFileDesc)) {
                     String name = file.getName().toLowerCase(Locale.US);
-                    if (isSupportedFileType(name)) {
+                    if (isSupportedFormat(name)) {
                         
                         Song song = createSong(file);
                         
@@ -321,7 +336,7 @@ public final class DaapMediator implements FinalizeListener {
         
         this.annotateEnabled = enabled;
         
-        if (CommonUtils.isJava14OrLater() && isServerRunning() && enabled) {
+        if (isSupportedPlatform() && isServerRunning() && enabled) {
             
             // disable updateWorker
             updateWorker.setEnabled(false);
@@ -336,7 +351,7 @@ public final class DaapMediator implements FinalizeListener {
                 
                 if (!(file instanceof IncompleteFileDesc)) {
                     String name = file.getName().toLowerCase(Locale.US);
-                    if (isSupportedFileType(name)) {
+                    if (isSupportedFormat(name)) {
                         
                         URN urn = file.getSHA1Urn();
                         
@@ -376,7 +391,7 @@ public final class DaapMediator implements FinalizeListener {
             }
             
             // See 1)
-            // As all known URNs were removed from 'map' only
+            // As all known URNs were removed from 'map' and only
             // deleted FileDesc URNs can be leftover and we
             // must remove the associated Songs from the Library
             Iterator it = map.getSongIterator();
