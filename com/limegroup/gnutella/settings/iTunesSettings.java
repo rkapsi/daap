@@ -96,6 +96,6 @@ public class iTunesSettings extends LimeProps {
     /**
      * The password in clear text. A security hazard?
      */
-	public static StringSetting DAAP_PASSWORD =
-		FACTORY.createStringSetting("DAAP_PASSWORD", "");
+	public static PasswordSetting DAAP_PASSWORD =
+		FACTORY.createPasswordSetting("DAAP_PASSWORD", "");
 }
