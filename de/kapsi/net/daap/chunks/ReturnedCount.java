@@ -1,8 +1,15 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.IntChunk;
 
+/**
+ * The number of songs, databases or whatever are retuned with
+ * the current response. This chunk usually appears together with 
+ * SpecifiedTotalCount.
+ *
+ * @see SpecifiedTotalCount
+ */
 public class ReturnedCount extends IntChunk {
 	
 	public ReturnedCount() {

@@ -1,8 +1,12 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.IntChunk;
 
+/**
+ * Used for the <tt>/update</tt> request and represents
+ * the current revisionNumber of the Library.
+ */
 public class ServerRevision extends IntChunk {
 	
 	public ServerRevision() {

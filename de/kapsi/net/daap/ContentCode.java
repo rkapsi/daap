@@ -1,11 +1,15 @@
 
 package de.kapsi.net.daap;
 
-import de.kapsi.net.daap.chunks.*;
 import java.io.OutputStream;
 import java.io.IOException;
 
-public class ContentCode extends Dictionary {
+import de.kapsi.net.daap.chunks.ContentCodesNumber;
+import de.kapsi.net.daap.chunks.ContentCodesName;
+import de.kapsi.net.daap.chunks.ContentCodesType;
+import de.kapsi.net.daap.chunks.Dictionary;
+
+public final class ContentCode extends Dictionary {
 	
 	public ContentCode(String type, String name, int value) {
 		super();

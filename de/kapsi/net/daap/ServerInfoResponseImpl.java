@@ -1,16 +1,29 @@
 
 package de.kapsi.net.daap;
 
-import de.kapsi.net.daap.chunks.*;
-import java.io.OutputStream;
-import java.io.IOException;
+import de.kapsi.net.daap.chunks.Status;
+import de.kapsi.net.daap.chunks.TimeoutInterval;
+import de.kapsi.net.daap.chunks.DmapProtocolVersion;
+import de.kapsi.net.daap.chunks.DaapProtocolVersion;
+import de.kapsi.net.daap.chunks.ItemName;
+import de.kapsi.net.daap.chunks.LoginRequired;
+import de.kapsi.net.daap.chunks.SupportsAutoLogout;
+import de.kapsi.net.daap.chunks.SupportsUpdate;
+import de.kapsi.net.daap.chunks.SupportsPersistentIds;
+import de.kapsi.net.daap.chunks.SupportsExtensions;
+import de.kapsi.net.daap.chunks.SupportsBrowse;
+import de.kapsi.net.daap.chunks.SupportsQuery;
+import de.kapsi.net.daap.chunks.SupportsIndex;
+import de.kapsi.net.daap.chunks.SupportsResolve;
+import de.kapsi.net.daap.chunks.DatabaseCount;
+import de.kapsi.net.daap.chunks.ServerInfoResponse;
 
-public class ServerInfo extends ServerInfoResponse {
+public final class ServerInfoResponseImpl extends ServerInfoResponse {
 	
 	private final Status status = new Status(200);
 	private final TimeoutInterval timeout = new TimeoutInterval(1800);
-	private final DmapProtocolVersion dmapProt = new DmapProtocolVersion(0x00020000);
-	private final DaapProtocolVersion daapProt = new DaapProtocolVersion(0x00020000);
+	private final DmapProtocolVersion dmapProt = new DmapProtocolVersion(0x00020000); // 2.0.0
+	private final DaapProtocolVersion daapProt = new DaapProtocolVersion(0x00020000); // 2.0.0
 	private final ItemName itemName = new ItemName();
 	private final LoginRequired loginRequired = new LoginRequired(false);
 	private final SupportsAutoLogout supportsAutoLogout = new SupportsAutoLogout(false);
@@ -23,7 +36,7 @@ public class ServerInfo extends ServerInfoResponse {
 	private final SupportsResolve supportsResolve = new SupportsResolve(false);
 	private final DatabaseCount databaseCount = new DatabaseCount(1);
 	
-	public ServerInfo(String name) {
+	public ServerInfoResponseImpl(String name) {
 		super();
 		
 		itemName.setValue(name);

@@ -1,8 +1,11 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.BooleanChunk;
 
+/**
+ *
+ */
 public class SongCompilation extends BooleanChunk {
 	
 	public SongCompilation() {

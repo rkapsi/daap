@@ -1,10 +1,10 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.ByteChunk;
 
 /**
- * msau, dmap.authenticationmethod, 2
+ * Unknown purpose.
  */
 public class AuthenticationMethod extends ByteChunk {
 	

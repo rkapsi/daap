@@ -16,28 +16,43 @@ public class Playlist implements SongListener {
 
 	private ItemId itemId;
 	private ItemName itemName;
-	//private final ItemCount itemCount = new ItemCount(0);
+	//private ItemCount itemCount;
 	
 	private PersistentId persistentId;
-	private SmartPlaylist smartPlaylist;
+	//private SmartPlaylist smartPlaylist;
 	//private final ContainerItemId containerItemId = new ContainerItemId();
 	
-	private ArrayList items = new ArrayList();
-	private ArrayList newItems = new ArrayList();
-	private ArrayList deletedItems = new ArrayList();
+	private ArrayList items;
+	private ArrayList newItems;
+	private ArrayList deletedItems;
 	
-	private HashMap properties = new HashMap();
-	private HashSet listener = new HashSet();
-		
+	private HashMap properties;
+    
+    private PlaylistSongs playlistSongs;
+    private PlaylistSongs playlistSongsUpdate;
+    
+    private Playlist masterPlaylist;
+    
+    private boolean notifyMasterPlaylistAddSong = true;
+    private boolean notifyMasterPlaylistRemoveSong = false;
+    private boolean notifyMasterPlaylistUpdateSong = true;
+    private boolean isclone = true;
+    
 	public Playlist(String name) {
-		
+		isclone = false;
 		synchronized(Playlist.class) {
 			itemId = new ItemId(PLAYLIST_ID++);
 		}
 		
-		itemName = new ItemName(name);
+        items = new ArrayList();
+        newItems = new ArrayList();
+        deletedItems = new ArrayList();
+        properties = new HashMap();
+        
+        itemName = new ItemName(name);
 		persistentId = new PersistentId(itemId.getValue());
-		smartPlaylist = new SmartPlaylist(false);
+		//smartPlaylist = new SmartPlaylist(true);
+		//itemCount = new ItemCount(0);
 		
 		add(itemId);
 		add(itemName);
@@ -48,13 +63,15 @@ public class Playlist implements SongListener {
 	}
 	
 	// required for createSnapshot()
-	private Playlist(int id, String name) {
+	private Playlist(String name, int id) {
 		
+        properties = new HashMap();
+        
 		this.itemId = new ItemId(id);
 		this.itemName = new ItemName(name);
 		
 		persistentId = new PersistentId(itemId.getValue());
-		smartPlaylist = new SmartPlaylist(false);
+		//smartPlaylist = new SmartPlaylist(false);
 		
 		add(itemId);
 		add(itemName);
@@ -63,7 +80,11 @@ public class Playlist implements SongListener {
 		//add(smartPlaylist);
 		//add(containerItemId);
 	}
-	
+    
+    void setMasterPlaylist(Playlist masterPlaylist) {
+        this.masterPlaylist = masterPlaylist;
+    }
+    
 	public int getId() {
 		return itemId.getValue();
 	}
@@ -76,14 +97,6 @@ public class Playlist implements SongListener {
 		return (Chunk)properties.get(property);
 	}
 	
-	void addListener(SongListener l) {
-		listener.add(l);
-	}
-	
-	void removeListener(SongListener l) {
-		listener.remove(l);
-	}
-	
 	public void setName(String name) {
 		itemName.setValue(name);
 	}
@@ -92,14 +105,42 @@ public class Playlist implements SongListener {
 		return itemName.getValue();
 	}
 	
-	public List getItems(boolean updateType) {
-		return (!updateType) ? items : newItems;
-	}
-	
-	public List getDeletedItems() {
-		return deletedItems;
-	}
-	
+    /*public void setSmartPlaylist(boolean smart) {
+        smartPlaylist.setValue(smart);
+    }
+    
+    public boolean isSmartPlaylist() {
+        return smartPlaylist.getValue();
+    }*/
+    
+    public Song getSong(int songId) {
+        Iterator it = items.iterator();
+        while(it.hasNext()) {
+            Song song = (Song)it.next();
+            if (song.getId() == songId) {
+                return song;
+            }
+        }
+        
+        return null;
+    }
+    
+    public int size() {
+        return items.size();
+    }
+
+    public List getSongs() {
+        return items;
+    }
+    
+    public List getNewSongs() {
+        return newItems;
+    }
+    
+    public List getDeletedSongs() {
+        return deletedItems;
+    }
+    
 	public void addSong(Song song) {
 		
 		if (items.contains(song)==false) {
@@ -111,13 +152,12 @@ public class Playlist implements SongListener {
 			Integer id = new Integer(song.getContainerId());
 			deletedItems.remove(id);
 			
-			Iterator it = listener.iterator();
-			while(it.hasNext()) {
-				((SongListener)it.next()).songEvent(song, SongListener.SONG_ADDED);
-			}
+			if (notifyMasterPlaylistAddSong && masterPlaylist != null) {
+                masterPlaylist.addSong(song);
+            }
 		}
 	}
-	
+    
 	public boolean removeSong(Song song) {
 		
 		if (items.remove(song)) {
@@ -128,10 +168,9 @@ public class Playlist implements SongListener {
 			Integer id = new Integer(song.getContainerId());
 			deletedItems.add(id);
 			
-			Iterator it = listener.iterator();
-			while(it.hasNext()) {
-				((SongListener)it.next()).songEvent(song, SongListener.SONG_DELETED);
-			}
+			if (notifyMasterPlaylistRemoveSong && masterPlaylist != null) {
+                masterPlaylist.removeSong(song);
+            }
 			
 			return true;
 		}
@@ -143,26 +182,12 @@ public class Playlist implements SongListener {
 		if (event == SongListener.SONG_CHANGED) {
 			if (newItems.contains(song)==false) {
 				newItems.add(song);
+                
+                if (notifyMasterPlaylistUpdateSong && masterPlaylist != null) {
+                    masterPlaylist.songEvent(song, event);
+                }
 			}
 		}
-	}
-	
-	void destroy() {
-		
-		items.clear();
-		items = null;
-		
-		newItems.clear();
-		newItems = null;
-		
-		deletedItems.clear();
-		deletedItems = null;
-		
-		properties.clear();
-		properties = null;
-		
-		listener.clear();
-		listener = null;
 	}
 	
 	public boolean contains(Song song) {
@@ -172,7 +197,14 @@ public class Playlist implements SongListener {
 	public synchronized Object select(DaapRequest request) {
 		
 		if (request.isPlaylistSongsRequest()) {
-			return getPlaylistSongs(request);
+            
+            if (request.isUpdateType()) {
+                return playlistSongsUpdate;
+                
+            } else {
+                return playlistSongs;
+                
+            }
 		}
 		
 		if (LOG.isInfoEnabled()) {
@@ -182,102 +214,60 @@ public class Playlist implements SongListener {
 		return null;
 	}
 	
-	private PlaylistSongs getPlaylistSongs(DaapRequest request) {
-		
-		int revisionNumber = request.getRevisionNumber();
-		int delta = request.getDelta();
-		
-		boolean updateType = (delta != DaapRequest.UNDEF_VALUE) && (delta < revisionNumber);
-		
-		PlaylistSongs playlistSongs = new PlaylistSongs();
-		
-		playlistSongs.add(new Status(200));
-		playlistSongs.add(new UpdateType(updateType));
-	
-		int secifiedTotalCount = items.size()-deletedItems.size();
-		int returnedCount = newItems.size();
-		
-		playlistSongs.add(new SpecifiedTotalCount(secifiedTotalCount));
-		playlistSongs.add(new ReturnedCount(returnedCount));
-		
-		Listing listing = new Listing();
-		
-		Iterator it = getItems(updateType).iterator();
-		
-		while(it.hasNext()) {
-			ListingItem listingItem = new ListingItem();
-			Song song = (Song)it.next();
-			
-			Iterator properties = new ArrayIterator(DaapUtil.PLAYLIST_SONGS_META);
-			while(properties.hasNext()) {
-				String key = (String)properties.next();
-				
-				Chunk chunk = song.getProperty(key);
-				
-				if (chunk != null) {
-					listingItem.add(chunk);
-				/*} else if (key.equals("dmap.containeritemid")) {
-					chunk = playlist.getProperty(key);
-					
-					if (chunk != null) {
-						listingItem.add(chunk);
-					} else if (LOG.isErrorEnabled()) {
-						LOG.error(key + " not definied in Playlist!");
-					}*/
-				} else if (LOG.isInfoEnabled()) {
-					LOG.info("Unknown chunk type: " + key);
-				}
-			}
-			
-			listing.add(listingItem);
+    void destroy() {
+        
+        if (items != null) {
+            items.clear();
+            items = null;
 		}
-	
-		playlistSongs.add(listing);
-		
-		if (updateType) {
-		
-			it = getDeletedItems().iterator();
-			
-			if (it.hasNext()) {
-				
-				DeletedIdListing deletedListing = new DeletedIdListing();
-				
-				while(it.hasNext()) {
-					Integer itemId = (Integer)it.next();
-					deletedListing.add(new ItemId(itemId.intValue()));
-				}
-		
-				playlistSongs.add(deletedListing);
-			}
+        
+        if (newItems != null) {
+            newItems.clear();
+            newItems = null;
 		}
-		
-		return playlistSongs;
+        
+        if (deletedItems != null) {
+            deletedItems.clear();
+            deletedItems = null;
+		}
+        
+        if (properties != null) {
+            properties.clear();
+            properties = null;
+		}
+        
+        playlistSongs = null;
+        playlistSongsUpdate = null;
 	}
-	
-	void createNewRevision() {
+    
+	void open() {
 		newItems.clear();
 		deletedItems.clear();
 	}
 	
+    void close() {
+        
+        playlistSongs = new PlaylistSongsImpl(items, newItems, deletedItems, false);
+        playlistSongsUpdate = new PlaylistSongsImpl(items, newItems, deletedItems, true);
+    }
+    
 	Playlist createSnapshot() {
 	
-		Playlist clone = new Playlist(this.itemId.getValue(), this.itemName.getValue());
-		
-		Iterator it = this.items.iterator();
-		while(it.hasNext()) {
-			clone.items.add(it.next());
-		}
-		
-		it = this.newItems.iterator();
-		while(it.hasNext()) {
-			clone.newItems.add(it.next());
-		}
-		
-		it = this.deletedItems.iterator();
-		while(it.hasNext()) {
-			clone.deletedItems.add(it.next());
-		}
+		Playlist clone = new Playlist(itemName.getValue(), itemId.getValue());
+        
+        clone.playlistSongs = this.playlistSongs;
+        clone.playlistSongsUpdate = this.playlistSongsUpdate;
+        
+        // 
+        //clone.items = null;
+        //clone.newItems = null;
+        //clone.deletedItems = null;
+        //clone.properties = null;
 		
 		return clone;
 	}
+    
+    public String toString() {
+        return getName();
+    }
 }

@@ -1,9 +1,12 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.BooleanChunk;
 
-public class SupportsAutoLogout extends BooleanChunk {
+/**
+ * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfo ServerInfo}
+ */
+ public class SupportsAutoLogout extends BooleanChunk {
 	
 	public SupportsAutoLogout() {
 		this(false);

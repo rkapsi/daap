@@ -1,7 +1,7 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.IntChunk;
 
 public class ContainerCount extends IntChunk {
 	

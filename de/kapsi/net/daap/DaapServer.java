@@ -5,6 +5,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import de.kapsi.net.daap.chunks.ServerInfoResponse;
+import de.kapsi.net.daap.chunks.ContentCodesResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -23,8 +26,8 @@ public class DaapServer implements Runnable {
 	private boolean serve = false;
 	
 	private Library library;
-	private ServerInfo serverInfo;
-	private ContentCodes contentCodes;
+	private ServerInfoResponse serverInfo;
+	private ContentCodesResponse contentCodes;
 	
 	private int port;
 	private ServerSocket serverSocket;
@@ -44,8 +47,8 @@ public class DaapServer implements Runnable {
 		this.library = library;
 		this.port = port;
 		
-		serverInfo = new ServerInfo(library.getName());
-		contentCodes = new ContentCodes();
+		serverInfo = new ServerInfoResponseImpl(library.getName());
+		contentCodes = new ContentCodesResponseImpl();
 	
 		this.group = new ThreadGroup("DaapServer Thread Group");
 		

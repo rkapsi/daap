@@ -1,8 +1,11 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.StringChunk;
 
+/**
+ * The album of this song. You can maybe map this to an IDv2/IDv3 Tag.
+ */
 public class SongAlbum extends StringChunk {
 	
 	public SongAlbum() {

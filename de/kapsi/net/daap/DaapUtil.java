@@ -8,7 +8,6 @@ import java.util.zip.*;
 
 import org.apache.commons.httpclient.*;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -150,61 +149,7 @@ public class DaapUtil {
 			//}
 		}
 		return list;
-		
-		/*ArrayList list = new ArrayList();
-		list.add("dmap.itemkind");
-		list.add("daap.songalbum");
-		list.add("daap.songgrouping");
-		list.add("daap.songartist");
-		list.add("daap.songbeatsperminute");
-		list.add("daap.songbitrate");//
-		list.add("daap.songcomment");
-		list.add("daap.songcompilation");
-		list.add("daap.songcomposer");
-		list.add("daap.songdateadded");
-		list.add("daap.songdatemodified");//
-		list.add("daap.songdisccount");
-		list.add("daap.songdiscnumber");
-		list.add("daap.songdatakind");
-		list.add("daap.songformat");
-		list.add("daap.songeqpreset");
-		list.add("daap.songgenre");
-		list.add("dmap.itemid");
-		list.add("daap.songdescription");
-		list.add("dmap.itemname");
-		//list.add("com.apple.itunes.norm-volume");
-		list.add("dmap.persistentid");
-		list.add("daap.songdisabled");
-		list.add("daap.songrelativevolume");
-		list.add("daap.songsamplerate");
-		list.add("daap.songsize");
-		list.add("daap.songstarttime");
-		list.add("daap.songstoptime");
-		list.add("daap.songtime");
-		list.add("daap.songtrackcount");
-		list.add("daap.songtracknumber");
-		list.add("daap.songuserrating");
-		list.add("daap.songyear");
-		list.add("com.apple.itunes.smart-playlist");
-		list.add("dmap.containeritemid");
-		list.add("daap.songdataurl");
-
-		return list;*/
 	}
-	
-	/*public static final String getDefaultHeader(int length, String encoding) {
-		StringBuffer buffer = new StringBuffer();
-		
-		buffer.append("HTTP/1.1 200 OK\r\n");
-		buffer.append(new Header("Date", now()).toExternalForm());
-		buffer.append(new Header("DAAP-Server", "iTunes/4.2 (Mac OS X)").toExternalForm());
-		buffer.append(new Header("Content-Type", "application/x-dmap-tagged").toExternalForm());
-		buffer.append(new Header("Content-Length", Integer.toString(length)).toExternalForm());
-		buffer.append(new Header("Content-Encoding", encoding).toExternalForm());
-		buffer.append("\r\n");
-		
-		return buffer.toString();
-	}*/
 	
 	public static final void dump(String file, byte[] bytes) throws IOException {
 		FileOutputStream out = new FileOutputStream(new File(file));
@@ -226,7 +171,7 @@ public class DaapUtil {
 		out.close();
 	}
 	
-	/*public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 		
 		final String name = "ChunkClasses";
 		final String javaname = name + ".java";
@@ -274,5 +219,5 @@ public class DaapUtil {
 		
 		out.write(buffer.toString());
 		out.close();
-	}*/
+	}
 }

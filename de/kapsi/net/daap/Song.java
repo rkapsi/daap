@@ -354,7 +354,6 @@ public class Song {
 	}
 	
 	Chunk getProperty(String property) {
-		//System.out.println("property: " + property + ", " + properties.containsKey(property));
 		return (Chunk)properties.get(property);
 	}
 	

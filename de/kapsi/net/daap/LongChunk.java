@@ -7,7 +7,9 @@ import java.io.IOException;
 
 public class LongChunk extends AbstractChunk {
 	
-	private byte[] value;
+	private static final BigInteger MAX_VALUE = new BigInteger("FFFFFFFFFFFFFFFF", 16);
+	
+	private BigInteger value;
 	
 	public LongChunk(String type, String name, long value) {
 		super(type, name);
@@ -19,41 +21,29 @@ public class LongChunk extends AbstractChunk {
 		setValue(value);
 	}
 	
+	public LongChunk(String type, String name, BigInteger value) {
+		super(type, name);
+		setValue(value);
+	}
+	
 	public BigInteger getValue() {
-		return new BigInteger(value);
+		return value;
 	}
 	
 	public void setValue(long value) {
-		this.value = new byte[chunkLength()];
-		ByteUtil.toByte64BE(value, this.value, 0);
+		setValue(new BigInteger(Long.toHexString(value), 16));
 	}
 	
 	public void setValue(String value) {
-		if (value.length() > 16) {
-			throw new IllegalArgumentException();
-		}
-		
 		setValue(new BigInteger(value, 16));
 	}
 	
 	public void setValue(BigInteger value) {
-		
-		if (value.compareTo(new BigInteger("FFFFFFFFFFFFFFFF", 16)) > 0) {
+		if (value == null || value.compareTo(MAX_VALUE) > 0) {
 			throw new IllegalArgumentException();
 		}
 		
-		byte[] bytes = value.toByteArray();
-		this.value = new byte[chunkLength()];
-		
-		int i = chunkLength()-1;
-		int j = bytes.length-1;
-		
-		while(i >= 0 && j >= 0) {
-			this.value[i] = bytes[j];
-			
-			i--;
-			j--;
-		}
+		this.value = value;
 	}
 	
 	public int chunkLength() {
@@ -68,7 +58,20 @@ public class LongChunk extends AbstractChunk {
 		
 		super.serialize(out);
 		
-		out.write(value, 0, value.length);
+		byte[] bytes = value.toByteArray();
+		byte[] tmp = new byte[chunkLength()];
+		
+		int i = chunkLength()-1;
+		int j = bytes.length-1;
+		
+		while(i >= 0 && j >= 0) {
+			tmp[i] = bytes[j];
+			
+			i--;
+			j--;
+		}
+		
+		out.write(tmp, 0, tmp.length);
 	}
 	
 	public String toString() {

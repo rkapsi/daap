@@ -1,8 +1,11 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.IntChunk;
 
+/**
+ * Unknown purpose
+ */
 public class ParentContainerId extends IntChunk {
 	
 	public ParentContainerId() {
@@ -12,6 +15,4 @@ public class ParentContainerId extends IntChunk {
 	public ParentContainerId(int id) {
 		super("mpco", "dmap.parentcontainerid", id);
 	}
-	
-	
 }

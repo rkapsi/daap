@@ -1,8 +1,13 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.BooleanChunk;
 
+/**
+ * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfo ServerInfo}
+ * but Auth requests are triggered by HTTP and iTunes doesn't care about
+ * this chunk
+ */
 public class LoginRequired extends BooleanChunk {
 	
 	public LoginRequired() {

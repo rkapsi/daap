@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
 
 public class DaapRequest {
 	
-	public static final int UNDEF_VALUE			= 0;	//  zero means not defined
+	public static final int UNDEF_VALUE			= 0;	//  zero means not defined (system wide)
 	
 	public static final int SERVER_INFO			= 1;	//  "/server-info"
 	public static final int CONTENT_CODES		= 2;	//  "/content-codes"
@@ -47,8 +47,9 @@ public class DaapRequest {
 	private int itemId = UNDEF_VALUE;
 	
 	private Header[] headers;
-	private boolean serverSideRequest;
-	
+	private boolean isServerSideRequest;
+	private boolean isUpdateType;
+    
 	public static DaapRequest parseRequest(String requestLine) throws URIException {
 		
 		String method = null;
@@ -88,13 +89,16 @@ public class DaapRequest {
 		this.delta = delta;
 		
 		this.requestType = UPDATE;
-		this.serverSideRequest = true;
+		this.isServerSideRequest = true;
+        this.isUpdateType = false;
 	}
 	
 	private DaapRequest(String method, URI uri, String protocol) throws URIException {
 		
-		this.serverSideRequest = false;
-		this.method = method;
+		this.isServerSideRequest = false;
+		this.isUpdateType = false;
+        
+        this.method = method;
 		this.uri = uri;
 		this.protocol = protocol;
 		
@@ -138,11 +142,13 @@ public class DaapRequest {
 				meta = DaapUtil.parseMeta((String)queryMap.get("meta"));
 			}
 			
+            isUpdateType = (delta != UNDEF_VALUE) && (delta < revisionNumber);
+            
+            
 			// "/databases/id/items"				3 tokens
 			// "/databases/id/containers"			3 tokens
 			// "/databases/id/items/id.format"		4 tokens
 			// "/databases/id/containers/id/items"  5 tokens
-		
 			if (path.equals("/databases")) {
 				requestType = DATABASES;
 			
@@ -318,9 +324,13 @@ public class DaapRequest {
 	}
 	
 	public boolean isServerSideRequest() {
-		return serverSideRequest;
+		return isServerSideRequest;
 	}
 	
+    public boolean isUpdateType() {
+        return isUpdateType;
+    }
+    
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		

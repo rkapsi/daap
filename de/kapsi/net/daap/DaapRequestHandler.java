@@ -17,12 +17,12 @@ public class DaapRequestHandler {
 	private static final Log LOG = LogFactory.getLog(DaapRequestHandler.class);
 	
 	private Library library;
-	private ServerInfo serverInfo;
-	private ContentCodes contentCodes;
+	private ServerInfoResponse serverInfo;
+	private ContentCodesResponse contentCodes;
 	
 	private DaapAuthenticator authenticator;
 	
-	public DaapRequestHandler(ServerInfo serverInfo, ContentCodes contentCodes, Library library) {
+	public DaapRequestHandler(ServerInfoResponse serverInfo, ContentCodesResponse contentCodes, Library library) {
 		this.serverInfo = serverInfo;
 		this.contentCodes = contentCodes;
 		this.library = library;
@@ -160,7 +160,7 @@ public class DaapRequestHandler {
 		
 		DaapSession session = conn.getSession(true);
 		
-		Login login = new Login(session.getSessionId().intValue());
+		LoginResponseImpl login = new LoginResponseImpl(session.getSessionId().intValue());
 		
 		DaapResponse response = 
 			DaapResponse.createResponse(login);
@@ -220,7 +220,7 @@ public class DaapRequestHandler {
 			// if revision is 0 (i.e. no database available) will iTunes
 			// disconnect...
 			
-			Update update = new Update(revision.intValue());
+			UpdateResponseImpl update = new UpdateResponseImpl(revision.intValue());
 			
 			DaapResponse response = 
 				DaapResponse.createResponse(update);

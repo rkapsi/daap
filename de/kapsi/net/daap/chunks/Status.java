@@ -1,12 +1,21 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.*;
+import de.kapsi.net.daap.IntChunk;
 
+/**
+ * Seems to be the equivalent to HTTP/1.1 200 OK but it's never
+ * changing even if an error occurs.
+ */
 public class Status extends IntChunk {
 	
+	/**
+	 * The default status
+	 */
+	public static final int STATUS_200 = 200;
+	
 	public Status() {
-		this(0);
+		this(STATUS_200);
 	}
 	
 	public Status(int status) {

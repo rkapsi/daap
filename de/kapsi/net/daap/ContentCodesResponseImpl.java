@@ -1,24 +1,24 @@
 
 package de.kapsi.net.daap;
 
-import de.kapsi.net.daap.chunks.*;
-
 import java.lang.reflect.*;
 import java.util.ArrayList;
+
+import de.kapsi.net.daap.chunks.Status;
+import de.kapsi.net.daap.chunks.ChunkClasses;
+import de.kapsi.net.daap.chunks.ContentCodesResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class ContentCodes extends ContainerChunk {
+public final class ContentCodesResponseImpl extends ContentCodesResponse {
 	
-	private static final Log LOG = LogFactory.getLog(ContentCodes.class);
+	private static final Log LOG = LogFactory.getLog(ContentCodesResponseImpl.class);
 	
-	private final Status status = new Status(200);
-	
-	public ContentCodes() {
-		super("mccr", "dmap.contentcodesresponse", new ArrayList());
+	public ContentCodesResponseImpl() {
+		super();
 		
-		add(status);
+		add(new Status(200));
 		
 		String[] names = ChunkClasses.names;
 		
@@ -35,12 +35,11 @@ public class ContentCodes extends ContainerChunk {
 				
 				Object inst = clazz.newInstance();
 				
-				String chunkType = (String)methodChunkType.invoke(inst, arg2);
-				String chunkName = (String)methodChunkName.invoke(inst, arg2);
-				int chunkTypeCode = ((Integer)methodChunkTypeCode.invoke(inst, arg2)).intValue();
-				//System.out.println(chunkType + ", " + chunkName + ", " + chunkTypeCode);
+				String type = (String)methodChunkType.invoke(inst, arg2);
+				String name = (String)methodChunkName.invoke(inst, arg2);
+				int code = ((Integer)methodChunkTypeCode.invoke(inst, arg2)).intValue();
 				
-				add(new ContentCode(chunkType, chunkName, chunkTypeCode));
+				add(new ContentCode(type, name, code));
 				
 			} catch (ClassNotFoundException err) {
 				LOG.error(err);

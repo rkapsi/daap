@@ -24,6 +24,9 @@ public class Library {
 	private Database current;
 	private Database temp;
 	
+    private ServerDatabases serverDatabases;
+    private ServerDatabases serverDatabasesUpdate;
+    
 	private boolean open = false;
 	
 	public Library(String name) {
@@ -59,11 +62,11 @@ public class Library {
 		}
 	}
 	
-	public synchronized boolean isOpen() {
+	public boolean isOpen() {
 		return open;
 	}
 	
-	public synchronized void open() {
+	public void open() {
 		
 		if (open) {
 			if (LOG.isWarnEnabled()) {
@@ -81,13 +84,13 @@ public class Library {
 			temp = current;
 			current = temp.createSnapshot();
 			
-			temp.createNewRevision();
+			temp.open();
 		}
 		
 		open = true;
 	}
 	
-	public synchronized void close() {
+	public void close() {
 		if (!open) {
 			if (LOG.isWarnEnabled()) {
 				LOG.warn("Library wasn't opened for edit");
@@ -100,23 +103,29 @@ public class Library {
 		}
 
 		current = temp;
+        current.close();
 		temp = null;
 		
-		open = false;
-		
+        ArrayList databases = new ArrayList();
+        databases.add(current);
+        
+        serverDatabases = new ServerDatabasesImpl(databases, false);
+        serverDatabasesUpdate = new ServerDatabasesImpl(databases, true);
+        
 		if (revisions.size() >= keepNumRevisions) {
 			Database old = (Database)revisions.remove(0);
 			old.destroy();
 		}
+        
+        open = false;
 	}
 	
 	public synchronized Object select(DaapRequest request) {
 	
-		int revisionNumber = request.getRevisionNumber();
-		int delta = request.getDelta();
-		
 		if (request.isUpdateRequest()) {
 			
+            int delta = request.getDelta();
+        
 			// What's the next revision of the database 
 			// iTunes should ask for?
 			if (delta == DaapRequest.UNDEF_VALUE) { // 1st. request, iTunes should/will 
@@ -140,13 +149,17 @@ public class Library {
 			if (database == null) {
 				
 				if (LOG.isInfoEnabled()) {
-					LOG.info("No database with this revision known: " + revisionNumber);
+					LOG.info("No database with this revision known: " + request.getRevisionNumber());
 				}
 				
 				return null;
 			}
-		
-			return getServerDatabases(request, database);
+            
+            if (request.isUpdateType()) {
+                return serverDatabasesUpdate;
+            } else {
+                return serverDatabases;
+            }
 			
 		} else if (request.isSongRequest() 
 					|| request.isDatabaseSongsRequest() 
@@ -156,7 +169,7 @@ public class Library {
 			Database database = getDatabase(request);
 			if (database == null) {
 				if (LOG.isInfoEnabled()) {
-					LOG.info("No database with this revision known: " + revisionNumber);
+					LOG.info("No database with this revision known: " + request.getRevisionNumber());
 				}
 				
 				return null;
@@ -195,11 +208,12 @@ public class Library {
 	}
 	
 	public void addSong(Song song) {
+    
 		if (!open) {
 			throw new IllegalStateException();
 		}
 		
-		temp.addSong(song);
+		temp.getMasterPlaylist().addSong(song);
 	}
 	
 	public boolean removeSong(Song song) {
@@ -208,11 +222,7 @@ public class Library {
 			throw new IllegalStateException();
 		}
 		
-		if (temp.removeSong(song)) {
-			return true;
-		}
-		
-		return false;
+		return temp.getMasterPlaylist().removeSong(song);
 	}
 	
 	public void addPlaylist(Playlist playlist) {
@@ -233,53 +243,11 @@ public class Library {
 		return temp.removePlaylist(playlist);
 	}
 	
-	private ServerDatabases getServerDatabases(DaapRequest request, Database database) {
-		
-		int revisionNumber = request.getRevisionNumber();
-		int delta = request.getDelta();
-		
-		boolean updateType = (delta != DaapRequest.UNDEF_VALUE) // i.e. 1st request (no update)
-								&& (delta < revisionNumber);	// iTunes already knows this revision!?
-																// (maybe an error!)
-		
-		ServerDatabases serverDatabases = new ServerDatabases();
-		
-		serverDatabases.add(new Status(200));
-		serverDatabases.add(new UpdateType(updateType));
-	
-		// Looks like DAAP supports multibe Databases but iTunes
-		// shows only one (it requests the data for the others but
-		// it doesn't show the DBs, so I'm not dealting with this)
-		
-		serverDatabases.add(new SpecifiedTotalCount(1));
-		serverDatabases.add(new ReturnedCount(1));
-		
-		Listing listing = new Listing();
-		
-		//Iterator it = databases.iterator();
-		//while(it.hasNext()) {
-			ListingItem listingItem = new ListingItem();
-			//Database database = (Database)it.next();
-			
-			listingItem.add(new ItemId(current.getId()));
-			listingItem.add(new PersistentId(current.getPersistentId()));
-			listingItem.add(new ItemName(current.getName()));
-			
-			listingItem.add(new ItemCount(current.getItems(updateType).size()));
-			listingItem.add(new ContainerCount(current.getContainers().size()));
-			
-			listing.add(listingItem);
-		//}
-		
-		serverDatabases.add(listing);
-		return serverDatabases;
-	}
-	
 	public int size() {
 		if (current==null) {
 			return 0;
 		} else {
-			return current.getItems(false).size();
+			return current.getMasterPlaylist().size();
 		}
 	}
 	
