@@ -105,7 +105,14 @@
         </javadoc>
     </target>
 
-    <target name="daap">
+    <target name="jar">
+        <javac srcdir="${basedir}" 
+        			destdir="${basedir}" 
+        			excludes="**/stubs/* com/limegroup/gnutella/*/**" 
+        			deprecation="no">
+            <classpath refid="default.classpath"/>
+        </javac>
+        
         <jar destfile="daap.jar" 
                         basedir="${basedir}" 
                         includes="**/*.class"
