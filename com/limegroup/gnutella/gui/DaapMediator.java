@@ -42,6 +42,7 @@ import javax.jmdns.ServiceInfo;
 import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.DaapServer;
+import de.kapsi.net.daap.DaapServerFactory;
 import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.DaapStreamSource;
@@ -101,7 +102,7 @@ public final class DaapMediator implements FinalizeListener {
                 updateWorker = new UpdateWorker();
                 
                 LimeConfig config = new LimeConfig();
-                server = new DaapServer(library, config);
+                server = DaapServerFactory.createServer(library, config, true);
                 server.setAuthenticator(new LimeAuthenticator());
                 server.setStreamSource(new LimeStreamSource());
                 server.setFilter(new LimeFilter());
@@ -110,7 +111,7 @@ public final class DaapMediator implements FinalizeListener {
                 
                 for(int i = 0; i < attempts; i++) {
                     try {
-                        server.init();
+                        server.bind();
                         break;
                     } catch (BindException bindErr) {
                         if (i == attempts-1)
@@ -381,7 +382,7 @@ public final class DaapMediator implements FinalizeListener {
             // 'Get Info' dialog are Songs assumed as MP3 until
             // a format is set explicit.
             
-            song.setFormat(ext);
+            song.setFormat(ext.toLowerCase(Locale.US));
             
             updateSongMeta(song, desc);
         }
@@ -548,7 +549,7 @@ public final class DaapMediator implements FinalizeListener {
         public LimeStreamSource() {
         }
         
-        public InputStream getSource(Song song) throws IOException {
+        public FileInputStream getSource(Song song) throws IOException {
             URN urn = map.get(song);
             
             if (urn != null) {
@@ -557,8 +558,7 @@ public final class DaapMediator implements FinalizeListener {
                 if (fileDesc != null) {
                     File file = fileDesc.getFile();
                     
-                    BufferedInputStream in
-                    = new BufferedInputStream(new FileInputStream(file));
+                    FileInputStream in = new FileInputStream(file);
                     
                     return in;
                 }

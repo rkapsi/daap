@@ -4,13 +4,17 @@ package de.kapsi.net.daap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.ItemId;
-import de.kapsi.net.daap.chunks.ItemName;
-import de.kapsi.net.daap.chunks.PersistentId;
-import de.kapsi.net.daap.chunks.PlaylistSongs;
-//import de.kapsi.net.daap.chunks.ItemCount;
-//import de.kapsi.net.daap.chunks.SmartPlaylist;
-//import de.kapsi.net.daap.chunks.ContainerItemId;
+import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.chunks.AbstractChunk;
+import de.kapsi.net.daap.chunks.PlaylistSongsImpl;
+
+import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.ItemName;
+import de.kapsi.net.daap.chunks.impl.PersistentId;
+import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
+//import de.kapsi.net.daap.chunks.impl.ItemCount;
+//import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
+//import de.kapsi.net.daap.chunks.impl.ContainerItemId;
 
 import java.util.Iterator;
 import java.util.List;
@@ -106,7 +110,7 @@ public class Playlist implements SongListener {
         properties.put(chunk.getName(), chunk);
     }
     
-    Chunk getProperty(String property) {
+    public Chunk getProperty(String property) {
         return (Chunk)properties.get(property);
     }
     
@@ -131,7 +135,7 @@ public class Playlist implements SongListener {
      * <tt>null</tt> if this id is unknown for
      * this Playlist
      */
-    Song getSong(int songId) {
+    public Song getSong(int songId) {
         Iterator it = items.iterator();
         while(it.hasNext()) {
             Song song = (Song)it.next();
@@ -153,21 +157,21 @@ public class Playlist implements SongListener {
     /**
      * Used internally by Database
      */
-    List getSongs() {
+    public List getSongs() {
         return items;
     }
     
     /**
      * Used internally by Database
      */
-    List getNewSongs() {
+    public List getNewSongs() {
         return newItems;
     }
     
     /**
      * Used internally by Database
      */
-    List getDeletedSongs() {
+    public List getDeletedSongs() {
         return deletedItems;
     }
     

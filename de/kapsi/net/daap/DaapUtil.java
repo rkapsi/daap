@@ -6,6 +6,12 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
+import java.nio.ByteBuffer;
+
+import org.apache.commons.httpclient.Header;
+
+import de.kapsi.net.daap.chunks.Chunk;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -14,10 +20,22 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class DaapUtil {
     
+    private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
+    private static final String ISO_8859_1 = "ISO-8859-1";
+    
     private static final Log LOG = LogFactory.getLog(DaapUtil.class);
     
     private final static SimpleDateFormat formatter
     = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z", Locale.US);
+    
+    private final static Random generator = new Random();
+    
+    static {
+        // warm up...
+        for(int i = 0; i < 100; i++) {
+            generator.nextInt();
+        }
+    }
     
     public static final String[] DATABASE_SONGS_META = {
         "dmap.itemkind",
@@ -99,9 +117,9 @@ public final class DaapUtil {
      * Serializes the <tt>chunk</tt> and compresses it optionally.
      * The serialized data is returned as a byte-Array.
      */
-    public static final byte[] serialize(Chunk chunk, boolean compress) 
-            throws IOException {
-                
+    public static final byte[] serialize(Chunk chunk, boolean compress)
+    throws IOException {
+        
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         
         if (compress) {
@@ -144,7 +162,7 @@ public final class DaapUtil {
         ArrayList list = new ArrayList();
         while(tok.hasMoreTokens()) {
             String token = tok.nextToken();
-
+     
             if (token.equals("dmap.itemkind")) {
                     list.add(0, token);
             } else if (!token.equals("com.apple.itunes.norm-volume")) {
@@ -169,73 +187,91 @@ public final class DaapUtil {
         return list;
     }
     
-    /*public static final void dump(String file, byte[] bytes) throws IOException {
-            FileOutputStream out = new FileOutputStream(new File(file));
-            out.write(bytes, 0, bytes.length);
-            out.close();
+    public static Integer createSessionId(Set knownIDs) {
+        Integer sessionId = null;
+        
+        while(sessionId == null || knownIDs.contains(sessionId)) {
+            int tmp = generator.nextInt();
+            
+            if (tmp == 0) {
+                continue;
+            } else if (tmp < 0) {
+                tmp = -tmp;
+            }
+            
+            sessionId = new Integer(tmp);
+        }
+        
+        return sessionId;
     }
-
+    
+    /*public static final void dump(String file, byte[] bytes) throws IOException {
+        FileOutputStream out = new FileOutputStream(new File(file));
+        out.write(bytes, 0, bytes.length);
+        out.close();
+    }
+    
     public static final void dumpungz(String file, byte[] bytes) throws IOException {
-            GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(bytes));
-            byte[] dst = new byte[4096];
-            int len = -1;
-            FileOutputStream out = new FileOutputStream(new File(file));
-
-            while((len = in.read(dst, 0, dst.length)) != -1) {
-                    out.write(dst, 0, len);
-            }
-
-            in.close();
-            out.close();
+        GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(bytes));
+        byte[] dst = new byte[4096];
+        int len = -1;
+        FileOutputStream out = new FileOutputStream(new File(file));
+        
+        while((len = in.read(dst, 0, dst.length)) != -1) {
+            out.write(dst, 0, len);
+        }
+        
+        in.close();
+        out.close();
     }*/
-
-    /*public static void main(String[] args) throws IOException {
-
-            final String name = "ChunkClasses";
-            final String javaname = name + ".java";
-            final String pakage = "de.kapsi.net.daap.chunks";
-
-            File fin = new File(pakage.replace('.', '/'));
-
-            if (!fin.exists() || fin.isFile()) {
-                    throw new IOException();
+    
+   /*public static void main(String[] args) throws IOException {
+    
+        final String name = "ChunkClasses";
+        final String javaname = name + ".java";
+        final String pakage = "de.kapsi.net.daap.chunks.impl";
+    
+        File fin = new File(pakage.replace('.', '/'));
+    
+        if (!fin.exists() || fin.isFile()) {
+            throw new IOException();
+        }
+    
+        File fout = (new File(fin, name + ".java")).getParentFile();
+    
+        BufferedWriter out = new BufferedWriter(new FileWriter(fout));
+        StringBuffer buffer = new StringBuffer();
+    
+        buffer.append("// This class is machine-made!").append("\n\n");
+        buffer.append("package ").append(pakage).append(";\n\n");
+        buffer.append("public final class ").append(name).append(" {\n");
+        buffer.append("\tpublic static final String[] names = {\n");
+    
+        String[] list = fin.list(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".java") && !javaname.equals(name);
             }
-
-            File fout = new File(fin, name + ".java");
-
-            BufferedWriter out = new BufferedWriter(new FileWriter(fout));
-            StringBuffer buffer = new StringBuffer();
-
-            buffer.append("// This class is machine-made!").append("\n\n");
-            buffer.append("package ").append(pakage).append(";\n\n");
-            buffer.append("public final class ").append(name).append(" {\n");
-                    buffer.append("\tpublic static final String[] names = {\n");
-
-                            String[] list = fin.list(new FilenameFilter() {
-                                            public boolean accept(File dir, String name) {
-                                                    return name.endsWith(".java") && !javaname.equals(name);
-                                            }
-                                    });
-
-                            for(int i = 0; i < list.length; i++) {
-                                    buffer.append("\t\t").append("\"");
-
-                                    String clazz = list[i];
-                                    int q = clazz.lastIndexOf(".");
-
-                                    buffer.append(pakage + "." + clazz.substring(0, q));
-                                    buffer.append("\"");
-
-                                    if (i < list.length-1) {
-                                            buffer.append(",");
-                                    }
-
-                                    buffer.append("\n");
-                            }
-                    buffer.append("\t};\n");
-            buffer.append("}\n");
-
-            out.write(buffer.toString());
-            out.close();
+        });
+    
+        for(int i = 0; i < list.length; i++) {
+            buffer.append("\t\t").append("\"");
+    
+            String clazz = list[i];
+            int q = clazz.lastIndexOf(".");
+    
+            buffer.append(pakage + "." + clazz.substring(0, q));
+            buffer.append("\"");
+    
+            if (i < list.length-1) {
+                buffer.append(",");
+            }
+    
+            buffer.append("\n");
+        }
+        buffer.append("\t};\n");
+        buffer.append("}\n");
+    
+        out.write(buffer.toString());
+        out.close();
     }*/
 }

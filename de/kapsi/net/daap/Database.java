@@ -1,11 +1,15 @@
 
 package de.kapsi.net.daap;
 
+import java.util.*;
+
+import de.kapsi.net.daap.chunks.DatabaseSongsImpl;
+import de.kapsi.net.daap.chunks.DatabasePlaylistsImpl;
+
+import de.kapsi.net.daap.chunks.impl.*;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import de.kapsi.net.daap.chunks.*;
-import java.util.*;
 
 /**
  * Database is used internally by Library and isn't accessible
@@ -53,7 +57,7 @@ public class Database {
     private Database() {
     }
     
-    int getRevision() {
+    public int getRevision() {
         return revision;
     }
     
@@ -61,39 +65,39 @@ public class Database {
         return id;
     }
     
-    String getName() {
+    public String getName() {
         return name;
     }
     
-    void setName(String name) {
+    public void setName(String name) {
         this.name = name;
         masterPlaylist.setName(name);
     }
     
-    String getPersistentId() {
+    public String getPersistentId() {
         return persistentId;
     }
     
-    int size() {
+    public int size() {
         return masterPlaylist.size();
     }
     
-    Playlist getMasterPlaylist() {
+    public Playlist getMasterPlaylist() {
         return masterPlaylist;
     }
     
-    List getPlaylists() {
+    public List getPlaylists() {
         return containers;
     }
     
-    List getDeletedPlaylists() {
+    public List getDeletedPlaylists() {
         return deletedContainers;
     }
     
     /**
      * Adds the Song to the Master Playlist
      */
-    void add(Song song) {
+    public void add(Song song) {
         masterPlaylist.add(song);
     }
     
@@ -114,7 +118,7 @@ public class Database {
         return false;
     }
     
-    void add(Playlist playlist) {
+    public void add(Playlist playlist) {
         if (containers.contains(playlist)==false) {
             containers.add(playlist);
             playlist.setMasterPlaylist(masterPlaylist);
@@ -123,7 +127,7 @@ public class Database {
         }
     }
     
-    boolean remove(Playlist playlist) {
+    public boolean remove(Playlist playlist) {
         if (containers.remove(playlist)) {
             deletedContainers.add(new Integer(playlist.getId()));
             playlist.setMasterPlaylist(null);
@@ -154,7 +158,7 @@ public class Database {
         return "Name: " + getName() + ", revision: " + revision;
     }
     
-    synchronized Object select(DaapRequest request) {
+    public synchronized Object select(DaapRequest request) {
         
         if (request.isSongRequest()) {
             return getSong(request.getItemId());
@@ -199,7 +203,7 @@ public class Database {
     /**
      * Used to speed up the destruction process
      */
-    void destroy() {
+    public void destroy() {
         
         if (containers != null) {
             Iterator it = containers.iterator();
@@ -226,7 +230,7 @@ public class Database {
     /**
      * Used internally. See Library.open()
      */
-    void open() {
+    public void open() {
         revision++;
         
         deletedContainers.clear();
@@ -240,7 +244,7 @@ public class Database {
     /**
      * Used internally. See Library.open()
      */
-    void close() {
+    public void close() {
         
         List items = masterPlaylist.getSongs();
         List newItems = masterPlaylist.getNewSongs();
@@ -258,7 +262,7 @@ public class Database {
         }
     }
     
-    Database createSnapshot() {
+    public Database createSnapshot() {
         
         Database clone = new Database();
         

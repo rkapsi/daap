@@ -57,6 +57,9 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
     private DaapServer server;
     
     public Main() throws Exception {
+        
+        System.out.println(SONG);
+        
         JmDNS jmdns = new JmDNS();
         ServiceInfo serviceInfo = new ServiceInfo("_daap._tcp.local.", LIBRARY + "._daap._tcp.local.", PORT, 0, 0, LIBRARY);
         jmdns.registerService(serviceInfo);
@@ -75,7 +78,7 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
         library.add(playlist2);
         library.add(playlist3);
         
-        for(int i = 0; i < 100; i++) {
+        for(int i = 0; i < 1000; i++) {
             
             Song song = createSong(i);
             
@@ -97,10 +100,10 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
         
         library.close();
         
-        server = new DaapServer(library, PORT);
+        server = DaapServerFactory.createNIOServer(library, PORT);
         server.setAuthenticator(this);
         server.setStreamSource(this);
-        server.init();
+        server.bind();
         
         Thread serverThread = new Thread(server, "DaapServerThread");
         serverThread.setDaemon(true);
@@ -121,15 +124,15 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
     }
     
     public boolean requiresAuthentication() {
-        return false;
+        return true;
     }
     
     public boolean authenticate(String username, String password) {
         return password.equals("test");
     }
     
-    public InputStream getSource(Song song)
-    throws IOException {
+    public FileInputStream getSource(Song song)
+        throws IOException {
         
         File file = SONG;
         

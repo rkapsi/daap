@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.ServerDatabases;
+import de.kapsi.net.daap.chunks.ServerDatabasesImpl;
+import de.kapsi.net.daap.chunks.impl.ServerDatabases;
 
 /**
  * This class and its internals are the heart of this DAAP
@@ -69,7 +70,7 @@ public class Library {
      * you open() and close() the library the revision will be
      * increased by one
      */
-    private int getRevision() {
+    public int getRevision() {
         if (current == null) {
             return 0;
         } else {

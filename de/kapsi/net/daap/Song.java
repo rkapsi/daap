@@ -1,43 +1,45 @@
 
 package de.kapsi.net.daap;
 
-import de.kapsi.net.daap.chunks.ItemKind;
-import de.kapsi.net.daap.chunks.ItemId;
-import de.kapsi.net.daap.chunks.ItemName;
-import de.kapsi.net.daap.chunks.SongAlbum;
-import de.kapsi.net.daap.chunks.SongArtist;
-import de.kapsi.net.daap.chunks.SongBeatsPerMinute;
-import de.kapsi.net.daap.chunks.SongBitrate;
-import de.kapsi.net.daap.chunks.SongComment;
-import de.kapsi.net.daap.chunks.SongCompilation;
-import de.kapsi.net.daap.chunks.SongComposer;
-import de.kapsi.net.daap.chunks.SongDataKind;
-import de.kapsi.net.daap.chunks.SongDataUrl;
-import de.kapsi.net.daap.chunks.SongDateAdded;
-import de.kapsi.net.daap.chunks.SongDateModified;
-import de.kapsi.net.daap.chunks.SongDescription;
-import de.kapsi.net.daap.chunks.SongDisabled;
-import de.kapsi.net.daap.chunks.SongDiscCount;
-import de.kapsi.net.daap.chunks.SongDiscNumber;
-import de.kapsi.net.daap.chunks.SongEqPreset;
-import de.kapsi.net.daap.chunks.SongFormat;
-import de.kapsi.net.daap.chunks.SongGenre;
-import de.kapsi.net.daap.chunks.SongFormat;
-import de.kapsi.net.daap.chunks.SongRelativeVolume;
-import de.kapsi.net.daap.chunks.SongSampleRate;
-import de.kapsi.net.daap.chunks.SongSize;
-import de.kapsi.net.daap.chunks.SongStartTime;
-import de.kapsi.net.daap.chunks.SongStopTime;
-import de.kapsi.net.daap.chunks.SongTime;
-import de.kapsi.net.daap.chunks.SongTrackCount;
-import de.kapsi.net.daap.chunks.SongTrackNumber;
-import de.kapsi.net.daap.chunks.SongUserRating;
-import de.kapsi.net.daap.chunks.SongYear;
-import de.kapsi.net.daap.chunks.SongGrouping;
-import de.kapsi.net.daap.chunks.ContainerItemId;
-import de.kapsi.net.daap.chunks.PersistentId;
-import de.kapsi.net.daap.chunks.NormVolume;
-import de.kapsi.net.daap.chunks.SongTrackNumber;
+import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.chunks.AbstractChunk;
+import de.kapsi.net.daap.chunks.impl.ItemKind;
+import de.kapsi.net.daap.chunks.impl.ItemId;
+import de.kapsi.net.daap.chunks.impl.ItemName;
+import de.kapsi.net.daap.chunks.impl.SongAlbum;
+import de.kapsi.net.daap.chunks.impl.SongArtist;
+import de.kapsi.net.daap.chunks.impl.SongBeatsPerMinute;
+import de.kapsi.net.daap.chunks.impl.SongBitrate;
+import de.kapsi.net.daap.chunks.impl.SongComment;
+import de.kapsi.net.daap.chunks.impl.SongCompilation;
+import de.kapsi.net.daap.chunks.impl.SongComposer;
+import de.kapsi.net.daap.chunks.impl.SongDataKind;
+import de.kapsi.net.daap.chunks.impl.SongDataUrl;
+import de.kapsi.net.daap.chunks.impl.SongDateAdded;
+import de.kapsi.net.daap.chunks.impl.SongDateModified;
+import de.kapsi.net.daap.chunks.impl.SongDescription;
+import de.kapsi.net.daap.chunks.impl.SongDisabled;
+import de.kapsi.net.daap.chunks.impl.SongDiscCount;
+import de.kapsi.net.daap.chunks.impl.SongDiscNumber;
+import de.kapsi.net.daap.chunks.impl.SongEqPreset;
+import de.kapsi.net.daap.chunks.impl.SongFormat;
+import de.kapsi.net.daap.chunks.impl.SongGenre;
+import de.kapsi.net.daap.chunks.impl.SongFormat;
+import de.kapsi.net.daap.chunks.impl.SongRelativeVolume;
+import de.kapsi.net.daap.chunks.impl.SongSampleRate;
+import de.kapsi.net.daap.chunks.impl.SongSize;
+import de.kapsi.net.daap.chunks.impl.SongStartTime;
+import de.kapsi.net.daap.chunks.impl.SongStopTime;
+import de.kapsi.net.daap.chunks.impl.SongTime;
+import de.kapsi.net.daap.chunks.impl.SongTrackCount;
+import de.kapsi.net.daap.chunks.impl.SongTrackNumber;
+import de.kapsi.net.daap.chunks.impl.SongUserRating;
+import de.kapsi.net.daap.chunks.impl.SongYear;
+import de.kapsi.net.daap.chunks.impl.SongGrouping;
+import de.kapsi.net.daap.chunks.impl.ContainerItemId;
+import de.kapsi.net.daap.chunks.impl.PersistentId;
+import de.kapsi.net.daap.chunks.impl.NormVolume;
+import de.kapsi.net.daap.chunks.impl.SongTrackNumber;
     
 import java.util.Iterator;
 import java.util.HashSet;
@@ -621,7 +623,7 @@ public class Song {
     /**
      * Used by Playlist to get the underlying Chunks
      */
-    Chunk getProperty(String property) {
+    public Chunk getProperty(String property) {
         return (Chunk)properties.get(property);
     }
     
