@@ -14,8 +14,8 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
     
     private static final File SONG = new File("music/American_Analog_Set_The_Only_One.mp3");
     
-    private static final String LIBRARY = "My Library";
-    private static final int PORT = 5353;
+    private static final String LIBRARY = "My Library123";
+    private static final int PORT = 5360;
     
     private static final String[] NAMES = { "Hello World!",
     "This Is A Test!",
@@ -100,8 +100,11 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
         server = new DaapServer(library, PORT);
         server.setAuthenticator(this);
         server.setStreamSource(this);
+        server.init();
         
-        server.start();
+        Thread serverThread = new Thread(server, "DaapServerThread");
+        serverThread.setDaemon(true);
+        serverThread.start();
     }
     
     public Song createSong(int i) {

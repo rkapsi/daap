@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * The famous DaapServer.
  */
-public class DaapServer {
+public class DaapServer implements Runnable {
     
     private static final Log LOG = LogFactory.getLog(DaapServer.class);
     
@@ -33,7 +33,6 @@ public class DaapServer {
     private ServerInfoResponse serverInfo;
     private ContentCodesResponse contentCodes;
     
-    private DaapAcceptor acceptor;
     private DaapFilter filter;
     
     private HashSet sessionIds;
@@ -43,6 +42,11 @@ public class DaapServer {
     private DaapConfig config;
     
     private DaapRequestHandler requestHandler;
+    
+    private DaapServer server;
+    private ServerSocket ssocket;
+    
+    private boolean running = false;
     
     public DaapServer(Library library) {
         this(library, new SimpleConfig());
@@ -99,43 +103,46 @@ public class DaapServer {
         return config;
     }
     
+    public synchronized void init() throws IOException {
+        if (running)
+            return;
+        
+        int port = config.getPort();
+        int backlog = config.getBacklog();
+        InetAddress bindAddr = config.getBindAddress();
+        
+        ssocket = new ServerSocket(port, backlog, bindAddr);
+        
+        if (LOG.isInfoEnabled()) {
+            if (bindAddr == null) {
+                LOG.info("DaapServer bound to port: " + port);
+            } else {
+                LOG.info("DaapServer bound to " + bindAddr + ":" + port);
+            }
+        }
+    }
+    
     /**
      * Returns <tt>true</tt> if DAAP Server
      * accepts incoming connections.
      */
     public synchronized boolean isRunning() {
-        if (acceptor == null)
-            return false;
-        return acceptor.isRunning();
-    }
-    
-    /**
-     * Starts the DAAP Server
-     */
-    public synchronized void start() throws IOException {
-        
-        if (isRunning())
-            return;
-        
-        threadNo = 0;
-        
-        acceptor = new DaapAcceptor(this);
-        
-        Thread acceptThread = new Thread(acceptor, "DaapAcceptorThread");
-        acceptThread.setDaemon(true);
-        acceptThread.start();
+        return running;
     }
     
     /**
      * Stops the DAAP Server
      */
     public synchronized void stop() {
-        
-        if (!isRunning())
+        if (!running)
             return;
+            
+        running = false;
         
-        acceptor.stop();
-        acceptor = null;
+        try {
+            if (ssocket != null)
+                ssocket.close();
+        } catch (IOException err) {}
         
         disconnectAll();
     }
@@ -145,7 +152,7 @@ public class DaapServer {
      */
     public synchronized void disconnectAll() {
         
-        if (!isRunning())
+        if (!running)
             return;
         
         synchronized(connections) {
@@ -378,4 +385,43 @@ public class DaapServer {
             return streams.size();
         }
     }
+    
+    
+    
+    public void run() {
+        
+        threadNo = 0;
+        running = true;
+        
+        try {
+            
+            while(running) {
+                Socket socket = ssocket.accept();
+                
+                try {
+                    
+                    if (running && ! accept(socket) ) {
+                        
+                        socket.close();
+                    }
+                    
+                } catch (IOException sErr) {
+                    LOG.error(sErr);
+                    socket.close();
+                }
+                
+                Thread.sleep(100);
+            }
+            
+        } catch (InterruptedException err) {
+            LOG.error(err);
+        } catch (SocketException err) {
+            LOG.error(err);
+        } catch (IOException err) {
+            LOG.error(err);
+        } finally {
+            stop();
+        }
+    }
+    
 }

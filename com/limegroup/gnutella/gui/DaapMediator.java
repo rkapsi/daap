@@ -109,7 +109,7 @@ public final class DaapMediator implements FinalizeListener {
                 
                 for(int i = 0; i < attempts; i++) {
                     try {
-                        server.start();
+                        server.init();
                         break;
                     } catch (BindException bindErr) {
                         if (i == attempts-1)
@@ -119,6 +119,12 @@ public final class DaapMediator implements FinalizeListener {
                     }
                 }
                 
+                // TODO use ManagedThreads
+                Thread serverThread = new Thread(server, "DaapServerThread");
+                serverThread.setDaemon(true);
+                serverThread.start();
+             
+                // TODO use ManagedThreads
                 Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
                 updateWorkerThread.setDaemon(true);
                 updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
