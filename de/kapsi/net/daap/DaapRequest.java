@@ -351,6 +351,11 @@ public class DaapRequest {
 		
 		buffer.append(uri);
 		
+        if (headers != null) {
+            for(int i = 0; i < headers.length; i++)
+                buffer.append(headers[i]);//.append("\n");
+        }
+        
 		return buffer.toString();
 	}
 }

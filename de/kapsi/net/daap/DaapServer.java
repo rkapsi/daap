@@ -101,12 +101,19 @@ public class DaapServer {
         return config;
     }
     
+    /**
+     * Returns <tt>true</tt> if DAAP Server
+     * accepts incoming connections.
+     */
     public synchronized boolean isRunning() {
         if (acceptor == null)
             return false;
         return acceptor.isRunning();
     }
     
+    /**
+     * Starts the DAAP Server
+     */
     public synchronized void start() throws IOException {
         
         if (isRunning())
@@ -121,6 +128,9 @@ public class DaapServer {
         acceptThread.start();
     }
     
+    /**
+     * Stops the DAAP Server
+     */
     public synchronized void stop() {
         
         if (!isRunning())
@@ -132,6 +142,9 @@ public class DaapServer {
         disconnectAll();
     }
     
+    /**
+     * Disconnects all DAAP and Stream connections
+     */
     public synchronized void disconnectAll() {
         
         if (!isRunning())
@@ -223,7 +236,10 @@ public class DaapServer {
         return true;
     }
     
-    public boolean accept(Socket socket) 
+    /**
+     * Called by DaapAcceptor
+     */
+    boolean accept(Socket socket) 
             throws IOException {
         
         
@@ -268,6 +284,14 @@ public class DaapServer {
         // or a standart DAAP connection. 
         connection.setAudioStream(request.isSongRequest());
         
+        // AudioStreams have a session-id and we must check the id
+        if (connection.isAudioStream()) {
+            //System.out.println(request);
+            if (isSessionIdValid(request.getSessionId()) == false) {
+                return false;
+            }
+        }
+        
         // add connection to the connection pool
         if ( ! addConnection(connection) ) {
             return false;
@@ -280,6 +304,9 @@ public class DaapServer {
         return true;
     }
     
+    /**
+     * Call this to notify the server that Library has changed
+     */
 	public void update() {
         synchronized(connections) {
             Iterator it = connections.iterator();
@@ -296,6 +323,9 @@ public class DaapServer {
         }
 	}
 	
+    /**
+     *
+     */
 	void processRequest(DaapConnection conn, DaapRequest request) 
             throws IOException {
 		
@@ -303,7 +333,7 @@ public class DaapServer {
 		
 		if (request.isSongRequest()) {
 		
-			if (isSessionIdValid(new Integer(request.getSessionId()))) {
+			if (isSessionIdValid(request.getSessionId())) {
 				audioRequestHandler.processRequest(conn, request);
 			}
 			
@@ -319,6 +349,9 @@ public class DaapServer {
         }
 	}
 	
+    /**
+     *
+     */
 	void removeConnection(DaapConnection conn) {
     
         if (conn.isAudioStream()) {
@@ -344,7 +377,17 @@ public class DaapServer {
         }
 	}
 	
-	private boolean isSessionIdValid(Integer sessionId) {
+    /**
+     * Returns <tt>true</tt> if sessionId is known and valid
+     */
+    private boolean isSessionIdValid(int sessionId) {
+		 return isSessionIdValid(new Integer(sessionId));
+	}
+    
+    /**
+     * Returns <tt>true</tt> if sessionId is known and valid
+     */
+     private boolean isSessionIdValid(Integer sessionId) {
 		 synchronized(sessionIds) {
 			return sessionIds.contains(sessionId);
 		 }
@@ -376,12 +419,28 @@ public class DaapServer {
 		
 		return sessionId;
 	}
-
+    
+    /**
+     * Returns the number of connections
+     */
 	public int getNumberOfConnections() {
-		return (connections != null) ? connections.size() : 0;
+        if (connections == null)
+            return 0;
+        
+        synchronized(connections) {
+            return connections.size();
+        }
 	}
     
+    /**
+     * Returns the number of streams
+     */
     public int getNumberOfStreams() {
-		return (streams != null) ? streams.size() : 0;
-	}
+        if (streams == null)
+            return 0;
+        
+        synchronized(streams) {
+            return streams.size();
+        }
+    }
 }

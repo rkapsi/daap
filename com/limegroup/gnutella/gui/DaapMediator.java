@@ -25,7 +25,6 @@ import com.limegroup.gnutella.util.CommonUtils;
 import com.limegroup.gnutella.util.NetworkUtils;
 import com.limegroup.gnutella.util.FileUtils;
 import com.limegroup.gnutella.settings.iTunesSettings;
-import com.limegroup.gnutella.settings.SharingSettings;
 import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.limegroup.gnutella.xml.MetaFileManagerEvent;
 
@@ -600,7 +599,7 @@ public final class DaapMediator {
         }
         
         public String getServerName() {
-            return iTunesSettings.DAAP_LIBRARY_NAME.getValue();
+            return CommonUtils.getHttpServer();
         }
         
         public int getPort() {
@@ -616,7 +615,7 @@ public final class DaapMediator {
         }
 
         public int getMaxConnections() {
-            return DaapConfig.DEFAULT_MAX_CONNECTIONS;
+            return iTunesSettings.DAAP_MAX_CONNECTIONS.getValue();
         }
     }
     
