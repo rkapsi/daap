@@ -86,7 +86,7 @@ public final class DaapUtil {
         "dmap.itemid",
         "daap.songdescription",
         "dmap.itemname",
-        "com.apple.itunes.norm-volume", // Seems to be OK now but needs more testing!
+        "com.apple.itunes.norm-volume",
         "dmap.persistentid",
         "daap.songdisabled",
         "daap.songrelativevolume",
@@ -191,21 +191,6 @@ public final class DaapUtil {
         return map;
     }
     
-    /*private static final ArrayList parseMeta2(String meta) {
-        StringTokenizer tok = new StringTokenizer(meta, ",");
-        ArrayList list = new ArrayList();
-        while(tok.hasMoreTokens()) {
-            String token = tok.nextToken();
-     
-            if (token.equals("dmap.itemkind")) {
-                    list.add(0, token);
-            } else if (!token.equals("com.apple.itunes.norm-volume")) {
-                    list.add(token);
-            }
-        }
-        return list;
-    }*/
-    
     public static final ArrayList parseMeta(String meta) {
         StringTokenizer tok = new StringTokenizer(meta, ",");
         ArrayList list = new ArrayList(tok.countTokens());
@@ -287,7 +272,10 @@ public final class DaapUtil {
         // hosts...
         if ( request.isSongRequest() && name.equals(USER_AGENT)) {
             
-            if (value.startsWith("iTunes/4.5"))
+            // Note: the protocol version of a song request is estimated
+            // by the server with the aid of the sessionId, i.e. this block
+            // is actually never touched...
+            if (value.startsWith("iTunes/4.5") || value.startsWith("iTunes/4.6"))
                 return DaapUtil.VERSION_3;
             else if (value.startsWith("iTunes/4.2") || value.startsWith("iTunes/4.1"))
                 return DaapUtil.VERSION_2;
