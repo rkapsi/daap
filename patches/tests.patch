@@ -1,0 +1,64 @@
+Index: com/limegroup/gnutella/stubs/ActivityCallbackStub.java
+===================================================================
+RCS file: /cvs/tests/com/limegroup/gnutella/stubs/ActivityCallbackStub.java,v
+retrieving revision 1.17
+diff -u -r1.17 ActivityCallbackStub.java
+--- com/limegroup/gnutella/stubs/ActivityCallbackStub.java	12 May 2004 15:50:00 -0000	1.17
++++ com/limegroup/gnutella/stubs/ActivityCallbackStub.java	5 Aug 2004 10:02:33 -0000
+@@ -7,6 +7,7 @@
+ import com.limegroup.gnutella.Downloader;
+ import com.limegroup.gnutella.Endpoint;
+ import com.limegroup.gnutella.FileDesc;
++import com.limegroup.gnutella.FileManagerEvent;
+ import com.limegroup.gnutella.GUID;
+ import com.limegroup.gnutella.RemoteFileDesc;
+ import com.limegroup.gnutella.Uploader;
+@@ -65,6 +66,7 @@
+     public void setAnnotateEnabled(boolean enabled) {}
+     public String getHostValue(String key) { return null;}
+     public void handleSharedFileUpdate(File file) { }
++    public void handleFileManagerEvent(FileManagerEvent evt) {}
+     public void notifyUserAboutUpdate(String version, boolean isPro, boolean l){
+     }
+     public void fileManagerLoaded() {}
+Index: com/limegroup/gnutella/stubs/FileManagerStub.java
+===================================================================
+RCS file: /cvs/tests/com/limegroup/gnutella/stubs/FileManagerStub.java,v
+retrieving revision 1.11
+diff -u -r1.11 FileManagerStub.java
+--- com/limegroup/gnutella/stubs/FileManagerStub.java	27 Jul 2004 20:01:53 -0000	1.11
++++ com/limegroup/gnutella/stubs/FileManagerStub.java	5 Aug 2004 10:02:33 -0000
+@@ -74,8 +74,8 @@
+     	_descs = new Vector();
+     }
+     
+-    public FileDesc addFileIfShared(File f, List docs) {
+-        return addFileIfShared(f);
++    protected FileDesc addFileIfShared(File f, List docs, boolean notify) {
++        return addFileIfShared(f, notify);
+     }
+ }
+ 
+Index: com/limegroup/gnutella/stubs/SimpleFileManager.java
+===================================================================
+RCS file: /cvs/tests/com/limegroup/gnutella/stubs/SimpleFileManager.java,v
+retrieving revision 1.4
+diff -u -r1.4 SimpleFileManager.java
+--- com/limegroup/gnutella/stubs/SimpleFileManager.java	27 Jul 2004 20:01:54 -0000	1.4
++++ com/limegroup/gnutella/stubs/SimpleFileManager.java	5 Aug 2004 10:02:33 -0000
+@@ -23,12 +23,12 @@
+         ;
+     }
+     
+-    public FileDesc addFileIfShared(File f, List docs) {
+-        return addFileIfShared(f);
++    protected FileDesc addFileIfShared(File f, List docs, boolean notify) {
++        return addFileIfShared(f, notify);
+     }
+     
+     public boolean isValidXMLMatch(Response r, LimeXMLDocument doc) {
+         return true;
+-    }    
++    }
+ }
+ 
