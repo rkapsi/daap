@@ -51,8 +51,6 @@ public class DaapServerImpl implements DaapServer {
     private DaapAuthenticator authenticator;
     private DaapStreamSource streamSource;
     
-    //private DaapRequestHandler requestHandler;
-    
     private DaapServer server;
     private ServerSocket ssocket;
     
@@ -73,8 +71,6 @@ public class DaapServerImpl implements DaapServer {
         
         serverInfo = new ServerInfoResponseImpl(library.getName());
         contentCodes = new ContentCodesResponseImpl();
-        
-        //requestHandler = new DaapRequestHandler(this);
         
         sessionIds = new HashSet();
         connections = new HashSet();
@@ -98,22 +94,18 @@ public class DaapServerImpl implements DaapServer {
     }
     
     public void setAuthenticator(DaapAuthenticator authenticator) {
-        //requestHandler.setAuthenticator(authenticator);
         this.authenticator = authenticator;
     }
     
     public DaapAuthenticator getAuthenticator() {
-        //return requestHandler.getAuthenticator();
         return authenticator;
     }
     
     public void setStreamSource(DaapStreamSource streamSource) {
-        //requestHandler.setStreamSource(streamSource);
         this.streamSource = streamSource;
     }
     
     public DaapStreamSource getStreamSource() {
-        //return requestHandler.getStreamSource();
         return streamSource;
     }
     
@@ -240,7 +232,6 @@ public class DaapServerImpl implements DaapServer {
             synchronized(connections) {
                 
                 if (connections.size() < config.getMaxConnections()) {
-                    //connection.connectionKeepAlive();
                     connections.add(connection);
                     
                 } else {
@@ -303,21 +294,6 @@ public class DaapServerImpl implements DaapServer {
     }
     
     /**
-     *
-     */
-    /*public void processRequest(DaapConnectionImpl connection, DaapRequest request)
-            throws IOException {
-        
-        boolean complete = false;
-        
-        //complete = requestHandler.processRequest(connection, request);
-        
-        //if (!complete) {
-        //    connection.connectionClose();
-        //}
-    }*/
-    
-    /**
      * Removes connection from the internal connection pool
      */
     public void removeConnection(DaapConnectionImpl connection) {
@@ -365,27 +341,6 @@ public class DaapServerImpl implements DaapServer {
      * Returns an unique session-id
      */
     public Integer createSessionId() {
-        
-        /*Integer sessionId = null;
-        
-        synchronized(sessionIds) {
-            
-            while(sessionId == null || sessionIds.contains(sessionId)) {
-                int tmp = generator.nextInt();
-                
-                if (tmp == 0) {
-                    continue;
-                } else if (tmp < 0) {
-                    tmp = -tmp;
-                }
-                
-                sessionId = new Integer(tmp);
-            }
-            
-            sessionIds.add(sessionId);
-        }
-        
-        return sessionId;*/
         
         synchronized(sessionIds) {
             Integer sid = DaapUtil.createSessionId(sessionIds);
