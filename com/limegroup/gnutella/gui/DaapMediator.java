@@ -6,29 +6,47 @@ import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Locale;
-
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.net.InetAddress;
-
 import javax.swing.SwingUtilities;
 
+import com.sun.java.util.collections.List;
+
+import com.limegroup.gnutella.URN;
 import com.limegroup.gnutella.Downloader;
 import com.limegroup.gnutella.ErrorService;
+import com.limegroup.gnutella.RouterService;
+import com.limegroup.gnutella.FileManager;
+import com.limegroup.gnutella.FileDesc;
+import com.limegroup.gnutella.IncompleteFileDesc;
 import com.limegroup.gnutella.util.CommonUtils;
+import com.limegroup.gnutella.util.NetworkUtils;
 import com.limegroup.gnutella.util.FileUtils;
 import com.limegroup.gnutella.settings.iTunesSettings;
 import com.limegroup.gnutella.settings.SharingSettings;
+import com.limegroup.gnutella.xml.LimeXMLDocument;
+import com.limegroup.gnutella.xml.MetaFileManagerEvent;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
-import javax.jmdns.*;
-import de.kapsi.net.daap.*;
-import org.apache.commons.httpclient.*;
-import com.sun.java.util.collections.*;
-import com.limegroup.gnutella.*;
-import com.limegroup.gnutella.xml.*;
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
-public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
+import de.kapsi.net.daap.Song;
+import de.kapsi.net.daap.Library;
+import de.kapsi.net.daap.DaapServer;
+import de.kapsi.net.daap.DaapConfig;
+import de.kapsi.net.daap.DaapFilter;
+import de.kapsi.net.daap.DaapAudioStream;
+import de.kapsi.net.daap.DaapAuthenticator;
+
+/**
+ * 
+ */
+public final class DaapMediator {
     
 	private static final Log LOG = LogFactory.getLog(DaapMediator.class);
         
@@ -40,18 +58,19 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
 	
 	private SongURNMap map;
     
+	private Library library;
+	private DaapServer server;
+	private RendezvousService rendezvous;
     private UpdateWorker updateWorker;
     
-	private Library library;
-	
-	private DaapServer server;
-    private LimeConfig config;
-	private RendezvousService rendezvous;
 	private boolean annotateEnabled = false;
     
     private DaapMediator() {
     }
 	
+    /**
+     * Initializes the Library
+     */
     public synchronized void init() {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
@@ -60,6 +79,9 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         }
     }
     
+    /**
+     * Starts the DAAP Server
+     */
 	public synchronized void start() 
             throws IOException {
         
@@ -69,12 +91,12 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             
                 map = new SongURNMap();
                 library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
-                config = new LimeConfig();
                 updateWorker = new UpdateWorker();
 
-                server = new DaapServer(library, config);
-                server.setAuthenticator(this);
-                server.setAudioStream(this);
+                server = new DaapServer(library, new LimeConfig());
+                server.setAuthenticator(new LimeAuthenticator());
+                server.setAudioStream(new LimeAudioStream());
+                server.setFilter(new LimeFilter());
                         
                 server.start();
                 
@@ -93,6 +115,9 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         }
 	}
 	
+    /**
+     * Stops the DAAP Server and releases all resources
+     */
 	public synchronized void stop() {
 		
         if (CommonUtils.isJava14OrLater()) {
@@ -114,10 +139,12 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             updateWorker = null;
             map = null;
             library = null;
-            config = null;
         }
 	}
 	
+    /**
+     * Updates the multicast-DNS servive info
+     */
     public synchronized void updateService() 
             throws IOException {
             
@@ -125,11 +152,17 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             rendezvous.updateService();
     }
     
+    /**
+     * Disconnects all clients
+     */
     public synchronized void disconnectAll() {
         if (CommonUtils.isJava14OrLater() && isServerRunning())
             server.disconnectAll();
     }
     
+    /**
+     * Returns <tt>true</tt> if server is running
+     */
 	public synchronized boolean isServerRunning() {
 		if (server != null) {
 			return server.isRunning();
@@ -137,74 +170,21 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
 		return false;
 	}
 	
-	public boolean requiresAuthentication() {
-		return iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
-	}
-	
-	// username is don't care (not supported by iTunes)
-	public boolean authenticate(String username, String password) {
-        return password.equals(iTunesSettings.DAAP_PASSWORD.getValue());
-	}
-	
-	public void stream(Song song, OutputStream out, int begin, int length) 
-		throws IOException {
-		
-        URN urn = map.get(song);
-        
-        if (urn != null) {
-            FileDesc fileDesc = RouterService.getFileManager().getFileDescForUrn(urn);
-            
-            if (fileDesc != null) {
-                
-                File file = fileDesc.getFile();
-                
-                BufferedInputStream in = null;
-                
-                try {
-                    
-                    in = new BufferedInputStream(new FileInputStream(file));
-                    byte[] buffer = new byte[4069*16];
-                    
-                    int total = 0;
-                    int len = -1;
-                    
-                    if (begin != 0) {
-                        in.skip(begin);
-                    }
-                    
-                    while((len = in.read(buffer, 0, buffer.length)) != -1 && total < length) {
-                        out.write(buffer, 0, len);
-                        
-                        total += len;
-                    }
-                    
-                    out.flush();
-                    in.close();
-                    in = null;
-                    
-                } finally {
-                    if (in != null) {
-                        in.close();
-                    }
-                }
-            }
-        }
-	}
-	
 	/**
      * Returns true if the extension of name is a supported file type.
      */
-    private static boolean isSupported(String name) {
+    private static boolean isSupportedFileType(String name) {
         String[] types = iTunesSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();        
         for(int i = 0; i < types.length; i++)
             if (name.endsWith(types[i]))
                 return true;
         return false;
-        
-        //return name.endsWith(".mp3");
     }
     
-    public void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
+    /**
+     * Called by VisualConnectionCallback/MetaFileManager.
+     */
+    public synchronized void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
         
@@ -231,7 +211,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
                 
                 if (!(file instanceof IncompleteFileDesc)) {
                     String name = file.getName().toLowerCase(Locale.US);
-                    if (isSupported(name)) {
+                    if (isSupportedFileType(name)) {
                         
                         Song song = createSong(file);
                         
@@ -263,7 +243,10 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         }
     }
     
-    public void setAnnotateEnabled(boolean enabled) {
+    /**
+     * Called by VisualConnectionCallback/MetaFileManager.
+     */
+    public synchronized void setAnnotateEnabled(boolean enabled) {
         
         this.annotateEnabled = enabled;
         
@@ -283,7 +266,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
                 
                 if (!(file instanceof IncompleteFileDesc)) {
                     String name = file.getName().toLowerCase(Locale.US);
-                    if (isSupported(name)) {
+                    if (isSupportedFileType(name)) {
                         
                         // 1)
                         // _Remove_ URN from the current 'map'...
@@ -512,6 +495,105 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         return update;
     }
     
+    /**
+     * Handles the audio stream
+     */
+    private final class LimeAudioStream implements DaapAudioStream {
+    
+        public LimeAudioStream() {
+        }
+        
+        public void stream(Song song, OutputStream out, int begin, int length) 
+                throws IOException {
+            
+            URN urn = map.get(song);
+            
+            if (urn != null) {
+                FileDesc fileDesc = RouterService.getFileManager().getFileDescForUrn(urn);
+                
+                if (fileDesc != null) {
+                    
+                    File file = fileDesc.getFile();
+                    
+                    BufferedInputStream in = null;
+                    
+                    try {
+                        
+                        in = new BufferedInputStream(new FileInputStream(file));
+                        byte[] buffer = new byte[4069*16];
+                        
+                        int total = 0;
+                        int len = -1;
+                        
+                        if (begin != 0) {
+                            in.skip(begin);
+                        }
+                        
+                        while((len = in.read(buffer, 0, buffer.length)) != -1 && total < length) {
+                            out.write(buffer, 0, len);
+                            
+                            total += len;
+                        }
+                        
+                        out.flush();
+                        in.close();
+                        in = null;
+                        
+                    } finally {
+                        if (in != null) {
+                            in.close();
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Implements the DaapAuthenticator
+     */
+    private final class LimeAuthenticator implements DaapAuthenticator {
+        
+        public LimeAuthenticator() {
+        }
+
+        public boolean requiresAuthentication() {
+            return iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
+        }
+        
+        /**
+         * Returns true if username and password are correct.<p>
+         * Note: iTunes does not support usernames (i.e. it's 
+         * don't care)!
+         */
+        public boolean authenticate(String username, String password) {
+            return password.equals(iTunesSettings.DAAP_PASSWORD.getValue());
+        }
+    }
+    
+    /**
+     * The DAAP Library should be only accessable from the LAN
+     * as we can not guarantee for the required bandwidth and it 
+     * could be used to bypass Gnutella etc. Note: iTunes can't 
+     * connect to DAAP Libraries outside of the LAN but certain 
+     * iTunes download tools can.
+     */
+    private final class LimeFilter implements DaapFilter {
+        
+        public LimeFilter() {
+        }
+        
+        /**
+         * Returns true if <tt>address</tt> is a private address
+         */
+        public boolean accept(InetAddress address) {
+            return NetworkUtils.isPrivateAddress(address);
+        }
+    }
+    
+    /**
+     * A LimeWire specific implementation of DaapConfig
+     */
     private final class LimeConfig implements DaapConfig {
         
         public LimeConfig() {
@@ -538,6 +620,10 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
         }
     }
     
+    /**
+     * Helps us to publicize and update the DAAP Service via
+     * multicast-DNS (aka Rendezvous or Zeroconf)
+     */
     private final class RendezvousService {
         
         private static final String MACHINE_NAME = "Machine Name";
@@ -551,7 +637,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             zeroConf = new JmDNS();
         }
         
-        public synchronized boolean isRegistered() {
+        public boolean isRegistered() {
             return registered;
         }
         
@@ -587,7 +673,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             return service;
         }
         
-        public synchronized void registerService() throws IOException {
+        public void registerService() throws IOException {
             
             if (isRegistered())
                 throw new IOException();
@@ -598,7 +684,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             registered = true;
         }
         
-        public synchronized void unregisterService() {
+        public void unregisterService() {
             if (!isRegistered())
                 return;
             
@@ -607,7 +693,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             registered = false;
         }
         
-        public synchronized void updateService() throws IOException {
+        public void updateService() throws IOException {
             if (!isRegistered())
                 throw new IOException();
                 
@@ -623,7 +709,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
             registered = true;
         }
         
-        public synchronized void close() {
+        public void close() {
             unregisterService();
             zeroConf.close();
         }
@@ -703,25 +789,26 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
                                     if (library.size() != 0) {
                                     
                                         Iterator it = remove.iterator();
-                                        while(it.hasNext()) {
+                                        while(it.hasNext() && running) {
                                             library.remove((Song)it.next());
                                         }
                                         
                                         it = update.iterator();
-                                        while(it.hasNext()) {
+                                        while(it.hasNext() && running) {
                                             ((Song)it.next()).update();
                                         }
                                     }
                                     
                                     Iterator it = add.iterator();
-                                    while(it.hasNext()) {
+                                    while(it.hasNext() && running) {
                                         library.add((Song)it.next());
                                     }
                                     
                                     library.close();
                                 }
                                 
-                                server.update();
+                                if (running)
+                                    server.update();
                                 
                                 add.clear();
                                 remove.clear();
@@ -729,7 +816,8 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
                                 
                                 // OK, we've updated the Library
                                 // Let's take an additional sleep
-                                extraSleep = true;
+                                if (running)
+                                    extraSleep = true;
                             }
                         }
                         

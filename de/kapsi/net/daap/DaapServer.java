@@ -34,6 +34,7 @@ public class DaapServer {
 	private ContentCodesResponse contentCodes;
 	
     private DaapAcceptor acceptor;
+    private DaapFilter filter;
     
 	private HashSet sessionIds;
 	private HashSet connections;
@@ -88,6 +89,14 @@ public class DaapServer {
 		return audioRequestHandler.getAudioStream();
 	}
     
+    public void setFilter(DaapFilter filter) {
+        this.filter = filter;
+    }
+    
+    public DaapFilter getFilter() {
+        return filter;
+    }
+
     public DaapConfig getConfig() {
         return config;
     }
@@ -217,6 +226,17 @@ public class DaapServer {
     public boolean accept(Socket socket) 
             throws IOException {
         
+        
+        if (filter != null && 
+                filter.accept(socket.getInetAddress()) == false) {
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("DaapFilter refused connection from " + socket);
+            }
+            
+            return false;
+        }
+
         DaapConnection connection = new DaapConnection(this, socket);
         
         // Set the timeout to an acceptable value and read the first request.
@@ -276,7 +296,8 @@ public class DaapServer {
         }
 	}
 	
-	void processRequest(DaapConnection conn, DaapRequest request) throws IOException {
+	void processRequest(DaapConnection conn, DaapRequest request) 
+            throws IOException {
 		
 		boolean complete = false;
 		
@@ -358,5 +379,9 @@ public class DaapServer {
 
 	public int getNumberOfConnections() {
 		return (connections != null) ? connections.size() : 0;
+	}
+    
+    public int getNumberOfStreams() {
+		return (streams != null) ? streams.size() : 0;
 	}
 }

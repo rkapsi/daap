@@ -59,8 +59,8 @@ public class DaapRequestHandler {
 		
 		} else {
 			
-			if (request.isServerSideRequest()==false) {
-				if (authenticator != null && authenticator.requiresAuthentication()) {
+			//if (request.isServerSideRequest()==false) {
+				/*if (authenticator != null && authenticator.requiresAuthentication()) {
 					
 					boolean authenticated = false;
 					
@@ -102,8 +102,15 @@ public class DaapRequestHandler {
 				
 						return response.processRequest(conn);
 					}
-				}
-			}
+				}*/
+                
+                if ( ! isAuthenticated(request)) {
+                    DaapResponse response = 
+                        DaapResponse.createAuthResponse(request);
+				
+                    return response.processRequest(conn);
+                }
+			//}
 			
 			if (request.isContentCodesRequest()) {
 				return processServerInfoRequest(conn, request);
@@ -140,6 +147,55 @@ public class DaapRequestHandler {
 		return false;
 	}
 	
+    private boolean isAuthenticated(DaapRequest request) 
+            throws UnsupportedEncodingException {
+        
+        boolean authenticated = request.isServerSideRequest();
+        
+        if ( ! authenticated ) {
+        
+            authenticated = authenticator != null && 
+                                !authenticator.requiresAuthentication();
+                                
+            if ( ! authenticated ) {
+            
+                Header[] headers = request.getHeaders();
+                        
+                for(int i = 0; i < headers.length; i++) {
+                    Header header = headers[i];
+                    if (header.getName().equals("Authorization")) {
+                    
+                        StringTokenizer tok = 
+                            new StringTokenizer(header.getValue(), " ");
+                        
+                        if (tok.nextToken().equals("Basic") == false) {
+                            return false;
+                        }
+                        
+                        byte[] logpass = Base64.decode(tok.nextToken().getBytes("UTF-8"));
+                
+                        int q = 0;
+                        for(;q<logpass.length && logpass[q] != ':';q++);
+                        
+                        String username = new String(logpass,0,q);
+                        
+                        q++;
+                        String password = "";
+                        
+                        if (logpass.length-q != 0) {
+                            password = new String(logpass,q,logpass.length-q);
+                        }
+                        
+                        authenticated = authenticator.authenticate(username, password);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        return authenticated;
+    }
+    
 	private boolean processServerInfoRequest(DaapConnection conn, DaapRequest request) 
 		throws IOException {
 		
