@@ -19,38 +19,19 @@
 
 package de.kapsi.net.daap;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.io.FileInputStream;
-import java.nio.channels.FileChannel;
-
-import java.util.LinkedList;
-import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpParser;
 import org.apache.commons.httpclient.util.Base64;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.Song;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapAuthenticator;
-import de.kapsi.net.daap.DaapStreamSource;
-
-import de.kapsi.net.daap.chunks.UpdateResponseImpl;
 import de.kapsi.net.daap.chunks.LoginResponseImpl;
-
-import de.kapsi.net.daap.chunks.impl.ServerDatabases;
-import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
-import de.kapsi.net.daap.chunks.impl.DatabaseSongs;
-import de.kapsi.net.daap.chunks.impl.DatabasePlaylists;
+import de.kapsi.net.daap.chunks.UpdateResponseImpl;
 
 /**
  * DaapRequestProcessor processes a DaapRequest and generates
@@ -158,7 +139,7 @@ public class DaapRequestProcessor {
             DaapServer server = connection.getServer();
             DaapAuthenticator authenticator = server.getAuthenticator();
             
-            authenticated = authenticator == null ||
+            authenticated = (authenticator == null) ||
                     !authenticator.requiresAuthentication();
             
             if ( ! authenticated ) {
@@ -310,11 +291,14 @@ public class DaapRequestProcessor {
             
         if (revision.intValue() == request.getDelta() && revision.intValue() != 0) {
             
-            session.addAttribute("DELTA", new Integer(request.getDelta()));
-            session.addAttribute("REVISION-NUMBER", new Integer(request.getRevisionNumber()));
-
+            session.setAttribute("DELTA", new Integer(request.getDelta()));
+            session.setAttribute("REVISION-NUMBER", new Integer(request.getRevisionNumber()));
+            session.removeAttribute("UPDATE_LOCK");
+            
             return null;
         }
+        
+        session.setAttribute("UPDATE_LOCK", "UPDATE_LOCK");
         
         // if revision is 0 (i.e. no database available) will iTunes
         // disconnect...

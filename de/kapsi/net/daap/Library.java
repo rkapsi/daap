@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -60,264 +62,296 @@ import de.kapsi.net.daap.chunks.impl.TimeoutInterval;
 import de.kapsi.net.daap.chunks.impl.UpdateType;
 
 /**
- * This class and its internals are the heart of this DAAP
- * implementation. Note: it's very important to synchronize
- * all operations!!!<p>
- * <code>
- * Library library = ...;
- * synchronized(library) {
- *      library.open();
- *      library.add(new Song(...));
- *      library.close();
- *  }
- * </code>
- *
- * @author  Roger Kapsi
+ * This class and its internals are the heart of this DAAP implementation. All 
+ * modifiying operations must be performed as a "transaction" on the Library. 
+ * 
+ * <p><code>
+ * DaapTransaction transaction = DaapTransaction.open(library);
+ * library.setName("New Name");
+ * library.add(new Database("Foobar"));
+ * ...
+ * transaction.commit();
+ * </code></p>
+ * 
+ * @author Roger Kapsi
  */
 public class Library {
-	
+
     private static final Log LOG = LogFactory.getLog(Library.class);
-	
-    private static final int DATABASE_ID = 1;
-    
+
     public static final int DEFAULT_KEEP_REVISIONS = 10;
+    private static final int GC_TIMER_INTERVAL = 10*1000; // 10 seconds
     
     private static long persistentId = 0;
-    
-    private ArrayList revisions = new ArrayList();
+    private int revision = 0;
 
-    private int keepNumRevisions;
-    private String name;
-
-    private Database current;
-    private Database temp;
-	
-    private byte[] serverDatabases;
-    private byte[] serverDatabasesUpdate;
+    private ArrayList databases = new ArrayList();
     
+    private boolean useLibraryGC;
+    private LibraryRevision[] revisions;
+    private Timer gcTimer = null;
+    
+    private final ItemName itemName = new ItemName();
     private byte[] contentCodes;
-    
-    //private byte[] serverInfoV1; // nobody uses iTunes 4.0
-    private byte[] serverInfoV2;
-    private byte[] serverInfoV3;
-    
-    private boolean open = false;
-    
+
     /**
-     * Creates a new Library with the provided <tt>name</tt>
-     * and with the default revision history of <tt>DEFAULT_KEEP_REVISIONS</tt>
+     * Creates a new Library with the provided <tt>name</tt> and with the
+     * default revision history of <tt>DEFAULT_KEEP_REVISIONS</tt>
      */
     public Library(String name) {
-        this(name, DEFAULT_KEEP_REVISIONS);
+        this(name, DEFAULT_KEEP_REVISIONS, true);
     }
 
     /**
-     * Creates a new Library with the provided <tt>name</tt> and
-     * the max number of revisions.
+     * Creates a new Library with the provided <tt>name</tt> and the max
+     * number of revisions.
      */
-    public Library(String name, int keepNumRevisions) {
-        
+    public Library(String name, int keepNumRevisions, boolean useLibraryGC) {
+
         if (keepNumRevisions <= 0)
             throw new IllegalArgumentException("keepNumRevisions must be >= 1");
+
+        this.useLibraryGC = (useLibraryGC && keepNumRevisions > 1);
+        revisions = new LibraryRevision[keepNumRevisions];
         
-        this.name = name;
-        this.keepNumRevisions = keepNumRevisions;
-        
+        itemName.setValue(name);
         contentCodes = new ContentCodesResponseImpl().getBytes();
-        
-        // 1.0.0 (iTunes 4.0)
-        //serverInfoV1 = new ServerInfoResponseImpl(name, DaapUtil.VERSION_1).getBytes();
-        
-        // 2.0.0 (iTunes 4.1 and 4.2)
-        serverInfoV2 = new ServerInfoResponseImpl(name, DaapUtil.VERSION_2).getBytes();
-        
-        // 3.0.0 (iTunes 4.5)
-        serverInfoV3 = new ServerInfoResponseImpl(name, DaapUtil.VERSION_3).getBytes();
-    }
-    
-    /**
-     * Returns the current revision of this library. Everytime
-     * you open() and close() the library the revision will be
-     * increased by one
-     */
-    public int getRevision() {
-        if (current == null) {
-            return 0;
-        } else {
-            return current.getRevision();
-        }
     }
 
     /**
-     * Sets the name of this Library. Note: Library must be
-     * open or an <tt>IllegalStateException</tt> will be thrown
+     * Returns the current revision of this library. Everytime you open() and
+     * close() the library the revision will be increased by one
+     */
+    public synchronized int getRevision() {
+        return revision;
+    }
+
+    /**
+     * Sets the name of this Library. Note: Library must be open or an
+     * <tt>IllegalStateException</tt> will be thrown
      */
     public void setName(String name) {
-        if (!isOpen()) {
-            throw new IllegalStateException("Library is not open");
+        if (!DaapTransaction.isOpen()) {
+            throw new DaapTransactionException(
+                    "Current Thread is not associated with a transaction.");
         }
 
-        temp.setName(name);
+        DaapTransaction transaction = DaapTransaction.getTransaction();
+        LibraryTransaction obj = (LibraryTransaction) transaction
+                .getAttribute(this);
+
+        if (obj == null) {
+            obj = new LibraryTransaction(this);
+            transaction.setAttribute(this, obj);
+        }
+
+        obj.setName(name);
     }
 
     /**
      * Returns the name of this Library
      */
     public String getName() {
-        if (current == null) {
-            return name;
-        } else {
-            return current.getName();
+        return itemName.getValue();
+    }
+
+    /**
+     * Adds database to this Library (<b>NOTE</b>: only one Database per Library
+     * is supported by iTunes!)
+     * 
+     * @param database
+     * @throws DaapTransactionException
+     */
+    public void add(Database database) throws DaapTransactionException {
+        if (!DaapTransaction.isOpen()) {
+            throw new DaapTransactionException(
+                    "Current Thread is not associated with a transaction.");
         }
+
+        DaapTransaction transaction = DaapTransaction.getTransaction();
+        LibraryTransaction obj = (LibraryTransaction) transaction
+                .getAttribute(this);
+
+        if (obj == null) {
+            obj = new LibraryTransaction(this);
+            transaction.setAttribute(this, obj);
+        }
+
+        obj.add(database);
     }
 
     /**
-     * Returns <tt>true</tt> if Library is open
-     * an can be edited
+     * Removes database from this Library
+     * 
+     * @param database
+     * @throws DaapTransactionException
      */
-    public boolean isOpen() {
-        return open;
+    public void remove(Database database) throws DaapTransactionException {
+        if (!DaapTransaction.isOpen()) {
+            throw new DaapTransactionException(
+                    "Current Thread is not associated with a transaction.");
+        }
+
+        DaapTransaction transaction = DaapTransaction.getTransaction();
+        LibraryTransaction obj = (LibraryTransaction) transaction
+                .getAttribute(this);
+
+        if (obj == null) {
+            obj = new LibraryTransaction(this);
+            transaction.setAttribute(this, obj);
+        }
+
+        obj.remove(database);
     }
 
     /**
-     * Deletes everything from the Library. Note: you
-     * should shutdown the server before doing this!
+     * Returns true if this Library contains database
+     * 
+     * @param database
+     * @return
      */
-    public void delete() {
-        if (isOpen()) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Library is open.");
+    public boolean contains(Database database) {
+        return databases.contains(database);
+    }
+
+    synchronized void commit() throws CloneNotSupportedException {
+
+        if (!DaapTransaction.isOpen()) {
+            throw new DaapTransactionException(
+                    "Current Thread is not associated with a transaction.");
+        }
+
+        try {
+            DaapTransaction transaction = DaapTransaction.getTransaction();
+
+            LibraryTransaction obj = (LibraryTransaction) transaction.getAttribute(this);
+
+            if (obj != null) {
+                obj.commit();
             }
-            return;
+            
+            // The difference between the original and the cloned
+            // Database is that the cloned Database has no longer
+            // references to the Songs because it no longer needs
+            // them!
+            
+            LibraryRevision current = revisions[(revision % revisions.length)];
+            
+            if (current != null) {
+                current.databases = new ArrayList();
+            }
+            
+            Iterator it = databases.iterator();
+            while (it.hasNext()) {
+                Database database = (Database) it.next();
+                if (current != null) {
+                    current.databases.add(database.clone()); // create a clone before...
+                }
+                database.commit(); // ...commiting the new items!!!
+            }
+            
+            revision++;
+            LibraryRevision newRevision = new LibraryRevision(revision);
+            newRevision.databases = databases;
+            
+            // 3.0.0 (iTunes 4.5 and up)
+            newRevision.serverInfo = new ServerInfoResponseImpl(this, DaapUtil.VERSION_3).getBytes();
+            
+            newRevision.serverDatabases = new ServerDatabasesImpl(this, false).getBytes();
+            newRevision.serverDatabasesUpdate = new ServerDatabasesImpl(this, true).getBytes();
+            
+            revisions[(revision % revisions.length)] = newRevision; 
+            
+            if (useLibraryGC && gcTimer == null) {
+                gcTimer = new Timer(true);
+                gcTimer.scheduleAtFixedRate(new LibraryGC(this), GC_TIMER_INTERVAL, GC_TIMER_INTERVAL);
+            }
+            
+        } finally {
+            Iterator it = databases.iterator();
+            while (it.hasNext()) {
+                Database database = (Database) it.next();
+                database.cleanup();
+            }
         }
-
-        revisions.clear();
-
-        current = null;
-        temp = null;
-
-        serverDatabases = null;
-        serverDatabasesUpdate = null;
     }
 
-    /**
-     * Creates an empty Library
-     */
-    public void init() {
-        if (getRevision()==0) {
-            open();
-            close();
-        }
-    }
-    
-    /**
-     * Open the Library for edit
-     */
-    public void open() {
+    synchronized void rollback() throws DaapTransactionException {
 
-        if (isOpen()) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Library is already opened for edit");
-            }
-            return;
-        }
-
-        if (current == null) {
-            // current is initialized on close()! 
-            temp = new Database(DATABASE_ID, name, nextPersistentId());
-
-        } else {
-
-            temp = current;
-            current = temp.createSnapshot();
-
-            temp.open();
-        }
-
-        open = true;
-    }
-
-    /**
-     * Closes the Library
-     */
-    public void close() {
-        if (!isOpen()) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Library is already closed");
-            }
-            return;
-        }
-
-        if (current != null) {
-            revisions.add(current);
-     
-            if (current.getName().equals(temp.getName()) == false) {
-                //serverInfoV1 = new ServerInfoResponseImpl(temp.getName(), DaapUtil.VERSION_1).getBytes();
-                serverInfoV2 = new ServerInfoResponseImpl(temp.getName(), DaapUtil.VERSION_2).getBytes();
-                serverInfoV3 = new ServerInfoResponseImpl(temp.getName(), DaapUtil.VERSION_3).getBytes();
-            }
+        if (!DaapTransaction.isOpen()) {
+            throw new DaapTransactionException(
+                    "Current Thread is not associated with a transaction.");
         }
         
-        current = temp;
-        current.close();
-        temp = null;
+        try {
+            DaapTransaction transaction = DaapTransaction.getTransaction();
+            LibraryTransaction obj = (LibraryTransaction) transaction.getAttribute(this);
 
-        ArrayList databases = new ArrayList();
-        databases.add(current);
+            if (obj != null) {
+                obj.rollback();
+            }
 
-        serverDatabases = (new ServerDatabasesImpl(databases, false)).getBytes();
-        serverDatabasesUpdate = (new ServerDatabasesImpl(databases, true)).getBytes();
-
-        if (revisions.size() >= keepNumRevisions) {
-            Database old = (Database)revisions.remove(0);
-            old.destroy();
+            Iterator it = databases.iterator();
+            while (it.hasNext()) {
+                ((Database) it.next()).rollback();
+            }
+        } finally {
+            Iterator it = databases.iterator();
+            while (it.hasNext()) {
+                ((Database) it.next()).cleanup();
+            }
         }
-
-        open = false;
     }
-    
+
     /**
-     * Returns some kind of Object or null if <tt>request</tt>
-     * didn't matched for this Library (unknown request, unknown id,
-     * whatever). The returned Object could be basically anything
-     * but it's in our case either an <tt>java.lang.Integer</tt> or
-     * a byte-Array (gzip'ed).
+     * Returns some kind of Object or null if <tt>request</tt> didn't matched
+     * for this Library (unknown request, unknown id, whatever). The returned
+     * Object could be basically anything but it's in our case either an
+     * <tt>java.lang.Integer</tt> or a byte-Array (gzip'ed).
      */
     public synchronized Object select(DaapRequest request) {
 
         if (request.isServerInfoRequest()) {
-            
+
             DaapConnection connection = request.getConnection();
             int version = connection.getProtocolVersion();
-              
-            if (version == DaapUtil.VERSION_2) {
-                return serverInfoV2;
-            } else if (version >= DaapUtil.VERSION_3) {
-                return serverInfoV3;
+
+            if (version >= DaapUtil.VERSION_3) {
+                LibraryRevision currentRevision = getLibraryRevision(request);
+                
+                if (currentRevision == null) {
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("Unknown revision: "
+                                + request.getRevisionNumber());
+                    }
+
+                    return null;
+                }
+                
+                return currentRevision.serverInfo;
+            } 
             
-            } else { // Undef or VERSION_1
-                return null;
-            }
-            
+            return null;
+
         } else if (request.isContentCodesRequest()) {
             return contentCodes;
-            
+
         } else if (request.isUpdateRequest()) {
 
             int delta = request.getDelta();
 
-            // What's the next revision of the database 
+            // What's the next revision of the database
             // iTunes should ask for?
-            if (delta == DaapUtil.UNDEF_VALUE) { 
-                 
-                // 1st. request, iTunes should/will 
+            if (delta == DaapUtil.UNDEF_VALUE) {
+
+                // 1st. request, iTunes should/will
                 // ask for the current revision
                 return (new Integer(getRevision()));
 
             } else if (delta < getRevision()) {
-                
+
                 // ask for the next revision
-                return (new Integer(++delta)); 
+                return (new Integer(++delta));
 
             } else {
 
@@ -326,35 +360,47 @@ public class Library {
             }
 
         } else if (request.isDatabasesRequest()) {
+            
+            LibraryRevision currentRevision = getLibraryRevision(request);
 
-            Database database = getDatabase(request);
-
-            if (database == null) {
+            if (currentRevision == null) {
 
                 if (LOG.isInfoEnabled()) {
-                    LOG.info("No database with this revision known: " 
-                        + request.getRevisionNumber());
+                    LOG.info("Unknown revision: "
+                            + request.getRevisionNumber());
                 }
 
                 return null;
             }
 
             if (request.isUpdateType()) {
-                return serverDatabasesUpdate;
+                return currentRevision.serverDatabasesUpdate;
             } else {
-                return serverDatabases;
+                return currentRevision.serverDatabases;
             }
 
-        } else if (request.isSongRequest() 
-                            || request.isDatabaseSongsRequest() 
-                            || request.isDatabasePlaylistsRequest()
-                            || request.isPlaylistSongsRequest()) {
+        } else if (request.isSongRequest() || request.isDatabaseSongsRequest()
+                || request.isDatabasePlaylistsRequest()
+                || request.isPlaylistSongsRequest()) {
+            
+            LibraryRevision currentRevision = getLibraryRevision(request);
+            
+            if (currentRevision == null) {
 
-            Database database = getDatabase(request);
+                if (LOG.isInfoEnabled()) {
+                    LOG.info("Unknown revision: "
+                            + request.getRevisionNumber());
+                }
+
+                return null;
+            }
+            
+            Database database = currentRevision.getDatabase(request);
+            
             if (database == null) {
                 if (LOG.isInfoEnabled()) {
-                    LOG.info("No database with this revision known: " 
-                        + request.getRevisionNumber());
+                    LOG.info("No database with this revision known: "
+                            + request.getRevisionNumber());
                 }
 
                 return null;
@@ -364,142 +410,233 @@ public class Library {
 
         } else {
             if (LOG.isInfoEnabled()) {
-                    LOG.info("Unknown request: " + request);
+                LOG.info("Unknown request: " + request);
             }
             return null;
         }
     }
-
+    
     /**
-     * Returns a Database for the <tt>request</tt>. The
-     * requested Database is determinated by the Database ID.
+     * Retruns the requested revision or null if the requested
+     * revision is unknown
+     * 
+     * @param request
+     * @return
      */
-    private Database getDatabase(DaapRequest request) {
-
-        if (current == null) {
-            return null;
-        }
-
+    private LibraryRevision getLibraryRevision(DaapRequest request) {
         int revisionNumber = request.getRevisionNumber();
+
+        if (revisionNumber == DaapUtil.UNDEF_VALUE) {
+            revisionNumber = revision;
+        }
         
-        if (revisionNumber == DaapUtil.UNDEF_VALUE || 
-                       revisionNumber == current.getRevision()) {
-                           
-            return current;
+        LibraryRevision rev = revisions[(revisionNumber % revisions.length)];
+        if (rev != null && rev.revision == revisionNumber) {
+            return rev;
+        } else {
+            return null;
         }
-
-        Iterator it = revisions.iterator();
-        while(it.hasNext()) {
-            Database database = (Database)it.next();
-            if (database.getRevision() == revisionNumber) {
-                return database;
-            }
-        }
-
-        return null;
     }
 
     /**
-     * Adds <tt>song</tt> to the Master Playlist.
-     */
-    public void add(Song song) {
-
-        if (!isOpen()) {
-            throw new IllegalStateException("Library is not open");
-        }
-
-        temp.add(song);
-    }
-
-    /**
-     * Removes <tt>song</tt> from the Master Playlist.
-     */
-    public boolean remove(Song song) {
-
-        if (!isOpen()) {
-            throw new IllegalStateException("Library is not open");
-        }
-
-        return temp.remove(song);
-    }
-
-    /**
-     * Adds <tt>playlist</tt> to the Library
-     */
-    public void add(Playlist playlist) {
-
-        if (!isOpen()) {
-            throw new IllegalStateException("Library is not open");
-        }
-
-        temp.add(playlist);
-    }
-
-    /**
-     * Removes <tt>playlist</tt> from the Library
-     */
-    public boolean remove(Playlist playlist) {
-
-        if (!isOpen()) {
-            throw new IllegalStateException("Library is not open");
-        }
-
-        return temp.remove(playlist);
-    }
-
-    /**
-     * Returns the number of Songs in this Library
+     * Returns the number of Databases
+     * 
+     * @return
      */
     public int size() {
-        if (current==null) {
-            return 0;
-        } else {
-
-            Playlist masterPlaylist = current.getMasterPlaylist();
-            if (masterPlaylist == null && temp != null)
-                masterPlaylist = temp.getMasterPlaylist();
-
-            if (masterPlaylist != null) {
-                return masterPlaylist.size();
-            } else {
-                return 0;
-            }
-        }
+        return databases.size();
     }
-
+ 
     static synchronized long nextPersistentId() {
         return ++persistentId;
     }
-    
-    public String toString() {
-        return getName();
+
+    /**
+     * 
+     */
+    private static final class LibraryTransaction {
+
+        private Library library;
+        private String name;
+        
+        private HashSet databases = new HashSet();
+        private HashSet deletedDatabases = new HashSet();
+
+        private LibraryTransaction(Library library) {
+            this.library = library;
+            this.name = library.getName();
+        }
+
+        private void setName(String name) {
+            this.name = name;
+        }
+
+        private void add(Database database) {
+            if (!databases.contains(database)) {
+                databases.add(database);
+                deletedDatabases.remove(database);
+            }
+        }
+
+        private void remove(Database database) {
+            if (!deletedDatabases.contains(database)) {
+                deletedDatabases.add(database);
+                databases.remove(database);
+            }
+        }
+
+        private void commit() {
+            if (library.getName() != name) {
+                library.itemName.setValue(name);
+            }
+
+            Iterator it = databases.iterator();
+            while (it.hasNext()) {
+                Database database = (Database) it.next();
+                if (!library.databases.contains(database)) {
+
+                    //if (library.databases.isEmpty()) {
+                    library.databases.add(database);
+                    //} else {
+                    //    library.databases.set(0, database);
+                    //}
+                }
+            }
+
+            it = deletedDatabases.iterator();
+            while (it.hasNext()) {
+                Database database = (Database) it.next();
+                library.databases.remove(database);
+            }
+
+            databases.clear();
+            deletedDatabases.clear();
+        }
+
+        private void rollback() {
+            databases.clear();
+            deletedDatabases.clear();
+        }
     }
     
-    private final class ServerDatabasesImpl extends ServerDatabases {
-   
-        public ServerDatabasesImpl(List databases, boolean updateType) {
+    /**
+     * A simple Garbage Collector for the Library which deletes the
+     * eldest 'LibraryRevision' object and terminates itself as soon
+     * as only the latest revision is left over.
+     */
+    private static final class LibraryGC extends TimerTask {
+        
+        private Library library;
+        
+        private LibraryGC(Library library) {
+            this.library = library;
+        }
+        
+        public void run() {
+            synchronized(library) {
+                final int index = library.revision % library.revisions.length;
+                int i = (index + 1) % library.revisions.length;
+                while(i != index) {
+                    
+                    if (library.revisions[i] != null) {
+                        //System.out.println("GC: " + library.revisions[i]);
+                        library.revisions[i] = null;
+                        break;
+                    }
+                    
+                    i = (i + 1) % library.revisions.length;
+                }
+                
+                if (i == index) {
+                    //System.out.println("LibraryGC is done");
+                    cancel();
+                    library.gcTimer.cancel();
+                    library.gcTimer = null;
+                }
+            }
+        }
+    }
+    
+    /**
+     * 
+     */
+    private static final class LibraryRevision {
+        
+        private final int revision;
+        private ArrayList databases;
+        
+        private byte[] serverInfo;
+        private byte[] serverDatabases;
+        private byte[] serverDatabasesUpdate;
+        
+        private LibraryRevision(int revision) {
+            this.revision = revision;
+        }
+        
+        /**
+         * Returns a Database for the <tt>request</tt>. The requested Database is
+         * determinated by the Database ID.
+         */
+        private Database getDatabase(DaapRequest request) {
+
+            int revisionNumber = request.getRevisionNumber();
+
+            if (revisionNumber == DaapUtil.UNDEF_VALUE) {
+                revisionNumber = revision;
+            }
+
+            if (databases != null && !databases.isEmpty()) {
+                int databaseId = request.getDatabaseId();
+                if (databaseId == DaapUtil.UNDEF_VALUE) {
+                    return (Database) databases.get(0);
+                } else {
+                    Iterator it = databases.iterator();
+                    while (it.hasNext()) {
+                        Database database = (Database) it.next();
+                        if (database.getId() == databaseId) {
+                            return database;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+        
+        public String toString() {
+            return "LibraryRevision: " + revision;
+        }
+    }
+    
+    /**
+     * This class implements the ServerDatabases chunk.
+     */
+    private static final class ServerDatabasesImpl extends ServerDatabases {
+
+        public ServerDatabasesImpl(Library library, boolean updateType) {
             super();
 
             add(new Status(200));
             add(new UpdateType(updateType));
 
-            add(new SpecifiedTotalCount(databases.size()));
-            add(new ReturnedCount(databases.size()));
+            add(new SpecifiedTotalCount(library.databases.size()));
+            add(new ReturnedCount(library.databases.size()));
 
             Listing listing = new Listing();
 
-            Iterator it = databases.iterator();
-            while(it.hasNext()) {
+            Iterator it = library.databases.iterator();
+            while (it.hasNext()) {
                 ListingItem listingItem = new ListingItem();
 
-                Database database = (Database)it.next();
+                Database database = (Database) it.next();
 
                 listingItem.add(new ItemId(database.getId()));
                 listingItem.add(new PersistentId(database.getPersistentId()));
                 listingItem.add(new ItemName(database.getName()));
 
                 Playlist playlist = database.getMasterPlaylist();
-                int itemCount = ((updateType) ? playlist.getNewSongs() : playlist.getSongs()).size();
+                int itemCount = ((updateType) ? playlist.getNewSongs()
+                        : playlist.getSongs()).size();
                 int containerCount = database.getPlaylists().size();
 
                 listingItem.add(new ItemCount(itemCount));
@@ -514,7 +651,7 @@ public class Library {
         public byte[] getBytes() {
             return getBytes(true);
         }
-        
+
         public byte[] getBytes(boolean compress) {
             try {
                 return DaapUtil.serialize(this, compress);
@@ -524,12 +661,13 @@ public class Library {
             }
         }
     }
-    
+
     /**
-    * Groups many ContentCodes to one single chunk
-    */
-    private static final class ContentCodesResponseImpl extends ContentCodesResponse {
-        
+     * Groups many ContentCodes to one single chunk
+     */
+    private static final class ContentCodesResponseImpl extends
+            ContentCodesResponse {
+
         public ContentCodesResponseImpl() {
             super();
 
@@ -537,22 +675,25 @@ public class Library {
 
             String[] names = ChunkClasses.names;
 
-            final Class[] arg1 = new Class[]{};
-            final Object[] arg2 = new Object[]{};
+            final Class[] arg1 = new Class[] {};
+            final Object[] arg2 = new Object[] {};
 
-            for(int i = 0; i < names.length; i++) {
+            for (int i = 0; i < names.length; i++) {
                 try {
                     Class clazz = Class.forName(names[i]);
 
-                    Method methodContentCode = clazz.getMethod("getContentCode", arg1);
+                    Method methodContentCode = clazz.getMethod(
+                            "getContentCode", arg1);
                     Method methodName = clazz.getMethod("getName", arg1);
                     Method methodType = clazz.getMethod("getType", arg1);
 
                     Object inst = clazz.newInstance();
 
-                    String contentCode = (String)methodContentCode.invoke(inst, arg2);
-                    String name = (String)methodName.invoke(inst, arg2);
-                    int type = ((Integer)methodType.invoke(inst, arg2)).intValue();
+                    String contentCode = (String) methodContentCode.invoke(
+                            inst, arg2);
+                    String name = (String) methodName.invoke(inst, arg2);
+                    int type = ((Integer) methodType.invoke(inst, arg2))
+                            .intValue();
 
                     add(new ContentCode(contentCode, name, type));
 
@@ -573,11 +714,11 @@ public class Library {
                 }
             }
         }
-        
+
         public byte[] getBytes() {
             return getBytes(true);
         }
-        
+
         public byte[] getBytes(boolean compress) {
             try {
                 return DaapUtil.serialize(this, compress);
@@ -587,20 +728,21 @@ public class Library {
             }
         }
     }
-    
+
     /**
      * This class implements the ServerInfoResponse
      */
-    private static final class ServerInfoResponseImpl extends ServerInfoResponse {
+    private static final class ServerInfoResponseImpl extends
+            ServerInfoResponse {
 
-        public ServerInfoResponseImpl(String name, int version) {
+        public ServerInfoResponseImpl(Library library, int version) {
             super();
 
             add(new Status(200));
             add(new TimeoutInterval(1800));
             add(new DmapProtocolVersion(version));
             add(new DaapProtocolVersion(version));
-            add(new ItemName(name));
+            add(library.itemName);
             add(new LoginRequired(false));
             add(new SupportsAutoLogout(false));
             add(new SupportsUpdate(false));
@@ -610,13 +752,13 @@ public class Library {
             add(new SupportsQuery(false));
             add(new SupportsIndex(false));
             add(new SupportsResolve(false));
-            add(new DatabaseCount(1));
+            add(new DatabaseCount(library.databases.size()));
         }
-        
+
         public byte[] getBytes() {
             return getBytes(true);
         }
-        
+
         public byte[] getBytes(boolean compress) {
             try {
                 return DaapUtil.serialize(this, compress);

@@ -20,16 +20,17 @@
 package de.kapsi.net.daap;
 
 /**
- * Used internally by Playlist and Song to notify 
- * each other about updates.
- *
- * @author  Roger Kapsi 
+ * Thrown by DaapTransaction and the involved Objects
+ * 
+ * @author Roger Kapsi
  */
-interface SongListener {
+public class DaapTransactionException extends RuntimeException {
     
-    static final int SONG_CHANGED	= 1;
-    static final int SONG_ADDED		= 2;
-    static final int SONG_DELETED	= 3;
+    public DaapTransactionException() {
+        super();
+    }
     
-    public void songEvent(Song song, int event);
+    public DaapTransactionException(String err) {
+        super(err);
+    }
 }

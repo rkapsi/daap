@@ -3,77 +3,77 @@ package com.limegroup.gnutella.gui;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Locale;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.BindException;
-
-import com.limegroup.gnutella.URN;
-import com.limegroup.gnutella.RouterService;
-import com.limegroup.gnutella.FileDesc;
-import com.limegroup.gnutella.IncompleteFileDesc;
-import com.limegroup.gnutella.util.CommonUtils;
-import com.limegroup.gnutella.util.NetworkUtils;
-import com.limegroup.gnutella.util.FileUtils;
-import com.limegroup.gnutella.util.ManagedThread;
-import com.limegroup.gnutella.settings.DaapSettings;
-import com.limegroup.gnutella.FileManagerEvent;
-import com.limegroup.gnutella.filters.IPFilter;
-import com.limegroup.gnutella.gui.GUIMediator;
-import com.limegroup.gnutella.gui.FinalizeListener;
-
-import com.limegroup.gnutella.xml.LimeXMLDocument;
-import com.limegroup.gnutella.xml.LimeXMLReplyCollection;
-import com.limegroup.gnutella.xml.SchemaReplyCollectionMapper;
-
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
 
-import de.kapsi.net.daap.Song;
-import de.kapsi.net.daap.Playlist;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapServerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.limegroup.gnutella.FileDesc;
+import com.limegroup.gnutella.FileManagerEvent;
+import com.limegroup.gnutella.IncompleteFileDesc;
+import com.limegroup.gnutella.RouterService;
+import com.limegroup.gnutella.URN;
+import com.limegroup.gnutella.filters.IPFilter;
+import com.limegroup.gnutella.settings.DaapSettings;
+import com.limegroup.gnutella.util.CommonUtils;
+import com.limegroup.gnutella.util.FileUtils;
+import com.limegroup.gnutella.util.ManagedThread;
+import com.limegroup.gnutella.util.NetworkUtils;
+import com.limegroup.gnutella.xml.LimeXMLDocument;
+import com.limegroup.gnutella.xml.LimeXMLReplyCollection;
+import com.limegroup.gnutella.xml.SchemaReplyCollectionMapper;
+
+import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapFilter;
+import de.kapsi.net.daap.DaapServer;
+import de.kapsi.net.daap.DaapServerFactory;
 import de.kapsi.net.daap.DaapStreamSource;
-import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapThreadFactory;
+import de.kapsi.net.daap.DaapTransaction;
+import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.Database;
+import de.kapsi.net.daap.Library;
+import de.kapsi.net.daap.Playlist;
+import de.kapsi.net.daap.Song;
 
 /**
  * This class handles the mDNS registration and acts as an
  * interface between LimeWire and DAAP.
  */
-public final class DaapMediator implements FinalizeListener {
+public final class DaapManager implements FinalizeListener {
     
-    private static final Log LOG = LogFactory.getLog(DaapMediator.class);
-    private static final DaapMediator INSTANCE = new DaapMediator();
+    private static final Log LOG = LogFactory.getLog(DaapManager.class);
+    private static final DaapManager INSTANCE = new DaapManager();
     
     private static final String AUDIO_SCHEMA = "http://www.limewire.com/schemas/audio.xsd";
     
-    public static DaapMediator instance() {
+    public static DaapManager instance() {
         return INSTANCE;
     }
 
     private SongURNMap map;
     
     private Library library;
+    private Database database;
     private Playlist whatsNew;
     private DaapServer server;
     private RendezvousService rendezvous;
-    private UpdateWorker updateWorker;
     
     private boolean annotateEnabled = false;
+    private int maxPlaylistSize;
     
-    private DaapMediator() {
+    private DaapManager() {
         if (CommonUtils.isJava14OrLater() == false)
-            throw new RuntimeException("Cannot instance DaapMediator");
+            throw new RuntimeException("Cannot instance DaapManager");
         
         GUIMediator.addFinalizeListener(this);
     }
@@ -98,15 +98,22 @@ public final class DaapMediator implements FinalizeListener {
             try {
                 
                 map = new SongURNMap();
-                library = new Library(DaapSettings.DAAP_LIBRARY_NAME.getValue());
+                
+                maxPlaylistSize = DaapSettings.DAAP_MAX_LIBRARY_SIZE.getValue();
+                
+                String name = DaapSettings.DAAP_LIBRARY_NAME.getValue();
+                int revisions = DaapSettings.DAAP_LIBRARY_REVISIONS.getValue();
+                boolean useLibraryGC = DaapSettings.DAAP_LIBRARY_GC.getValue();
+                library = new Library(name, revisions, useLibraryGC);
+                
+                database = new Database(name);
                 whatsNew = new Playlist(GUIMediator.getStringResource("SEARCH_TYPE_WHATSNEW"));
+                
+                DaapTransaction txn = DaapTransaction.open(library);
+                library.add(database);
+                database.add(whatsNew);
                 whatsNew.setSmartPlaylist(true);
-                
-                library.open();
-                library.add(whatsNew);
-                library.close();
-                
-                updateWorker = new UpdateWorker();
+                txn.commit();
                 
                 LimeConfig config = new LimeConfig();
                 
@@ -139,11 +146,6 @@ public final class DaapMediator implements FinalizeListener {
                 Thread serverThread = new ManagedThread(server, "DaapServerThread");
                 serverThread.setDaemon(true);
                 serverThread.start();
-             
-                Thread updateWorkerThread = new ManagedThread(updateWorker, "UpdateWorkerThread");
-                updateWorkerThread.setDaemon(true);
-                updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
-                updateWorkerThread.start();
                 
                 rendezvous = new RendezvousService();
                 rendezvous.registerService();
@@ -160,9 +162,6 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void stop() {
         
-        if (updateWorker != null)
-            updateWorker.stop();
-        
         if (rendezvous != null)
             rendezvous.close();
         
@@ -174,10 +173,10 @@ public final class DaapMediator implements FinalizeListener {
         
         rendezvous = null;
         server = null;
-        updateWorker = null;
         map = null;
         library = null;
         whatsNew = null;
+        database = null;
     }
     
     /**
@@ -215,7 +214,13 @@ public final class DaapMediator implements FinalizeListener {
         
         if (isServerRunning()) {
             rendezvous.updateService();
-            updateWorker.setName(DaapSettings.DAAP_LIBRARY_NAME.getValue());
+
+            DaapTransaction txn = DaapTransaction.open(library);
+            String name = DaapSettings.DAAP_LIBRARY_NAME.getValue();
+            library.setName(name);
+            database.setName(name);
+            txn.commit();
+            server.update();
         }
     }
     
@@ -254,62 +259,75 @@ public final class DaapMediator implements FinalizeListener {
     /**
      * Called by VisualConnectionCallback
      */
-    public void handleFileManagerEvent(FileManagerEvent evt) {
-        System.out.println(evt);
-        if (isServerRunning()) {
+    public synchronized void handleFileManagerEvent(FileManagerEvent evt) {
+
+        if (!isServerRunning())
+            return;
               
-            if (evt.isChangeEvent()) {
+        if (evt.isChangeEvent()) {
+            
+            FileDesc oldDesc = evt.getFileDesc()[0];
+            
+            Song song = map.remove(oldDesc.getSHA1Urn());
+            
+            if (song != null) {
                 
-                FileDesc oldDesc = evt.getFileDesc()[0];
+                FileDesc newDesc = evt.getFileDesc()[1];
+                map.put(song, newDesc.getSHA1Urn());
+                String format = song.getFormat();
                 
-                Song song = map.remove(oldDesc.getSHA1Urn());
+                // Any changes in the meta data?
+                if ( updateSongMeta(song, newDesc) ) {
+                    DaapTransaction txn = DaapTransaction.open(library);
+                    database.update(song);
+                    txn.commit();
+                    server.update();
+                }
+            }
+            
+        } else if (evt.isAddEvent()) {
+            
+            if (database.getMasterPlaylist().size() >= maxPlaylistSize) {
                 
-                if (song != null) {
+                return;
+            }
+            
+            FileDesc file = evt.getFileDesc()[0];
+            
+            if (!(file instanceof IncompleteFileDesc)) {
+                String name = file.getName().toLowerCase(Locale.US);
+                if (isSupportedFormat(name)) {
                     
-                    FileDesc newDesc = evt.getFileDesc()[1];
-                    map.put(song, newDesc.getSHA1Urn());
-                    String format = song.getFormat();
+                    Song song = createSong(file);
+                    map.put(song, file.getSHA1Urn());
                     
-                    // Any changes in the meta data?
-                    if ( updateSongMeta(song, newDesc) ) {
-                        updateWorker.update(song);
-                    }
+                    DaapTransaction txn = DaapTransaction.open(library);
+                    database.add(song);
+                    txn.commit();
+                    server.update();
                 }
-                
-            } else if (evt.isAddEvent()) {
-             
-                FileDesc file = evt.getFileDesc()[0];
-                
-                if (!(file instanceof IncompleteFileDesc)) {
-                    String name = file.getName().toLowerCase(Locale.US);
-                    if (isSupportedFormat(name)) {
-                        
-                        Song song = createSong(file);
-                        
-                        map.put(song, file.getSHA1Urn());
-                        
-                        updateWorker.add(song, true);
-                    }
-                }
-                
-            } else if (evt.isRenameEvent()) {
-                
-                FileDesc oldDesc = evt.getFileDesc()[0];
-                Song song = map.remove(oldDesc.getSHA1Urn());
-                
-                if (song != null) {
-                    FileDesc newDesc = evt.getFileDesc()[1];
-                    map.put(song, newDesc.getSHA1Urn());
-                }
-                
-            } else if (evt.isRemoveEvent()) {
-                
-                FileDesc file = evt.getFileDesc()[0];
-                Song song = map.remove(file.getSHA1Urn());
-                
-                if (song != null) {
-                    updateWorker.remove(song);
-                }
+            }
+            
+        } else if (evt.isRenameEvent()) {
+            
+            FileDesc oldDesc = evt.getFileDesc()[0];
+            Song song = map.remove(oldDesc.getSHA1Urn());
+            
+            if (song != null) {
+                FileDesc newDesc = evt.getFileDesc()[1];
+                map.put(song, newDesc.getSHA1Urn());
+            }
+            
+        } else if (evt.isRemoveEvent()) {
+            
+            FileDesc file = evt.getFileDesc()[0];
+            Song song = map.remove(file.getSHA1Urn());
+            
+            if (song != null) {
+                DaapTransaction txn = DaapTransaction.open(library);
+                database.remove(song);
+                txn.commit();
+                server.update();
             }
         }
     }
@@ -321,76 +339,78 @@ public final class DaapMediator implements FinalizeListener {
         
         this.annotateEnabled = enabled;
         
-        if (isServerRunning() && enabled) {
+        if (!isServerRunning() || !enabled)
+            return;
+         
+        int size = database.getMasterPlaylist().size();
+        
+        DaapTransaction txn = DaapTransaction.open(library);
+        
+        SongURNMap tmpMap = new SongURNMap();
+        
+        FileDesc[] files = RouterService.getFileManager().getAllSharedFileDescriptors();
+        
+        for(int i = 0; i < files.length; i++) {
             
-            // disable updateWorker
-            updateWorker.setEnabled(false);
+            FileDesc file = files[i];
             
-            SongURNMap tmpMap = new SongURNMap();
-            
-            FileDesc[] files = RouterService.getFileManager().getAllSharedFileDescriptors();
-            
-            for(int i = 0; i < files.length; i++) {
-                
-                FileDesc file = files[i];
-                
-                if (!(file instanceof IncompleteFileDesc)) {
-                    String name = file.getName().toLowerCase(Locale.US);
-                    if (isSupportedFormat(name)) {
+            if (!(file instanceof IncompleteFileDesc)) {
+                String name = file.getName().toLowerCase(Locale.US);
+                if (isSupportedFormat(name)) {
+                    
+                    URN urn = file.getSHA1Urn();
+                    
+                    // 1)
+                    // _Remove_ URN from the current 'map'...
+                    Song song = map.remove(urn);
                         
-                        URN urn = file.getSHA1Urn();
+                    // Check if URN is already in the tmpMap.
+                    // If so do nothing as we don't want add 
+                    // the same file multible times...
+                    if (tmpMap.contains(urn) == false) {
                         
-                        // 1)
-                        // _Remove_ URN from the current 'map'...
-                        Song song = map.remove(urn);
+                        // This URN was already mapped with a Song.
+                        // Save the Song (again) and update the meta
+                        // data if necessary
+                        if (song != null) {
                             
-                        // Check if URN is already in the tmpMap.
-                        // If so do nothing as we don't want add 
-                        // the same file multible times...
-                        if (tmpMap.contains(urn) == false) {
-                            
-                            // This URN was already mapped with a Song.
-                            // Save the Song (again) and update the meta
-                            // data if necessary
-                            if (song != null) {
-                                
-                                tmpMap.put(song, urn);
+                            tmpMap.put(song, urn);
 
-                                // Any changes in the meta data?
-                                if ( updateSongMeta(song, file) ) {
-                                    updateWorker.update(song);
-                                }
-
-                            } else {
-                                
-                                // URN was unknown and we must create a
-                                // new Song for this URN...
-                                
-                                song = createSong(file);
-                                tmpMap.put(song, urn);
-                                updateWorker.add(song, false);
+                            // Any changes in the meta data?
+                            if ( updateSongMeta(song, file) ) {
+                                database.update(song);
                             }
+
+                        } else if (size < maxPlaylistSize){
+                            
+                            // URN was unknown and we must create a
+                            // new Song for this URN...
+                            
+                            song = createSong(file);
+                            tmpMap.put(song, urn);
+                            database.getMasterPlaylist().add(song);
+                            size++;
                         }
                     }
                 }
             }
-            
-            // See 1)
-            // As all known URNs were removed from 'map' and only
-            // deleted FileDesc URNs can be leftover and we
-            // must remove the associated Songs from the Library
-            Iterator it = map.getSongIterator();
-            while(it.hasNext()) {
-                Song song = (Song)it.next();
-                updateWorker.remove(song);
-            }
-            
-            map.clear();
-            map = tmpMap; // tempMap is the new 'map'
-            
-            // enable updateWorker
-            updateWorker.setEnabled(true);
         }
+        
+        // See 1)
+        // As all known URNs were removed from 'map' only
+        // deleted FileDesc URNs can be leftover! We must 
+        // remove the associated Songs from the Library now
+        Iterator it = map.getSongIterator();
+        while(it.hasNext()) {
+            Song song = (Song)it.next();
+            database.remove(song);
+        }
+        
+        map.clear();
+        map = tmpMap; // tempMap is the new 'map'
+        
+        txn.commit();
+        server.update();
     }
     
     /**
@@ -429,6 +449,12 @@ public final class DaapMediator implements FinalizeListener {
         
         SchemaReplyCollectionMapper map = SchemaReplyCollectionMapper.instance();
         LimeXMLReplyCollection collection = map.getReplyCollection(AUDIO_SCHEMA);
+        
+        if (collection == null) {
+            LOG.error("LimeXMLReplyCollection is null");
+            return false;
+        }
+        
         LimeXMLDocument doc = collection.getDocForHash(desc.getSHA1Urn());
         
         if (doc == null)
@@ -529,7 +555,7 @@ public final class DaapMediator implements FinalizeListener {
         int currentTime = song.getTime();
         if (time != null) {
             try {
-                // iTunes expects the song length in milli seconds
+                // iTunes expects the song length in milliseconds
                 int num = (int)Integer.parseInt(time)*1000;
                 if (num > 0 && num != currentTime) {
                     update = true;
@@ -569,10 +595,7 @@ public final class DaapMediator implements FinalizeListener {
      * This factory creates ManagedThreads for the DAAP server
      */
     private final class LimeThreadFactory implements DaapThreadFactory {
-        
-        public LimeThreadFactory() {    
-        }
-        
+               
         public Thread createDaapThread(Runnable runner, String name) {
             Thread thread = new ManagedThread(runner, name);
             thread.setDaemon(true);
@@ -584,9 +607,6 @@ public final class DaapMediator implements FinalizeListener {
      * Handles the audio stream
      */
     private final class LimeStreamSource implements DaapStreamSource {
-        
-        public LimeStreamSource() {
-        }
         
         public FileInputStream getSource(Song song) throws IOException {
             URN urn = map.get(song);
@@ -612,9 +632,6 @@ public final class DaapMediator implements FinalizeListener {
      */
     private final class LimeAuthenticator implements DaapAuthenticator {
         
-        public LimeAuthenticator() {
-        }
-        
         public boolean requiresAuthentication() {
             return DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
         }
@@ -637,10 +654,7 @@ public final class DaapMediator implements FinalizeListener {
      * iTunes download tools can.
      */
     private final class LimeFilter implements DaapFilter {
-        
-        public LimeFilter() {
-        }
-        
+
         /**
          * Returns true if <tt>address</tt> is a private address
          */
@@ -733,7 +747,7 @@ public final class DaapMediator implements FinalizeListener {
             // only a nice visual effect and has no impact to the
             // ability to connect this server! Disabled because 
             // iTunes 4.2 is still widespread...
-            //props.put(VERSION, Integer.toString(DaapUtil.VERSION_3));
+            props.put(VERSION, Integer.toString(DaapUtil.VERSION_3));
             
             // This is the inital share name
             props.put(MACHINE_NAME, name);
@@ -793,175 +807,6 @@ public final class DaapMediator implements FinalizeListener {
         public void close() {
             unregisterService();
             zeroConf.close();
-        }
-    }
-    
-    /**
-     * The job of UpdateWorker is to collect Library operations
-     * and to perform them as one single operation on the Library.
-     * This reduces the overall network/cpu load to notify the
-     * clients about the changes and reduces the risk to run out
-     * of revisions in principle to zero.
-     */
-    private final class UpdateWorker implements Runnable {
-        
-        private static final int SLEEP = 5*1000; // 5 seconds
-        
-        private final Object LOCK = new Object();
-        
-        private String name = null;
-        private HashMap /* of Song -> Boolean */ add = new HashMap();
-        private HashSet /* of Song */ remove = new HashSet();
-        private HashSet /* of Song */ update = new HashSet();
-        
-        private boolean running = false;
-        private boolean enabled = true;
-        
-        public UpdateWorker() {
-        }
-        
-        public void setName(String name) {
-            synchronized(LOCK) {
-                this.name = name;
-            }
-        }
-        
-        public void add(Song song, boolean isNew) {
-            synchronized(LOCK) {
-                add.put(song, new Boolean(isNew));
-                remove.remove(song);
-                update.remove(song);
-            }
-        }
-        
-        public void remove(Song song) {
-            synchronized(LOCK) {
-                remove.add(song);
-                add.remove(song);
-                update.remove(song);
-            }
-        }
-        
-        public void update(Song song) {
-            synchronized(LOCK) {
-                if (!add.containsKey(song) &&
-                    !remove.contains(song)) {
-                    
-                    update.add(song);
-                }
-            }
-        }
-        
-        public void run() {
-            
-            running = true;
-            
-            try {
-                
-                do {
-                    
-                    Thread.sleep(SLEEP);
-                    
-                    if (running && enabled) {
-                        
-                        boolean extraSleep = false;
-                        
-                        synchronized(LOCK) {
-                            if (add.size() != 0 ||
-                                remove.size() != 0 ||
-                                update.size() != 0 ||
-                                name != null) {
-                                
-                                synchronized(library) {
-                                    library.open();
-                                    
-                                    if (name != null) {
-                                        library.setName(name);
-                                        name = null;
-                                    }
-                                    
-                                    // It makes no sense to remove or update
-                                    // songs if Library is empty...
-                                    if (library.size() != 0) {
-                                        
-                                        Iterator it = remove.iterator();
-                                        while(it.hasNext() && running) {
-                                            library.remove((Song)it.next());
-                                        }
-                                        
-                                        it = update.iterator();
-                                        while(it.hasNext() && running) {
-                                            ((Song)it.next()).update();
-                                        }
-                                    }
-                                    
-                                    final int MAX_SIZE = DaapSettings.DAAP_MAX_LIBRARY_SIZE.getValue();
-                                    
-                                    Iterator it = add.keySet().iterator();
-                                    while(it.hasNext() && running && library.size() < MAX_SIZE) {
-                                        Song song = (Song)it.next();
-                                        Boolean bool = (Boolean)add.get(song);
-                                        
-                                        if (bool.booleanValue()) {
-                                            // add to What's New playlist
-                                            whatsNew.add(song);
-                                        } else {
-                                            // add to master playlist
-                                            library.add(song);
-                                        }
-                                    }
-                                    
-                                    
-                                    library.close();
-                                }
-                                
-                                if (running)
-                                    server.update();
-                                
-                                add.clear();
-                                remove.clear();
-                                update.clear();
-                                
-                                // OK, we've updated the Library
-                                // Let's take an additional sleep
-                                if (running)
-                                    extraSleep = true;
-                            }
-                        }
-                        
-                        if (extraSleep && running)
-                            Thread.sleep(SLEEP);
-                    }
-                    
-                } while(running);
-                
-            } catch (InterruptedException err) {
-                
-            } finally {
-                stop();
-            }
-        }
-        
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-        
-        public boolean isRunning() {
-            return running;
-        }
-        
-        public void clear() {
-            synchronized(LOCK) {
-                add.clear();
-                remove.clear();
-                update.clear();
-                name = null;
-            }
-        }
-        
-        public void stop() {
-            running = false;
-            clear();
         }
     }
     

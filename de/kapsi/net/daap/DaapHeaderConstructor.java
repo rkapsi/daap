@@ -107,7 +107,7 @@ public class DaapHeaderConstructor {
             headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
             
             // 
-            if ( version <= DaapUtil.VERSION_2 || pos == 0) {
+            if (pos == 0 || version <= DaapUtil.VERSION_2 ) {
                 
                 statusLine = HTTP_OK;
                 headers.add(new Header("Content-Length", Integer.toString(contentLength)));

@@ -710,7 +710,11 @@ public class DaapRequest {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         
-        buffer.append(uri).append("\n");
+        if (isServerSideRequest)
+            buffer.append("ServerSideRequest").append("\n");
+        
+        if (uri != null)
+            buffer.append(uri).append("\n");
         
         if (headers != null) {
             for(int i = 0; i < headers.size(); i++)

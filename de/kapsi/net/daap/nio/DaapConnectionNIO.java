@@ -142,7 +142,7 @@ public class DaapConnectionNIO extends DaapConnection {
                         throw new IOException("Illegal first request: " + request);
                     }
                     
-                    if (getProtocolVersion() < DaapUtil.VERSION_2) {
+                    if (!DaapUtil.isSupportedProtocolVersion(getProtocolVersion())) {
                         throw new IOException("Unsupported Protocol Version: " + getProtocolVersion());
                     }
                     
@@ -177,7 +177,7 @@ public class DaapConnectionNIO extends DaapConnection {
         if (isNormal()) {
             DaapSession session = getSession(false);
 
-            if (session != null) {
+            if (session != null && !session.hasAttribute("UPDATE_LOCK")) {
 
                 Integer sessionId = session.getSessionId();
                 Integer delta = (Integer)session.getAttribute("DELTA");

@@ -98,4 +98,21 @@ public class DaapSettings extends LimeProps {
      */
     public static IntSetting DAAP_MAX_LIBRARY_SIZE =
         FACTORY.createIntSetting("DAAP_MAX_LIBRARY_SIZE", 10000);
+    
+    /**
+     * The number of revisions the Library should keep in the history
+     * (necessary for slowly updating clients and iTunes is quite
+     * slow in that respect).
+     */
+    public static IntSetting DAAP_LIBRARY_REVISIONS =
+        FACTORY.createIntSetting("DAAP_LIBRARY_REVISIONS", 100);
+    
+    /**
+     * If <tt>true</tt> (default) then Library earses entries 
+     * from the eldest to the latest entry automatically from
+     * the revision history table. <b>IT IS A VERY BAD IDEA
+     * TO DISABLE THIS CUZ YOU WOULD WASTE MEMORY!!!</b>
+     */
+    public static BooleanSetting DAAP_LIBRARY_GC =
+        FACTORY.createBooleanSetting("DAAP_LIBRARY_GC", true);
 }

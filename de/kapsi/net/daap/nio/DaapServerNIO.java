@@ -643,7 +643,7 @@ public class DaapServerNIO implements DaapServer {
  
                         } catch (IOException err) {
                             cancel(sk);
-                            LOG.error("Exception in processRead() or processWrite()", err);
+                            LOG.error("An exception occured in processRead() or processWrite()", err);
                         }
                     }
                 } catch (CancelledKeyException err) {

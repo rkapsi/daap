@@ -1,4 +1,3 @@
-
 <project name="DAAP" default="build" basedir=".">
     <description>DAAP support</description>
 	
@@ -53,7 +52,7 @@
     <target name="build" depends="init,copy">
         <javac srcdir="${basedir}" 
         			destdir="${basedir}" 
-        			excludes="**/stubs/*" 
+        			excludes="**/stubs/* **/tests/*" 
         			deprecation="no">
             <classpath refid="default.classpath"/>
         </javac>
@@ -118,7 +117,8 @@
                         includes="**/*.class"
                         excludes="**/Main.* 
                             com/limegroup/**/*.* 
-                            de/kapsi/net/daap/tools/**/*.*"/>
+                            de/kapsi/net/daap/tools/**/*.*
+                            de/kapsi/net/daap/tests/**/*.*"/>
     </target>
 
     <target name="clean" description="clean up">

@@ -8,7 +8,7 @@ import com.limegroup.gnutella.gui.SizedPasswordField;
 
 import com.limegroup.gnutella.gui.LabeledComponent;
 import com.limegroup.gnutella.settings.DaapSettings;
-import com.limegroup.gnutella.gui.DaapMediator;
+import com.limegroup.gnutella.gui.DaapManager;
 
 public final class DaapPasswordPaneItem extends AbstractPaneItem {
 
@@ -94,17 +94,17 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
                 // A password is required now or password has changed, 
                 // disconnect all users...
                 if (requiresPassword) { 
-                    DaapMediator.instance().disconnectAll();
+                    DaapManager.instance().disconnectAll();
                 }
                 
-                DaapMediator.instance().updateService();
+                DaapManager.instance().updateService();
 
             } catch (IOException err) {
 
                 DaapSettings.DAAP_REQUIRES_PASSWORD.setValue(prevRequiresPassword);
                 DaapSettings.DAAP_PASSWORD.setValue(prevPassword);
 
-                DaapMediator.instance().stop();
+                DaapManager.instance().stop();
 
                 initOptions();
 

@@ -205,38 +205,38 @@ public final class VisualConnectionCallback implements ActivityCallback {
         
     public void handleFileManagerEvent(FileManagerEvent evt) {
         if (CommonUtils.isJava14OrLater()) {
-            DaapMediator.instance().handleFileManagerEvent(evt);
+            DaapManager.instance().handleFileManagerEvent(evt);
         }
     }
     
-	public void clearSharedFiles() 
-	{
-	    SwingUtilities.invokeLater(new Runnable() {
-	        public void run() {
-	            try {
-		            LIBRARY_MEDIATOR.clearLibrary();
-		        } catch(Throwable e) {
-		            GUIMediator.showInternalError(e, "clearSharedFiles");
-		        }
-		    }
-		 });
-	}
-
-	public void setAnnotateEnabled(final boolean enabled) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					LIBRARY_MEDIATOR.setAnnotateEnabled(enabled);
-				} catch(Throwable e) {
-					GUIMediator.showInternalError(e, "setAnnotateEnabled");
-				}
-			}
-		});
+    public void clearSharedFiles() 
+    {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+    	            LIBRARY_MEDIATOR.clearLibrary();
+    	        } catch(Throwable e) {
+    	            GUIMediator.showInternalError(e, "clearSharedFiles");
+    	        }
+    	    }
+    	 });
+    }
+    
+    public void setAnnotateEnabled(final boolean enabled) {
+    	SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+            	try {
+        		    LIBRARY_MEDIATOR.setAnnotateEnabled(enabled);
+            	} catch(Throwable e) {
+        		    GUIMediator.showInternalError(e, "setAnnotateEnabled");
+            	}
+            }
+    	});
         
-		if (CommonUtils.isJava14OrLater()) {
-		    DaapMediator.instance().setAnnotateEnabled(enabled);
-		}
-	}
+    	if (CommonUtils.isJava14OrLater()) {
+    	    DaapManager.instance().setAnnotateEnabled(enabled);
+    	}
+    }
 
 
     public void addDownload(Downloader mgr)

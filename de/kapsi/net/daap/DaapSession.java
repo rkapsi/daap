@@ -34,7 +34,7 @@ public class DaapSession {
     private final long creationTime = System.currentTimeMillis();
     private final HashMap attributes = new HashMap();
     
-    private Integer sessionId;
+    private final Integer sessionId;
     private boolean valid;
     private long lastAccesedTime;
     private int maxInactiveTime;
@@ -62,7 +62,7 @@ public class DaapSession {
      *
      * @return
      */    
-    public long getLastAccessedTime() {
+    public synchronized long getLastAccessedTime() {
         return lastAccesedTime;
     }
     
@@ -78,7 +78,7 @@ public class DaapSession {
      *
      * @return
      */    
-    public int getMaxInactiveTime() {
+    public synchronized int getMaxInactiveTime() {
         return maxInactiveTime;
     }
     
@@ -86,7 +86,7 @@ public class DaapSession {
      *
      * @param maxInactiveTime
      */    
-    public void setMaxInactiveTime(int maxInactiveTime) {
+    public synchronized void setMaxInactiveTime(int maxInactiveTime) {
         this.maxInactiveTime = maxInactiveTime;
     }
     
@@ -94,11 +94,11 @@ public class DaapSession {
      *
      * @return
      */    
-    public boolean isValid() {
+    public synchronized boolean isValid() {
         return valid;
     }
     
-    public void invalidate() {
+    public synchronized void invalidate() {
         valid = false;
         attributes.clear();
     }
@@ -108,7 +108,7 @@ public class DaapSession {
      * @param key
      * @return
      */    
-    public Object getAttribute(String key) {
+    public synchronized Object getAttribute(String key) {
         return attributes.get(key);
     }
     
@@ -118,7 +118,7 @@ public class DaapSession {
      * @param value
      * @return
      */    
-    public Object addAttribute(String key, Object value) {
+    public synchronized Object setAttribute(String key, Object value) {
         return attributes.put(key, value);
     }
     
@@ -127,7 +127,7 @@ public class DaapSession {
      * @param key
      * @return
      */    
-    public Object removeAttribute(String key) {
+    public synchronized Object removeAttribute(String key) {
         return attributes.remove(key);
     }
     
@@ -135,7 +135,7 @@ public class DaapSession {
      *
      * @return
      */    
-    public Iterator getAttributeNames() {
+    public synchronized Iterator getAttributeNames() {
         return attributes.keySet().iterator();
     }
     
@@ -144,11 +144,11 @@ public class DaapSession {
      * @param key
      * @return
      */    
-    public boolean hasAttribute(String key) {
+    public synchronized boolean hasAttribute(String key) {
         return attributes.containsKey(key);
     }
     
-    void update() {
+    synchronized void update() {
         lastAccesedTime = System.currentTimeMillis();
     }
     

@@ -127,6 +127,14 @@ public final class DaapUtil {
     private DaapUtil() {
     }
     
+    public static boolean isSupportedProtocolVersion(int version) {
+        if (version >= VERSION_3) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     public static int toContentCodeNumber(String contentCode) {
         if (contentCode.length() != 4) {
             throw new IllegalArgumentException("content code must have 4 characters!");

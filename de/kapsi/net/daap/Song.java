@@ -20,8 +20,6 @@
 package de.kapsi.net.daap;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 
 import de.kapsi.net.daap.chunks.AbstractChunk;
 import de.kapsi.net.daap.chunks.Chunk;
@@ -74,7 +72,6 @@ public class Song {
     private static int ID = 0;
     
     private final HashMap properties = new HashMap();
-    private final HashSet listener = new HashSet();
     
     private final ItemKind itemKind = new ItemKind(2);
     private final ItemId itemId = new ItemId();
@@ -649,33 +646,6 @@ public class Song {
      */
     public Chunk getProperty(String property) {
         return (Chunk)properties.get(property);
-    }
-    
-    /**
-     * Used by Playlist to get notifications about
-     * updates
-     */
-    void addListener(SongListener l) {
-        listener.add(l);
-    }
-    
-    /**
-     * Used by Playlist to get notifications about
-     * updates
-     */
-    void removeListener(SongListener l) {
-        listener.remove(l);
-    }
-    
-    /**
-     * Call this when you're done with editing
-     * and you'd like to commit the changes.
-     */
-    public void update() {
-        Iterator it = listener.iterator();
-        while(it.hasNext()) {
-            ((SongListener)it.next()).songEvent(this, SongListener.SONG_CHANGED);
-        }
     }
     
     public String toString() {

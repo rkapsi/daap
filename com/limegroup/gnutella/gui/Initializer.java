@@ -5,7 +5,7 @@ import com.limegroup.gnutella.bugs.BugManager;
 import com.limegroup.gnutella.browser.ExternalControl;
 import com.limegroup.gnutella.settings.StartupSettings;
 import com.limegroup.gnutella.settings.DaapSettings;
-import com.limegroup.gnutella.gui.DaapMediator;
+import com.limegroup.gnutella.gui.DaapManager;
 import com.limegroup.gnutella.util.SystemUtils;
 import com.limegroup.gnutella.util.CommonUtils;
 import com.limegroup.gnutella.util.I18NConvert;
@@ -255,21 +255,21 @@ public final class Initializer {
         // Activate a download for magnet URL locally if one exists
         ExternalControl.runQueuedMagnetRequest();
         
-        // Start DaapMediator if Java 1.4 or later and DAAP support
+        // Start DaapManager if Java 1.4 or later and DAAP support
         // is enabled
         if (CommonUtils.isJava14OrLater() && 
                 DaapSettings.DAAP_ENABLED.getValue()) {
             
-            LOG.trace("START DaapMediator");
+            LOG.trace("START DaapManager");
             try {
                 GUIMediator.setSplashScreenString(
                         GUIMediator.getStringResource("SLPASH_STATUS_DAAP"));
-                DaapMediator.instance().start();
-                DaapMediator.instance().init();
+                DaapManager.instance().start();
+                DaapManager.instance().init();
             } catch (java.io.IOException err) {
                 ErrorService.error(err);
             }
-            LOG.trace("STOP DaapMediator");
+            LOG.trace("STOP DaapManager");
         }
         
         // Tell the GUI that loading is all done.

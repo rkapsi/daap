@@ -118,7 +118,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                     throw new IOException("Illegal first request: " + request);
                 }
                 
-                if (getProtocolVersion() < DaapUtil.VERSION_2) {
+                if (!DaapUtil.isSupportedProtocolVersion(getProtocolVersion())) {
                     throw new IOException("Unsupported Protocol Version: " + getProtocolVersion());
                 }
                 
@@ -177,7 +177,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
             // is already running, it will autumatically update to the
             // lates revision of the library!
 
-            if (session != null/* && !session.hasAttribute("UPDATE_LOCK")*/) {
+            if (session != null && !session.hasAttribute("UPDATE_LOCK")) {
 
                 Integer sessionId = session.getSessionId();
                 Integer delta = (Integer)session.getAttribute("DELTA");
@@ -189,9 +189,9 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                     DaapRequest request =
                         new DaapRequest(this, sessionId.intValue(),
                             revisionNumber.intValue(), delta.intValue());
-
-                    DaapResponse response = PROCESSOR.process(request);
                     
+                    DaapResponse response = PROCESSOR.process(request);
+
                     if (response != null)
                         response.write();
                 }
