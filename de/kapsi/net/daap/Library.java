@@ -45,6 +45,8 @@ public class Library {
     
     public static final int DEFAULT_KEEP_REVISIONS = 10;
     
+    private static long persistentId = 0;
+    
     private ArrayList revisions = new ArrayList();
 
     private int keepNumRevisions;
@@ -168,7 +170,7 @@ public class Library {
 
         if (current == null) {
             // current is initialized on close()! 
-            temp = new Database(DATABASE_ID, name, "0");
+            temp = new Database(DATABASE_ID, name, nextPersistentId());
 
         } else {
 
@@ -219,7 +221,7 @@ public class Library {
      * didn't matched for this Library (unknown request, unknown id,
      * whatever). The returned Object could be basically anything
      * but it's in our case either an <tt>java.lang.Integer</tt> or
-     * a child of Chunk.
+     * a byte-Array (gzip'ed).
      */
     public synchronized Object select(DaapRequest request) {
 
@@ -388,6 +390,10 @@ public class Library {
         }
     }
 
+    static synchronized long nextPersistentId() {
+        return ++persistentId;
+    }
+    
     public String toString() {
         return getName();
     }

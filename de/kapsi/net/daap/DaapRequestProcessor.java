@@ -88,7 +88,7 @@ public class DaapRequestProcessor {
             }
 
             if (request.isContentCodesRequest()) {
-                return processServerInfoRequest(request);
+                return processContentCodesRequest(request);
 
             } else if (request.isLoginRequest()) {
                 return processLoginRequest(request);
@@ -135,8 +135,8 @@ public class DaapRequestProcessor {
             DaapServer server = connection.getServer();
             DaapAuthenticator authenticator = server.getAuthenticator();
             
-            authenticated = authenticator != null &&
-            !authenticator.requiresAuthentication();
+            authenticated = authenticator == null ||
+                    !authenticator.requiresAuthentication();
             
             if ( ! authenticated ) {
                 

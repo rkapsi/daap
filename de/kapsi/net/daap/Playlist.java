@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 
 import de.kapsi.net.daap.chunks.Chunk;
 import de.kapsi.net.daap.chunks.AbstractChunk;
+import de.kapsi.net.daap.chunks.DummyChunk;
 
 import de.kapsi.net.daap.chunks.impl.ItemId;
 import de.kapsi.net.daap.chunks.impl.ItemName;
@@ -23,6 +24,8 @@ import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
 import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
 import de.kapsi.net.daap.chunks.impl.ReturnedCount;
 import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
+import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
+import de.kapsi.net.daap.chunks.impl.ItemCount;
 
 import java.util.Iterator;
 import java.util.List;
@@ -42,10 +45,13 @@ public class Playlist implements SongListener {
     private static final boolean notifyMasterPlaylistRemoveSong = false;
     private static final boolean notifyMasterPlaylistUpdateSong = true;
     
+    private static final SmartPlaylist SMART_PLAYLIST = new SmartPlaylist(false);
+    private static final DummyChunk DUMMY_CHUNK = new DummyChunk(SMART_PLAYLIST);
+    
     private ItemId itemId;
     private ItemName itemName;
-    
     private PersistentId persistentId;
+    private ItemCount itemCount;
     
     private ArrayList items;
     private ArrayList newItems;
@@ -58,6 +64,7 @@ public class Playlist implements SongListener {
     
     private Playlist masterPlaylist;
     
+    private boolean isSmartPlaylist = false;
     private boolean isclone = true;
     
     public Playlist(String name) {
@@ -72,26 +79,31 @@ public class Playlist implements SongListener {
         properties = new HashMap();
         
         itemName = new ItemName(name);
-        persistentId = new PersistentId(itemId.getValue());
+        persistentId = new PersistentId(Library.nextPersistentId());
+        itemCount = new ItemCount();
         
         add(itemId);
         add(itemName);
         add(persistentId);
+        add(DUMMY_CHUNK);
+        add(itemCount);
     }
     
     // required for createSnapshot()
-    private Playlist(String name, int id) {
+    private Playlist(Playlist orig) {
         
         properties = new HashMap();
         
-        this.itemId = new ItemId(id);
-        this.itemName = new ItemName(name);
+        this.itemId = new ItemId(orig.getId());
+        this.itemName = new ItemName(orig.getName());
         
         persistentId = new PersistentId(itemId.getValue());
+        itemCount = new ItemCount(orig.itemCount.getValue());
         
         add(itemId);
         add(itemName);
         add(persistentId);
+        add(itemCount);
     }
     
     void setMasterPlaylist(Playlist masterPlaylist) {
@@ -118,13 +130,19 @@ public class Playlist implements SongListener {
         return itemName.getValue();
     }
     
-    /*public void setSmartPlaylist(boolean smart) {
-        smartPlaylist.setValue(smart);
+    public void setSmartPlaylist(boolean smart) {
+        isSmartPlaylist = smart;
+        
+        if (isSmartPlaylist) {
+            add(SMART_PLAYLIST);
+        } else {
+            add(DUMMY_CHUNK);
+        }
     }
      
     public boolean isSmartPlaylist() {
-        return smartPlaylist.getValue();
-    }*/
+        return isSmartPlaylist;
+    }
     
     /**
      * Returns a Song for the provided songId or
@@ -188,6 +206,8 @@ public class Playlist implements SongListener {
             if (notifyMasterPlaylistAddSong && masterPlaylist != null) {
                 masterPlaylist.add(song);
             }
+            
+            itemCount.setValue(items.size());
         }
     }
     
@@ -208,6 +228,8 @@ public class Playlist implements SongListener {
             if (notifyMasterPlaylistRemoveSong && masterPlaylist != null) {
                 masterPlaylist.remove(song);
             }
+            
+            itemCount.setValue(items.size());
             
             return true;
         }
@@ -307,7 +329,8 @@ public class Playlist implements SongListener {
     
     Playlist createSnapshot() {
         
-        Playlist clone = new Playlist(itemName.getValue(), itemId.getValue());
+        //Playlist clone = new Playlist(itemName.getValue(), itemId.getValue());
+        Playlist clone = new Playlist(this);
         
         clone.playlistSongs = this.playlistSongs;
         clone.playlistSongsUpdate = this.playlistSongsUpdate;

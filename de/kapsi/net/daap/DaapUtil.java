@@ -58,7 +58,7 @@ public final class DaapUtil {
         "dmap.itemid",
         "daap.songdescription",
         "dmap.itemname",
-        //"com.apple.itunes.norm-volume", // DO NOT ENABLE!
+        "com.apple.itunes.norm-volume", // Seems to be OK now but needs more testing!
         "dmap.persistentid",
         "daap.songdisabled",
         "daap.songrelativevolume",
@@ -71,16 +71,16 @@ public final class DaapUtil {
         "daap.songtracknumber",
         "daap.songuserrating",
         "daap.songyear",
-        //"com.apple.itunes.smart-playlist",
         "dmap.containeritemid",
         "daap.songdataurl"
     };
     
     public static final String[] DATABASE_PLAYLISTS_META = {
         "dmap.itemid",
+        "dmap.persistentid",
         "dmap.itemname",
-        "dmap.persistentid"//,
-        //"com.apple.itunes.smart-playlist"
+        "com.apple.itunes.smart-playlist",
+        "dmap.itemcount"
     };
     
     public static final String[] PLAYLIST_SONGS_META = {

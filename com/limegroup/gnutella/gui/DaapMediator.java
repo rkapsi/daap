@@ -101,6 +101,7 @@ public final class DaapMediator implements FinalizeListener {
                 map = new SongURNMap();
                 library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
                 whatsNew = new Playlist(GUIMediator.getStringResource("SEARCH_TYPE_WHATSNEW"));
+                whatsNew.setSmartPlaylist(true);
                 
                 library.open();
                 library.add(whatsNew);

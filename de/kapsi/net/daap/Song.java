@@ -40,7 +40,7 @@ import de.kapsi.net.daap.chunks.impl.ContainerItemId;
 import de.kapsi.net.daap.chunks.impl.PersistentId;
 import de.kapsi.net.daap.chunks.impl.NormVolume;
 import de.kapsi.net.daap.chunks.impl.SongTrackNumber;
-    
+
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.HashMap;

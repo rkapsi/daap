@@ -37,7 +37,7 @@ public class Database {
     private int revision;
     private int id;
     private String name;
-    private String persistentId;
+    private long persistentId;
     
     private byte[] databaseSongs;
     private byte[] databaseSongsUpdate;
@@ -53,7 +53,7 @@ public class Database {
     private Playlist masterPlaylist;
     
     /* friendly */
-    Database(int id, String name, String persistentId) {
+    Database(int id, String name, long persistentId) {
         
         this.id = id;
         this.name = name;
@@ -105,7 +105,7 @@ public class Database {
         masterPlaylist.setName(name);
     }
     
-    String getPersistentId() {
+    long getPersistentId() {
         return persistentId;
     }
     

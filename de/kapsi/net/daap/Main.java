@@ -67,9 +67,14 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
         library = new Library(LIBRARY);
         
         playlist0 = new Playlist("Rock Music");
+        
         playlist1 = new Playlist("Rock & Roll");
+        playlist1.setSmartPlaylist(true);
+        
         playlist2 = new Playlist("Punk Music");
+        
         playlist3 = new Playlist("All");
+        playlist3.setSmartPlaylist(true);
         
         library.open();
         
