@@ -12,7 +12,6 @@ import com.limegroup.gnutella.util.I18NConvert;
 import com.limegroup.gnutella.gui.init.*;
 import com.limegroup.gnutella.gui.notify.NotifyUserProxy;
 
-import java.lang.reflect.*;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.JLabel;
@@ -297,62 +296,25 @@ public final class Initializer {
     }
     
     /**
-     * Users reflection to set system properties.  This is not done
-     * for java 1.1.8.
+	 * Sets the system properties.
      */
-    static void setSystemProperties() {
-        if(CommonUtils.isJava118())
-            return;
-            
-        try {
-            Method setPropertyMethod = System.class.getDeclaredMethod(
-                "setProperty",
-                new Class[] { String.class, String.class });
-            setPropertyMethod.invoke(null, new String[] {
-                    "http.agent", CommonUtils.getHttpServer()});
-        }
-        catch (IllegalAccessException e1) {}
-        catch (InvocationTargetException e1) {}
-        catch (SecurityException e) {}
-        catch (NoSuchMethodException e) {}
+    static void setSystemProperties() {            
+        System.setProperty("http.agent", CommonUtils.getHttpServer());
     }
     
     /**
-     * Uses reflection to set system properties on OS X.  Reflection is
-     * necessary because the static System.setProperty(String, String) method
-     * is a Java2 method.
+     * Sets OSX system properties.
      */
     static void setOSXSystemProperties() {
         if (!CommonUtils.isMacOSX())
             return;
-        
-        try {
-            Method setPropertyMethod = System.class.getDeclaredMethod(
-                "setProperty",
-                new Class[] { String.class, String.class });
-            if (CommonUtils.isJava14OrLater()) {
-                setPropertyMethod.invoke(null, new String[] {
-                    "apple.laf.useScreenMenuBar", "true"});
-            } else {
-                setPropertyMethod.invoke(null, new String[] {
-                    "com.apple.macos.useScreenMenuBar", "true"});
-                setPropertyMethod.invoke(null, new String[] {
-                    "com.apple.mrj.application.apple.menu.about.name",
-                    "LimeWire"});
-                setPropertyMethod.invoke(null, new String[] {
-                    "com.apple.macos.use-file-dialog-packages", "true"});
-            }
-        } catch (IllegalAccessException e1) {
-            // nothing we can do
-        } catch (InvocationTargetException e1) {
-            // nothing we can do
-        } catch (SecurityException e) {
-            // nothing we can do
-        } catch (NoSuchMethodException e) {
-            // nothing we can do
+            
+        if(CommonUtils.isJava14OrLater()) {
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+        } else {
+            System.setProperty("com.apple.macos.useScreenMenuBar", "true");
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "LimeWire");
+            System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
         }
-        
-        // any other exception is unexpected and will be propagated to
-        // ErrorService
     }
 }

@@ -191,7 +191,9 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                             revisionNumber.intValue(), delta.intValue());
 
                     DaapResponse response = PROCESSOR.process(request);
-                    response.write();
+                    
+                    if (response != null)
+                        response.write();
                 }
             }
         }

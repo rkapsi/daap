@@ -571,7 +571,14 @@ public class DaapServerNIO implements DaapServer {
                 if (connection.isNormal()) {
                     try {
                         connection.update();
-                        sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                        if (sk.isValid()) {
+                            try {
+                                sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                            } catch (CancelledKeyException err) {
+                                cancel(sk);
+                                LOG.error("SelectionKey.interestOps()", err);
+                            }
+                        }
                     } catch (ClosedChannelException err) {
                         cancel(sk);
                         LOG.error("DaapConnection.update()", err);
