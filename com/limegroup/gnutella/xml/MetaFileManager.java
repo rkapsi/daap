@@ -211,6 +211,7 @@ public class MetaFileManager extends FileManager {
         SchemaReplyCollectionMapper mapper =
             SchemaReplyCollectionMapper.instance();
         
+
         // add xml docs as appropriate, one per schema.
         List schemasAddedTo = new LinkedList();
         for(Iterator iter = metadata.iterator(); iter.hasNext(); ) {
@@ -221,11 +222,12 @@ public class MetaFileManager extends FileManager {
                 schemasAddedTo.add(uri);
                 if( ID3Reader.isCorrupted(currDoc) )
                     currDoc = ID3Reader.fixCorruption(currDoc);
-                collection.addReplyWithCommit(file, fd, currDoc);
+                collection.addReplyWithCommit(file, fd, currDoc, true);
                 
             }
             
         }
+
         _needRebuild = true;
         return fd;
     }

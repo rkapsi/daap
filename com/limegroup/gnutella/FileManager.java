@@ -349,7 +349,16 @@ public abstract class FileManager {
         }
 
         return (FileDesc)_fileToFileDesc.get(f);
-    }    
+    }
+    
+    /**
+     * Determines whether or not the specified URN is shared in the library
+     * as a complete file.
+     */
+    public synchronized boolean isUrnShared(final URN urn) {
+        FileDesc fd = getFileDescForUrn(urn);
+        return fd != null && !(fd instanceof IncompleteFileDesc);
+    }
 
 	/**
 	 * Returns the <tt>FileDesc</tt> for the specified URN.  This only returns 
