@@ -59,15 +59,17 @@ public class DaapHeaderConstructor {
             DaapConnection connection = request.getConnection();
             String serverName = connection.getServer().getConfig().getServerName();
             
-            Header[] headers = {
-                new Header("Date", DaapUtil.now()),
-                new Header("DAAP-Server", serverName),
-                new Header("Content-Type", "application/x-dmap-tagged"),
-                new Header("Content-Length", Integer.toString(contentLength)),
-                new Header("Content-Encoding", "gzip")
-            };
+            ArrayList headers = new ArrayList();
+            headers.add(new Header("Date", DaapUtil.now()));
+            headers.add(new Header("DAAP-Server", serverName));
+            headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
+            headers.add(new Header("Content-Length", Integer.toString(contentLength)));
             
-            return toByteArray(HTTP_OK, headers);
+            if (DaapUtil.COMPRESS) {
+                headers.add(new Header("Content-Encoding", "gzip"));
+            }
+            
+            return toByteArray(HTTP_OK, (Header[])headers.toArray(new Header[0]));
             
         } catch (UnsupportedEncodingException err) {
             // Should never happen

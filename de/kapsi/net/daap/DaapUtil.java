@@ -53,6 +53,11 @@ public final class DaapUtil {
      */
     public static final int NULL = 0;
     
+    /**
+     * Global flag to turn gzip compression on and off
+     */
+    public static final boolean COMPRESS = true;
+    
     private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
     private static final String ISO_8859_1 = "ISO-8859-1";
     

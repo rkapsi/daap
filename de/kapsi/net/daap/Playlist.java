@@ -645,7 +645,7 @@ public class Playlist implements Cloneable {
         }
         
         public byte[] getBytes() {
-            return getBytes(true);
+            return getBytes(DaapUtil.COMPRESS);
         }
         
         public byte[] getBytes(boolean compress) {

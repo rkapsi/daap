@@ -657,7 +657,7 @@ public class Library {
         }
 
         public byte[] getBytes() {
-            return getBytes(true);
+            return getBytes(DaapUtil.COMPRESS);
         }
 
         public byte[] getBytes(boolean compress) {
@@ -724,7 +724,7 @@ public class Library {
         }
 
         public byte[] getBytes() {
-            return getBytes(true);
+            return getBytes(DaapUtil.COMPRESS);
         }
 
         public byte[] getBytes(boolean compress) {
@@ -764,7 +764,7 @@ public class Library {
         }
 
         public byte[] getBytes() {
-            return getBytes(true);
+            return getBytes(DaapUtil.COMPRESS);
         }
 
         public byte[] getBytes(boolean compress) {

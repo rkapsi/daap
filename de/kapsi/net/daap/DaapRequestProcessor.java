@@ -253,7 +253,7 @@ public class DaapRequestProcessor {
         Integer sessionId = connection.getSession(true).getSessionId();
         LoginResponseImpl login = new LoginResponseImpl(sessionId.intValue());
         
-        byte[] data = DaapUtil.serialize(login, true);
+        byte[] data = DaapUtil.serialize(login, DaapUtil.COMPRESS);
         return factory.createChunkResponse(request, data);
     }
     
@@ -304,7 +304,7 @@ public class DaapRequestProcessor {
         // disconnect...
         
         UpdateResponseImpl update = new UpdateResponseImpl(revision.intValue());
-        byte[] data = DaapUtil.serialize(update, true);
+        byte[] data = DaapUtil.serialize(update, DaapUtil.COMPRESS);
         
         return factory.createChunkResponse(request, data);
     }

@@ -678,7 +678,7 @@ public class Database implements Cloneable {
         }
 
         private byte[] getBytes() {
-            return getBytes(true);
+            return getBytes(DaapUtil.COMPRESS);
         }
 
         private byte[] getBytes(boolean compress) {
@@ -768,7 +768,7 @@ public class Database implements Cloneable {
          * @return
          */
         public byte[] getBytes() {
-            return getBytes(true);
+            return getBytes(DaapUtil.COMPRESS);
         }
 
         /**
