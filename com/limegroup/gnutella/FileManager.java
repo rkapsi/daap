@@ -183,6 +183,11 @@ public abstract class FileManager {
     private Object _loadThreadLock=new Object();
     
     /**
+     * Whether or not we are finished loading the files.
+     */
+    private boolean _loadFinished = false;
+    
+    /**
      * The only ShareableFileFilter object that should be used.
      */
     public static FilenameFilter SHAREABLE_FILE_FILTER =
@@ -580,6 +585,7 @@ public abstract class FileManager {
 
             final boolean notifyOnClearFinal = notifyOnClear;
             _loadThreadInterrupted = false;
+            _loadFinished = false;            
             _loadThread = new ManagedThread("FileManager.loadSettingsBlocking") {
                 public void managedRun() {
 					try {
@@ -588,6 +594,9 @@ public abstract class FileManager {
 					} catch(Throwable t) {
 						ErrorService.error(t);
 					}
+					_loadFinished = true;
+					// make sure SavedFileManager starts its processing ASAP
+					SavedFileManager.instance().run();
                 }
             };
             _loadThread.start();
@@ -598,6 +607,13 @@ public abstract class FileManager {
      *  loading files. */
     protected boolean loadThreadInterrupted() {
         return _loadThreadInterrupted;
+    }
+    
+    /**
+     * Returns whether or not the loading is finished.
+     */
+    public boolean isLoadFinished() {
+        return _loadFinished;
     }
 
     /** Clears this', reloads this' extensions, generates an array of
