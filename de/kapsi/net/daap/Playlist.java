@@ -57,10 +57,6 @@ public class Playlist implements SongListener {
     
     private static int PLAYLIST_ID = 0;
     
-    private static final boolean notifyMasterPlaylistAddSong = true;
-    private static final boolean notifyMasterPlaylistRemoveSong = false;
-    private static final boolean notifyMasterPlaylistUpdateSong = true;
-    
     // Note: a playlist is "smart" when aeSP is in the serialized 
     // chunklist regardless of its value (i.e. true or false doesn't matter)
     private static final SmartPlaylist SMART_PLAYLIST = new SmartPlaylist(!true);
@@ -82,6 +78,10 @@ public class Playlist implements SongListener {
     
     private Playlist masterPlaylist;
     private boolean isSmartPlaylist = false;
+    
+    private boolean notifyMasterPlaylistOnAdd = true;
+    private boolean notifyMasterPlaylistOnRemove = false;
+    private boolean notifyMasterPlaylistOnUpdate = true;
     
     public Playlist(String name) {
         
@@ -130,6 +130,10 @@ public class Playlist implements SongListener {
         
         playlistSongs = orig.playlistSongs;
         playlistSongsUpdate = orig.playlistSongsUpdate;
+        
+        notifyMasterPlaylistOnAdd = orig.notifyMasterPlaylistOnAdd;
+        notifyMasterPlaylistOnRemove = orig.notifyMasterPlaylistOnRemove;
+        notifyMasterPlaylistOnUpdate = orig.notifyMasterPlaylistOnUpdate;
     }
     
     void setMasterPlaylist(Playlist masterPlaylist) {
@@ -154,6 +158,33 @@ public class Playlist implements SongListener {
     
     public String getName() {
         return itemName.getValue();
+    }
+    
+    /**
+     * If <tt>true</tt> (default) then add songs also to the 
+     * master playlist
+     * @param notify
+     */
+    public void setNotifyMasterPlaylistOnAdd(boolean notify) {
+        notifyMasterPlaylistOnAdd = notify;
+    }
+    
+    /**
+     * If <tt>false</tt> (default) then remove songs also from 
+     * the master playlist
+     * @param notify
+     */
+    public void setNotifyMasterPlaylistOnRemove(boolean notify) {
+        notifyMasterPlaylistOnRemove = notify;
+    }
+    
+    /**
+     * If <tt>true</tt> (default) then update songs also on the 
+     * master playlist
+     * @param notify
+     */
+    public void setNotifyMasterPlaylistOnUpdate(boolean notify) {
+        notifyMasterPlaylistOnUpdate = notify;
     }
     
     /**
@@ -239,7 +270,7 @@ public class Playlist implements SongListener {
             Integer id = new Integer(song.getContainerId());
             deletedItems.remove(id);
             
-            if (notifyMasterPlaylistAddSong && masterPlaylist != null) {
+            if (notifyMasterPlaylistOnAdd && masterPlaylist != null) {
                 masterPlaylist.add(song);
             }
             
@@ -261,7 +292,7 @@ public class Playlist implements SongListener {
             Integer id = new Integer(song.getContainerId());
             deletedItems.add(id);
             
-            if (notifyMasterPlaylistRemoveSong && masterPlaylist != null) {
+            if (notifyMasterPlaylistOnRemove && masterPlaylist != null) {
                 masterPlaylist.remove(song);
             }
             
@@ -278,7 +309,7 @@ public class Playlist implements SongListener {
             if (newItems.contains(song)==false) {
                 newItems.add(song);
                 
-                if (notifyMasterPlaylistUpdateSong && masterPlaylist != null) {
+                if (notifyMasterPlaylistOnUpdate && masterPlaylist != null) {
                     masterPlaylist.songEvent(song, event);
                 }
             }

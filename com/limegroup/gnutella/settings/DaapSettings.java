@@ -17,14 +17,11 @@ public class DaapSettings extends LimeProps {
 	
     
     /**
-     * The file types supported by DAAP. I haven't checked if
-     * .ogg, .mp2 etc. work too but what I can say is that .mid
-     * files are not supported.
-     * TODO: Check which formats are supported by DAAP...
+     * The file types supported by DAAP.
      */
     public static StringArraySetting DAAP_SUPPORTED_FILE_TYPES = 
         FACTORY.createStringArraySetting("DAAP_SUPPORTED_FILE_TYPES", 
-            new String[]{".mp3", ".aif", ".aiff", ".wav", ".m4a"});
+            new String[]{".mp3", ".m4a", ".wav", ".aif", ".aiff", ".m1a"});
             
     /**
      * The name of the Library.

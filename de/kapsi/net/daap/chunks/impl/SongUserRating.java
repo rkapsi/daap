@@ -32,32 +32,32 @@ public class SongUserRating extends ByteChunk {
     /**
      * Constant field for zero stars.
      */
-    public static final int NONE	= 0;
+    public static final int NONE = 0;
     
     /**
      * Constant field for one star.
      */
-    public static final int ONE		= 20;
+    public static final int ONE	= 20;
     
     /**
      * Constant field for two stars.
      */
-    public static final int TWO		= 40;
+    public static final int TWO	= 40;
     
     /**
      * Constant field for three stars.
      */
-    public static final int THREE   = 60;
+    public static final int THREE = 60;
     
     /**
      * Constant field for four stars.
      */
-    public static final int FOUR	= 80;
+    public static final int FOUR	 = 80;
     
     /**
      * Constant field for five stars.
      */
-    public static final int FIVE	= 100;
+    public static final int FIVE	 = 100;
     
     /**
      * Creates a new SongUserRating with zero stars.
