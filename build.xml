@@ -120,7 +120,56 @@
                             de/kapsi/net/daap/tools/**/*.*
                             de/kapsi/net/daap/tests/**/*.*"/>
     </target>
+	
+	<target name="merge">
+		<copy todir="../core" overwrite="true">
+			<fileset dir=".">
+				<include name="com/**/*.java"/>
 
+				<exclude name="com/**/gui/**/*.java"/>
+				<exclude name="com/**/bugs/**/*.java"/>
+				<exclude name="com/**/stubs/**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="../gui" overwrite="true">
+			<fileset dir=".">
+				<include name="com/**/gui/**/*.java"/>
+				<include name="com/**/bugs/**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="../tests" overwrite="true">
+			<fileset dir=".">
+				<include name="com/**/stubs/**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<!-- DOES NOT WORK -->
+	<!--
+	<target name="createPatches" depends="merge">
+		<delete>
+			<fileset dir="../">
+		    		<include name="lib/**/.DS_Store"/>
+				<include name="core/**/.DS_Store"/>
+	    			<include name="gui/**/.DS_Store"/>
+	    			<include name="tests/**/.DS_Store"/>
+		    	</fileset>
+		</delete>
+		
+		<cvs dest="../lib" command="-q diff -u -N" output="../daap/patches/lib.patch" compression="true"/>
+		<cvs dest="../core" command="-q diff -u -N" output="../daap/patches/core.patch" compression="true"/>
+		<cvs dest="../gui" command="-q diff -u -N" output="../daap/patches/gui.patch" compression="true"/>
+		<cvs dest="../tests" command="-q diff -u -N" output="../daap/patches/tests.patch" compression="true"/>
+	</target>
+	-->
+	
+	<target name="applyPatches">
+		<patch patchfile="patches/lib.patch" dir="../lib" strip="0"/>
+		<patch patchfile="patches/core.patch" dir="../core" strip="0"/>
+		<patch patchfile="patches/gui.patch" dir="../gui" strip="0"/>
+		<patch patchfile="patches/tests.patch" dir="../tests" strip="0"/>
+	</target>
+		
     <target name="clean" description="clean up">
         <delete>
             <fileset dir="${basedir}">
