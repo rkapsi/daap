@@ -507,14 +507,18 @@ public class DaapServerBIO implements DaapServer {
             
         } catch (InterruptedException err) {
             LOG.error(err);
-        } catch (SocketException err) {
+            throw new RuntimeException(err);
             
+        } catch (SocketException err) {
             if (running) {
                 LOG.error(err);
             }
+            throw new RuntimeException(err);
             
         } catch (IOException err) {
             LOG.error(err);
+            throw new RuntimeException(err);
+            
         } finally {
             stop();
         }

@@ -711,6 +711,7 @@ public class DaapServerNIO implements DaapServer {
             
         } catch (IOException err) {
             LOG.error(err);
+            throw new RuntimeException(err);
             
         } finally {
             close();
