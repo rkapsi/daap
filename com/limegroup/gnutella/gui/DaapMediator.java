@@ -130,13 +130,13 @@ public final class DaapMediator implements FinalizeListener {
                         server.bind();
                         break;
                     } catch (BindException bindErr) {
-                    		if (i < maxAttempts-1) {
-                    			// try next port...
-                        		int port = DaapSettings.DAAP_PORT.getValue()+1;
-                            config.setInetSocketAddress(port);
-                            DaapSettings.DAAP_PORT.setValue(port);
-                    		} else {
-                            throw bindErr;
+                		if (i < maxAttempts-1) {
+                		    // try next port...
+                		    int port = DaapSettings.DAAP_PORT.getValue()+1;
+                		    config.setInetSocketAddress(port);
+                		    DaapSettings.DAAP_PORT.setValue(port);
+                		} else {
+                		    throw bindErr;
                         }
                     }
                 }
