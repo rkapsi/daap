@@ -263,6 +263,8 @@ public final class Initializer {
             
             LOG.trace("START DaapMediator");
             try {
+                GUIMediator.setSplashScreenString(
+                        GUIMediator.getStringResource("SLPASH_STATUS_DAAP"));
                 DaapMediator.instance().start();
                 DaapMediator.instance().init();
             } catch (java.io.IOException err) {
