@@ -43,7 +43,7 @@ public class DaapServer {
     private DaapConfig config;
     
 	private DaapRequestHandler requestHandler;
-	private DaapAudioRequestHandler audioRequestHandler;
+	//private DaapAudioRequestHandler audioRequestHandler;
 	
     public DaapServer(Library library) {
         this(library, new SimpleConfig());
@@ -62,7 +62,7 @@ public class DaapServer {
 		contentCodes = new ContentCodesResponseImpl();
 		
 		requestHandler = new DaapRequestHandler(serverInfo, contentCodes, library);
-		audioRequestHandler = new DaapAudioRequestHandler(library);
+		//audioRequestHandler = new DaapAudioRequestHandler(library);
         
         sessionIds = new HashSet();
         connections = new HashSet();
@@ -81,12 +81,14 @@ public class DaapServer {
 		return requestHandler.getAuthenticator();
 	}
 	
-	public void setAudioStream(DaapAudioStream audioStream) {
-		audioRequestHandler.setAudioStream(audioStream);
+	public void setStreamSource(DaapStreamSource streamSource) {
+		//audioRequestHandler.setStreamSource(streamSource);
+        requestHandler.setStreamSource(streamSource);
 	}
 	
-	public DaapAudioStream getAudioStream() {
-		return audioRequestHandler.getAudioStream();
+	public DaapStreamSource getStreamSource() {
+		//return audioRequestHandler.getStreamSource();
+        return requestHandler.getStreamSource();
 	}
     
     public void setFilter(DaapFilter filter) {
@@ -326,26 +328,15 @@ public class DaapServer {
     /**
      *
      */
-	void processRequest(DaapConnection conn, DaapRequest request) 
+	void processRequest(DaapConnection connection, DaapRequest request) 
             throws IOException {
 		
 		boolean complete = false;
-		
-		if (request.isSongRequest()) {
-		
-			if (isSessionIdValid(request.getSessionId())) {
-				audioRequestHandler.processRequest(conn, request);
-			}
-			
-			complete = false; // always disconnect when done
-			
-		} else {
-		
-			complete = requestHandler.processRequest(conn, request);
-		}
-	
+        
+        complete = requestHandler.processRequest(connection, request);
+
         if (!complete) {
-            conn.connectionClose();
+            connection.connectionClose();
         }
 	}
 	

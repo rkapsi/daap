@@ -10,7 +10,7 @@ import org.apache.commons.httpclient.*;
 /**
  * Test and Sample environment for DAAP
  */
-public class Main implements DaapAuthenticator, DaapAudioStream {
+public class Main implements DaapAuthenticator, DaapStreamSource {
 	
     private static final File SONG = new File("music/American_Analog_Set_The_Only_One.mp3");
     
@@ -99,7 +99,7 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
 		
 		server = new DaapServer(library, PORT);
 		server.setAuthenticator(this);
-		server.setAudioStream(this);
+		server.setStreamSource(this);
 		
 		server.start();
 	}
@@ -125,42 +125,16 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
         return password.equals("test");
 	}
 	
-	public void stream(Song song, OutputStream out, int begin, int length) 
+	public InputStream getSource(Song song) 
 		throws IOException {
 		
 		File file = SONG;
 		
 		if (file != null && file.isFile()) {
-			
-			BufferedInputStream in = null;
-			
-			try {
-				
-				in = new BufferedInputStream(new FileInputStream(file));
-				byte[] buffer = new byte[4069*16];
-				
-				int total = 0;
-				int len = -1;
-				
-				if (begin != 0) {
-					in.skip(begin);
-				}
-				
-				while((len = in.read(buffer, 0, buffer.length)) != -1 && total < length) {
-					out.write(buffer, 0, len);
-					
-					total += len;
-				}
-				
-				out.flush();
-				in.close();
-				
-			} finally {
-				if (in != null) {
-					in.close();
-				}
-			}
+			return new FileInputStream(file);
 		}
+        
+        return null;
 	}
 	
 	public void update() {

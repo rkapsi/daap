@@ -2,7 +2,7 @@
 package de.kapsi.net.daap;
 
 /**
- *
+ * 
  */
 public interface DaapAuthenticator {
 	

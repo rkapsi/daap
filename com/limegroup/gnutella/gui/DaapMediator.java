@@ -1,9 +1,8 @@
 package com.limegroup.gnutella.gui;
 
 import java.io.File;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.io.FileInputStream;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.DaapServer;
 import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapFilter;
-import de.kapsi.net.daap.DaapAudioStream;
+import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapAuthenticator;
 
 /**
@@ -96,7 +95,7 @@ public final class DaapMediator {
                 LimeConfig config = new LimeConfig();
                 server = new DaapServer(library, config);
                 server.setAuthenticator(new LimeAuthenticator());
-                server.setAudioStream(new LimeAudioStream());
+                server.setStreamSource(new LimeStreamSource());
                 server.setFilter(new LimeFilter());
                 
                 final int attempts = 10;
@@ -513,54 +512,24 @@ public final class DaapMediator {
     /**
      * Handles the audio stream
      */
-    private final class LimeAudioStream implements DaapAudioStream {
+    private final class LimeStreamSource implements DaapStreamSource {
     
-        public LimeAudioStream() {
+        public LimeStreamSource() {
         }
         
-        public void stream(Song song, OutputStream out, int begin, int length) 
-                throws IOException {
-            
+        public InputStream getSource(Song song) throws IOException {
             URN urn = map.get(song);
             
             if (urn != null) {
                 FileDesc fileDesc = RouterService.getFileManager().getFileDescForUrn(urn);
                 
                 if (fileDesc != null) {
-                    
                     File file = fileDesc.getFile();
-                    
-                    BufferedInputStream in = null;
-                    
-                    try {
-                        
-                        in = new BufferedInputStream(new FileInputStream(file));
-                        byte[] buffer = new byte[4069*16];
-                        
-                        int total = 0;
-                        int len = -1;
-                        
-                        if (begin != 0) {
-                            in.skip(begin);
-                        }
-                        
-                        while((len = in.read(buffer, 0, buffer.length)) != -1 && total < length) {
-                            out.write(buffer, 0, len);
-                            
-                            total += len;
-                        }
-                        
-                        out.flush();
-                        in.close();
-                        in = null;
-                        
-                    } finally {
-                        if (in != null) {
-                            in.close();
-                        }
-                    }
+                    return new FileInputStream(file);
                 }
             }
+            
+            return null;
         }
     }
     

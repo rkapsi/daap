@@ -3,7 +3,7 @@ package de.kapsi.net.daap;
 
 import java.io.*;
 import java.util.*;
-
+import java.net.SocketException;
 import de.kapsi.net.daap.chunks.*;
 
 import org.apache.commons.httpclient.*;
@@ -23,6 +23,7 @@ public class DaapRequestHandler {
 	private ServerInfoResponse serverInfo;
 	private ContentCodesResponse contentCodes;
 	
+    private DaapStreamSource streamSource;
 	private DaapAuthenticator authenticator;
 	
 	public DaapRequestHandler(ServerInfoResponse serverInfo, 
@@ -41,6 +42,14 @@ public class DaapRequestHandler {
 		return authenticator;
 	}
 	
+    public void setStreamSource(DaapStreamSource streamSource) {
+		this.streamSource = streamSource;
+	}
+	
+	public DaapStreamSource getStreamSource() {
+		return streamSource;
+	}
+    
 	public boolean processRequest(DaapConnection conn, DaapRequest request) 
             throws IOException {
 		
@@ -54,7 +63,11 @@ public class DaapRequestHandler {
 			return false;
 		}
 		
-		if (request.isServerInfoRequest()) {
+        if (request.isSongRequest()) {
+            processSongRequest(conn, request);
+            return false;
+            
+        } else if (request.isServerInfoRequest()) {
 			return processServerInfoRequest(conn, request);
 		
 		} else if (request.isLogoutRequest()) {
@@ -95,8 +108,6 @@ public class DaapRequestHandler {
 				} else if (request.isResolveRequest()) {
 					return processResolveRequest(conn, request);
 				
-				} else if (request.isSongRequest()) {
-					return processSongRequest(conn, request);
 				}
 			}
 		}
@@ -104,6 +115,9 @@ public class DaapRequestHandler {
 		return false;
 	}
 	
+    /**
+     * Returns <tt>true</tt> if request is authenticated
+     */
     private boolean isAuthenticated(DaapRequest request) 
             throws UnsupportedEncodingException {
         
@@ -316,14 +330,6 @@ public class DaapRequestHandler {
 		return response.processRequest(conn);
 	}
 	
-	private boolean processSongRequest(DaapConnection conn, DaapRequest request)
-		throws IOException {
-		
-		LOG.warn("DaapAudioRequestHandler is responsible for this Request!");
-	
-		return false;
-	}
-	
 	private boolean processResolveRequest(DaapConnection conn, DaapRequest request) 
 		throws IOException {
 		
@@ -331,4 +337,158 @@ public class DaapRequestHandler {
 		
 		return false;
 	}
+    
+    // BEGIN AUDIO
+    
+    /**
+     *
+     */
+    private boolean processSongRequest(DaapConnection conn, DaapRequest request) 
+		throws IOException {
+		
+		if (streamSource != null && request.isSongRequest()) {
+		
+			int[] range = getRange(request);
+			
+			if (range == null) {
+				if (LOG.isInfoEnabled())
+					LOG.info("getRange returned null");
+				return false;
+			}
+			
+			int begin = range[0];
+			int end = range[1];
+			
+			int length = 0;
+			
+			Song song = (Song)library.select(request);
+			
+			if (song == null) {
+				if (LOG.isInfoEnabled())
+					LOG.info("Library returned null-Song for request: " + request);
+				return false;
+			}
+			
+			if (end == -1) {
+				length = song.getSize()-begin;
+			} else {
+				length = end - begin;
+			}
+			
+			DaapResponse response = DaapResponse.createAudioResponse(request, length);
+			response.processAudioRequest(conn);
+			
+            try {
+                OutputStream out = conn.getOutputStream();
+                InputStream in = streamSource.getSource(song);
+                
+                if (in == null) {
+                    if (LOG.isInfoEnabled())
+                        LOG.info("Unknown source for Song: " + song);
+                    return false;
+                }
+                
+                try {
+                    stream(in, out, begin, length);
+                } finally {
+                    in.close();
+                }
+                
+            } catch (SocketException err) {
+                // we can ignore this exception as is thrown when
+                // a song ends (or the user hits pause or whatever)
+                // and the client closes the connection
+            }
+		}
+		
+		return false;
+	}
+	
+    /**
+     * Returns a range from where to where shall be played
+     */
+	private int[] getRange(DaapRequest request) 
+            throws IOException {
+		
+		Header[] headers = request.getHeaders();
+		for(int i = 0; i < headers.length; i++) {
+			Header header = headers[i];
+			if (header.getName().equals("Range")) {
+				try {
+					StringTokenizer tok = new StringTokenizer(header.getValue(), "=");
+					String key = tok.nextToken();
+					
+					if (key.equals("bytes")==false) { 
+                        if (LOG.isInfoEnabled())
+                            LOG.info("unknown type");
+						return null; 
+					}
+					
+					byte[] range = tok.nextToken().getBytes("UTF-8");
+					
+					int q = 0;
+					for(;q<range.length && range[q] != '-';q++);
+					
+					int begin = Integer.parseInt(new String(range,0,q));
+					
+					q++;
+					int end = -1;
+					
+					if (range.length-q != 0) {
+						end = Integer.parseInt(new String(range,q,range.length-q));
+					}
+					
+					return (new int[]{begin, end});
+					
+				} catch (NoSuchElementException err) {
+					LOG.error(err);
+				} catch (NumberFormatException err) {
+					LOG.error(err);
+				}
+			}
+		}
+		
+		return (new int[]{0,-1});
+	}
+    
+    private long totalBytes = 0;
+    
+    /**
+     * Reads from <tt>in</tt> and writes to <tt>out</tt>
+     */
+    private void stream(InputStream in, OutputStream out, int begin, int length) 
+            throws IOException {
+                
+        BufferedInputStream bufin = null;
+        
+        try {
+            
+            bufin = new BufferedInputStream(in);
+            byte[] buffer = new byte[4069*16];
+            
+            int total = 0;
+            int len = -1;
+            
+            if (begin != 0) {
+                bufin.skip(begin);
+            }
+            
+            while((len = bufin.read(buffer, 0, buffer.length)) != -1 && total < length) {
+                out.write(buffer, 0, len);
+                out.flush();
+                total += len;
+                
+                totalBytes += len;
+            }
+            
+            out.flush();
+            bufin.close();
+            bufin = null;
+            
+        } finally {
+            if (bufin != null) {
+                bufin.close();
+            }
+        }
+    }
 }

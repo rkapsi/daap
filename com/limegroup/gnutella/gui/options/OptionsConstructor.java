@@ -208,27 +208,27 @@ public final class OptionsConstructor {
 			addOption(OptionsMediator.ROOT_NODE_KEY, playerPane);
 		}
 		
-		if (CommonUtils.isJava14OrLater()) {
         
+		if (CommonUtils.isJava14OrLater() || CommonUtils.isMacOSX()) {
+        
+            addGroupTreeNode(OptionsMediator.ROOT_NODE_KEY, ITUNES_KEY);
+            
+            // Auto import of newly downloaded files is only 
+            // available on Mac OS X
             if (CommonUtils.isMacOSX()) {
-                addGroupTreeNode(OptionsMediator.ROOT_NODE_KEY, ITUNES_KEY);
-                
                 final OptionsPane itunesPane = new OptionsPaneImpl(ITUNES_KEY);
                 itunesPane.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
                 addOption(ITUNES_KEY, itunesPane);
             }
             
-			final OptionsPane daapPane = new OptionsPaneImpl(ITUNES_DAAP_KEY);
-			daapPane.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
-			daapPane.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
-			
-            if (CommonUtils.isMacOSX()) {
+            if (CommonUtils.isJava14OrLater()) {
+                final OptionsPane daapPane = new OptionsPaneImpl(ITUNES_DAAP_KEY);
+                daapPane.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
+                daapPane.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
                 addOption(ITUNES_KEY, daapPane);
-            } else {
-                addOption(OptionsMediator.ROOT_NODE_KEY, daapPane);
             }
-		}
-
+        }
+        
 		if (CommonUtils.isUnix()) {
 			final OptionsPane browserPane = new OptionsPaneImpl(APPS_KEY);
 			browserPane.add(new BrowserPaneItem("BROWSER_PREFERENCE"));
