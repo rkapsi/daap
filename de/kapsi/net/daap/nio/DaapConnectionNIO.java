@@ -157,8 +157,10 @@ public class DaapConnectionNIO extends DaapConnection {
                 
                 DaapResponse response = PROCESSOR.process(request);
                 
-                LOG.trace(request);
-                LOG.trace(response);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace(request);
+                    LOG.trace(response);
+                }
                 
                 if (response != null) {
                     writer.add(response);
