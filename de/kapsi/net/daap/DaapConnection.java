@@ -136,7 +136,7 @@ public class DaapConnection implements Runnable {
         DaapSession session = getSession(false);
         
         // Do not trigger new updates if an update for this connection
-        // is already running, it it will autumatically update to the
+        // is already running, it will autumatically update to the
         // lates revision of the library!
         
         if (session != null && !session.hasAttribute("UPDATE_LOCK")) {
@@ -174,15 +174,36 @@ public class DaapConnection implements Runnable {
     
     public void close() {
         
+        if (session != null)
+            session.invalidate();
+        
+        try {
+            if (in != null)
+                in.close();
+        } catch (IOException err) {
+            LOG.error("Error while closing connection", err);
+        }
+        
+        try {
+            if (out != null)
+                out.close();
+        } catch (IOException err) {
+            LOG.error("Error while closing connection", err);
+        }
+        
+        try {
+            if (writer != null)
+                writer.close();
+        } catch (IOException err) {
+            LOG.error("Error while closing connection", err);
+        }
+        
         try {
             if (socket != null)
                 socket.close();
         } catch (IOException err) {
             LOG.error("Error while closing connection", err);
         }
-        
-        if (session != null)
-            session.invalidate();
         
         server.removeConnection(this);
     }
