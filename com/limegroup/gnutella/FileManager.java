@@ -1250,28 +1250,28 @@ public abstract class FileManager {
      * Note that this does not change the disk.
      * @modifies this 
      */
-    public synchronized FileDesc renameFileIfShared(File oldName,
+    public synchronized boolean renameFileIfShared(File oldName,
                                                    File newName) {
-        FileDesc oldFD = getFileDescForFile(oldName);
-        if( oldFD == null )
-            return null;
+        FileDesc removed = getFileDescForFile(oldName);
+        if( removed == null )
+            return false;
         List xmlDocs = new LinkedList();
-        xmlDocs.addAll(oldFD.getLimeXMLDocuments());            
-        oldFD = removeFile(oldName);
-        Assert.that( oldFD != null, "invariant broken.");
+        xmlDocs.addAll(removed.getLimeXMLDocuments());            
+        removed = removeFile(oldName);
+        Assert.that( removed != null, "invariant broken.");
         // hash didn't change so no need to re-input creation time
-        FileDesc newFD = addFile(newName, xmlDocs);
+        FileDesc fd = addFile(newName, xmlDocs);
         
         // Notify the GUI...
-        if (newFD != null) {
+        if (fd != null) {
             FileManagerEvent evt = new FileManagerEvent(this, 
                                             FileManagerEvent.RENAME, 
-                                            new FileDesc[]{oldFD,newFD});
+                                            new FileDesc[]{removed,fd});
                                             
             RouterService.getCallback().handleFileManagerEvent(evt);
         }
         
-        return newFD;
+        return (fd != null);
     }
 
 
