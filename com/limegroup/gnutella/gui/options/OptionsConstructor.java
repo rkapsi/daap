@@ -207,7 +207,7 @@ public final class OptionsConstructor {
 			addOption(OptionsMediator.ROOT_NODE_KEY, playerPane);
 		}
 		
-		if (CommonUtils.isJava13OrLater()) {
+		if (CommonUtils.isJava14OrLater()) {
 			final OptionsPane playerPane2 = new OptionsPaneImpl(ITUNES_KEY);
 			
 			if (CommonUtils.isMacOSX()) {

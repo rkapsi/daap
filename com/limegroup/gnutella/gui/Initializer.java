@@ -205,7 +205,7 @@ public final class Initializer {
         // Activate a download for magnet URL locally if one exists
         ExternalControl.runQueuedMagnetRequest();
 		
-		if (CommonUtils.isJava13OrLater() && 
+		if (CommonUtils.isJava14OrLater() && 
 			com.limegroup.gnutella.settings.iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
 			
 			try {
