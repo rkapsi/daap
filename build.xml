@@ -6,7 +6,7 @@
     
     <property name="gui" value="${basedir}/../gui"/>
     <property name="core" value="${basedir}/../core"/>
-    
+	
     <property name="lib" value="${basedir}/../lib"/>
     <property name="jars" value="${lib}/jars"/>
   
@@ -48,14 +48,14 @@
         <echo message="*******************************************************"/>
     </target>
     
-    <target name="build" depends="init">
-        <javac srcdir="${basedir}" 
-        			destdir="${basedir}" 
-        			excludes="**/stubs/* **/tests/*" 
-        			deprecation="no">
-            <classpath refid="default.classpath"/>
-        </javac>
-    </target>
+	<target name="build" depends="init">
+	    <javac srcdir="${basedir}" 
+	    			destdir="${basedir}" 
+	    			excludes="**/tests/*" 
+	    			deprecation="no">
+			<classpath refid="default.classpath"/>
+	    </javac>
+	</target>
 
     <target name="runTest" depends="init">
         <java classname="de.kapsi.net.daap.Main">
@@ -100,7 +100,7 @@
     <target name="jar">
         <javac srcdir="${basedir}" 
         			destdir="${basedir}" 
-        			excludes="**/stubs/* com/limegroup/gnutella/*/**" 
+        			excludes="**/tests/*" 
         			deprecation="no"
         			target="1.3"
         			source="1.3">
@@ -111,7 +111,6 @@
                         basedir="${basedir}" 
                         includes="**/*.class"
                         excludes="**/Main.* 
-                            com/limegroup/**/*.* 
                             de/kapsi/net/daap/tools/**/*.*
                             de/kapsi/net/daap/tests/**/*.*"/>
     </target>
