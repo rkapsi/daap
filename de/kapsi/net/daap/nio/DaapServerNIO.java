@@ -492,8 +492,17 @@ public class DaapServerNIO implements DaapServer {
         
         boolean keepAlive = false;
 
-        keepAlive = connection.write();
-
+        try {
+            keepAlive = connection.write();
+        } catch (DaapStreamException err) {
+            
+            // Broken pipe: User pressed Pause, fast-foward 
+            // or whatever. Just close the connection and go 
+            // ahead
+            keepAlive = false;
+            //LOG.error(err);
+        }
+        
         if (keepAlive) {
             sk.interestOps(connection.interrestOps());
 
@@ -582,9 +591,8 @@ public class DaapServerNIO implements DaapServer {
                             } else if (sk.isWritable()) {
                                 processWrite(sk);
                             }
-
+ 
                         } catch (IOException err) {
-                            
                             cancel(sk);
                             LOG.error(err);
                         }
@@ -619,6 +627,22 @@ public class DaapServerNIO implements DaapServer {
         } finally {
             close();
         }
+    }
+    
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Name: ").append(config.getServerName()).append("\n");
+        buffer.append("Address: ").append(config.getSocketAddress()).append("\n");
+        buffer.append("Backlog: ").append(config.getBacklog()).append("\n");
+        buffer.append("Max connections: ").append(config.getMaxConnections()).append("\n");
+        buffer.append("IsRunning: ").append(isRunning()).append("\n");
+        
+        if (isRunning()) {
+            buffer.append("Connections: ").append(getNumberOfConnections()).append("\n");
+            buffer.append("Streams: ").append(getNumberOfStreams()).append("\n");
+        }
+        
+        return buffer.toString();
     }
 }
 

@@ -44,24 +44,28 @@ public class DaapAudioResponseImpl extends DaapAudioResponse {
     }
     
     public boolean write() throws IOException {
-             
+        
         if (headerBuffer.hasRemaining()) {
-            
+
             try {
-                
+
                 channel.write(headerBuffer);
-            
+
                 if (headerBuffer.hasRemaining() == true) {
                     return false;
                 }
-                
+
             } catch (IOException err) {
                 close();
                 throw err;
             }
         }
-        
-        return stream();
+
+        try {
+            return stream();
+        } catch (IOException err) {
+            throw new DaapStreamException(err);
+        }
     }
     
     private boolean stream() throws IOException {
@@ -71,26 +75,31 @@ public class DaapAudioResponseImpl extends DaapAudioResponse {
             if (!channel.isOpen()) {
                 close();
                 return true;
-            }
-            
-            try {
                 
-                pos += chIn.transferTo(pos, 512, channel);
+            } else {
+            
+                // Stream...
+                try {
 
-                if (pos >= end) {
+                    pos += chIn.transferTo(pos, 512, channel);
+
+                    if (pos >= end) {
+                        close();
+                        return true;
+                    } else {
+                        return false;
+                    }
+
+                } catch (IOException err) {
                     close();
-                    return true;
+                    throw err;
                 }
                 
-                return false;
-                
-            } catch (IOException err) {
-                close();
-                throw err;
             }
+            
+        } else {
+            return true;
         }
-        
-        return true;
     }
     
     private void close() throws IOException {
