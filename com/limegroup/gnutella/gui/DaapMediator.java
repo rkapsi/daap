@@ -25,6 +25,7 @@ import com.limegroup.gnutella.IncompleteFileDesc;
 import com.limegroup.gnutella.util.CommonUtils;
 import com.limegroup.gnutella.util.NetworkUtils;
 import com.limegroup.gnutella.util.FileUtils;
+import com.limegroup.gnutella.util.ManagedThread;
 import com.limegroup.gnutella.settings.iTunesSettings;
 import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.limegroup.gnutella.FileManagerEvent;
@@ -119,13 +120,11 @@ public final class DaapMediator implements FinalizeListener {
                     }
                 }
                 
-                // TODO use ManagedThreads
-                Thread serverThread = new Thread(server, "DaapServerThread");
+                Thread serverThread = new ManagedThread(server, "DaapServerThread");
                 serverThread.setDaemon(true);
                 serverThread.start();
              
-                // TODO use ManagedThreads
-                Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
+                Thread updateWorkerThread = new ManagedThread(updateWorker, "UpdateWorkerThread");
                 updateWorkerThread.setDaemon(true);
                 updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
                 updateWorkerThread.start();
