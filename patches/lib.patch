@@ -1,11 +1,11 @@
 Index: messagebundles/MessagesBundle.properties
 ===================================================================
 RCS file: /usr/local/tigris/data/helm/cvs/repository/lib/messagebundles/MessagesBundle.properties,v
-retrieving revision 1.62
-diff -u -r1.62 MessagesBundle.properties
---- messagebundles/MessagesBundle.properties	2004/04/12 17:49:29	1.62
-+++ messagebundles/MessagesBundle.properties	2004/04/17 23:06:07
-@@ -969,6 +969,7 @@
+retrieving revision 1.76
+diff -u -r1.76 MessagesBundle.properties
+--- messagebundles/MessagesBundle.properties	2004/04/29 22:20:33	1.76
++++ messagebundles/MessagesBundle.properties	2004/05/01 09:32:04
+@@ -980,6 +980,7 @@
  OPTIONS_CHAT_MAIN_TITLE=Chat
  OPTIONS_PLAYER_MAIN_TITLE=Player
  OPTIONS_ITUNES_MAIN_TITLE=iTunes
@@ -13,17 +13,17 @@ diff -u -r1.62 MessagesBundle.properties
  OPTIONS_APPS_MAIN_TITLE=Helper Apps
  OPTIONS_BUGS_MAIN_TITLE=Bug Reports
  OPTIONS_GUI_MAIN_TITLE=View
-@@ -1157,6 +1158,21 @@
+@@ -1168,6 +1169,21 @@
  OPTIONS_ITUNES_SUPPORT_ACTIVE_CHECK_BOX_LABEL=Enable iTunes support:
  OPTIONS_ITUNES_PREFERENCE_TITLE=iTunes options
- OPTIONS_ITUNES_PREFERENCE_LABEL=You can enable iTunes support.
+ OPTIONS_ITUNES_PREFERENCE_LABEL=You can enable iTunes support (Mac OS X only).
 +
 +################################################################################
 +# Key/Value pairs for the iTunes/DAAP options in the options window
 +################################################################################
 +OPTIONS_ITUNES_DAAP_PREFERENCE_TITLE=Digital Audio Access Protocol
 +OPTIONS_ITUNES_DAAP_PREFERENCE_LABEL=You can share your Music on the Local Area Network and make it accessible for iTunes or other DAAP enabled Players. 
-+OPTIONS_ITUNES_DAAP_SUPPORT_DAAP_ENABLED_LABEL=Share my Music
++OPTIONS_ITUNES_DAAP_SUPPORT_DAAP_ENABLED_LABEL=Share my Music:
 +OPTIONS_ITUNES_DAAP_SUPPORT_SERVICE_NAME_LABEL=Shared name:
 +OPTIONS_ITUNES_DAAP_SUPPORT_USE_BIO_LABEL=BIO
 +OPTIONS_ITUNES_DAAP_SUPPORT_USE_NIO_LABEL=NIO
