@@ -201,7 +201,7 @@ public class DaapServerNIO implements DaapServer {
      */    
     public void bind() throws IOException {
         
-        SocketAddress bindAddr = config.getSocketAddress();
+        SocketAddress bindAddr = config.getInetSocketAddress();
         int backlog = config.getBacklog();
         
         streams = new HashSet();
@@ -670,7 +670,7 @@ public class DaapServerNIO implements DaapServer {
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Name: ").append(config.getServerName()).append("\n");
-        buffer.append("Address: ").append(config.getSocketAddress()).append("\n");
+        buffer.append("Address: ").append(config.getInetSocketAddress()).append("\n");
         buffer.append("Backlog: ").append(config.getBacklog()).append("\n");
         buffer.append("Max connections: ").append(config.getMaxConnections()).append("\n");
         buffer.append("IsRunning: ").append(isRunning()).append("\n");

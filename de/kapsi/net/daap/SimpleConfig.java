@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap;
 
-import java.net.SocketAddress;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 /**
@@ -53,7 +53,7 @@ public class SimpleConfig implements DaapConfig {
     
     private String serverName;
     
-    private SocketAddress bindAddr;
+    private InetSocketAddress bindAddr;
     private int backlog;
     
     private int maxConnections;
@@ -104,7 +104,7 @@ public class SimpleConfig implements DaapConfig {
      * @param backlog
      * @param bindAddr
      */    
-    public SimpleConfig(String serverName, SocketAddress bindAddr, int backlog) {
+    public SimpleConfig(String serverName, InetSocketAddress bindAddr, int backlog) {
         this.serverName = serverName;
         this.bindAddr = bindAddr;
         this.backlog = backlog;
@@ -148,15 +148,41 @@ public class SimpleConfig implements DaapConfig {
      *
      * @param bindAddr
      */    
-    public void setSocketAddress(SocketAddress bindAddr) {
+    public void setInetSocketAddress(InetSocketAddress bindAddr) {
         this.bindAddr = bindAddr;
     }
     
     /**
+     * 
+     * @param port
+     */
+    public void setInetSocketAddress(int port) {
+    		this.bindAddr = new InetSocketAddress(port);
+    }
+    
+    /**
+     * 
+     * @param addr
+     * @param port
+     */
+    public void setInetSocketAddress(InetAddress addr, int port) {
+    		this.bindAddr = new InetSocketAddress(addr, port);
+    }
+    
+    /**
+     * 
+     * @param host
+     * @param port
+     */
+    public void setInetSocketAddress(String host, int port) {
+    		this.bindAddr = new InetSocketAddress(host, port);
+    }
+    
+     /**
      *
      * @return
      */    
-    public SocketAddress getSocketAddress() {
+    public InetSocketAddress getInetSocketAddress() {
         return bindAddr;
     }
     

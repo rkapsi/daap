@@ -143,7 +143,7 @@ public class DaapServerBIO implements DaapServer {
         if (running)
             return;
         
-        SocketAddress bindAddr = config.getSocketAddress();
+        SocketAddress bindAddr = config.getInetSocketAddress();
         int backlog = config.getBacklog();
         
         

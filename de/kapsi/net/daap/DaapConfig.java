@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 /**
  * Interface for DaapServer Settings
@@ -38,7 +38,7 @@ public interface DaapConfig {
      *
      * @return
      */    
-    public SocketAddress getSocketAddress();
+    public InetSocketAddress getInetSocketAddress();
     
     /**
      *
