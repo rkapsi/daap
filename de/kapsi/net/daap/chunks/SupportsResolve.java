@@ -1,0 +1,15 @@
+
+package de.kapsi.net.daap.chunks;
+
+import de.kapsi.net.daap.*;
+
+public class SupportsResolve extends BooleanChunk {
+	
+	public SupportsResolve() {
+		this(false);
+	}
+	
+	public SupportsResolve(boolean supports) {
+		super("msrs", "dmap.supportsresolve", supports);
+	}
+}

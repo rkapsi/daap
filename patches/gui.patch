@@ -1,0 +1,61 @@
+? com/limegroup/gnutella/gui/DaapMediator.java
+? com/limegroup/gnutella/gui/SizedPasswordField.java
+? com/limegroup/gnutella/gui/options/panes/DaapPasswordPaneItem.java
+? com/limegroup/gnutella/gui/options/panes/DaapSupportPaneItem.java
+Index: com/limegroup/gnutella/gui/Initializer.java
+===================================================================
+RCS file: /usr/local/tigris/data/helm/cvs/repository/gui/com/limegroup/gnutella/gui/Initializer.java,v
+retrieving revision 1.117
+diff -u -r1.117 Initializer.java
+--- com/limegroup/gnutella/gui/Initializer.java	2004/02/04 17:33:56	1.117
++++ com/limegroup/gnutella/gui/Initializer.java	2004/02/21 23:59:01
+@@ -204,6 +204,17 @@
+         
+         // Activate a download for magnet URL locally if one exists
+         ExternalControl.runQueuedMagnetRequest();
++		
++		if (CommonUtils.isJava13OrLater() && 
++			com.limegroup.gnutella.settings.iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
++			
++			try {
++				com.limegroup.gnutella.gui.DaapMediator.instance().startServer();
++				com.limegroup.gnutella.gui.DaapMediator.instance().registerService();
++			} catch (java.io.IOException err) {
++				ErrorService.error(err);
++			}
++		}
+     }
+     
+     /**
+Index: com/limegroup/gnutella/gui/options/OptionsConstructor.java
+===================================================================
+RCS file: /usr/local/tigris/data/helm/cvs/repository/gui/com/limegroup/gnutella/gui/options/OptionsConstructor.java,v
+retrieving revision 1.59
+diff -u -r1.59 OptionsConstructor.java
+--- com/limegroup/gnutella/gui/options/OptionsConstructor.java	2004/01/16 18:26:54	1.59
++++ com/limegroup/gnutella/gui/options/OptionsConstructor.java	2004/02/21 23:59:03
+@@ -205,12 +205,19 @@
+ 			playerPane.add(new PlayerPreferencePaneItem("PLAYER_PREFERENCE"));
+ 			addOption(OptionsMediator.ROOT_NODE_KEY, playerPane);
+ 		}
+-
+-        if (CommonUtils.isMacOSX()) {
+-            final OptionsPane playerPane2 = new OptionsPaneImpl(ITUNES_KEY);
+-			playerPane2.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
++		
++		if (CommonUtils.isJava13OrLater()) {
++			final OptionsPane playerPane2 = new OptionsPaneImpl(ITUNES_KEY);
++			
++			if (CommonUtils.isMacOSX()) {
++				playerPane2.add(new iTunesPreferencePaneItem("ITUNES_PREFERENCE"));
++			}
++			
++			playerPane2.add(new DaapSupportPaneItem("ITUNES_DAAP_PREFERENCE"));
++			playerPane2.add(new DaapPasswordPaneItem("ITUNES_DAAP_PASSWORD"));
++			
+ 			addOption(OptionsMediator.ROOT_NODE_KEY, playerPane2);
+-        }
++		}
+ 
+ 		if (CommonUtils.isUnix()) {
+ 			final OptionsPane browserPane = new OptionsPaneImpl(APPS_KEY);

@@ -1,0 +1,99 @@
+
+<project name="DAAP" default="build" basedir=".">
+	<description>DAAP support</description>
+	
+    <property name="basedir" value="."/>
+    <property name="javadoc" value="${basedir}/javadoc"/>
+    
+    <property name="gui" value="${basedir}/../gui"/>
+    <property name="core" value="${basedir}/../core"/>
+    <property name="lib" value="${basedir}/../lib"/>
+    
+    <property name="jars" value="${lib}/jars"/>
+  
+    <path id="default.classpath">
+        <fileset dir="lib/jars" includes="*.jar"/>
+        
+        <pathelement location="${core}"/>
+        <!--<fileset dir="${basedir}/../gui"/>-->
+		<fileset dir="${jars}" includes="*.jar"/>
+    </path>
+    
+    <target name="init">
+        <!--<available file="${gui}" type="dir" property="gui.present"/>-->
+        <available file="${core}" type="dir" property="core.present"/>
+        <available file="${jars}" type="dir" property="jars.present"/>
+        <tstamp/>
+        <!--<antcall target="checkgui"/>-->
+        <antcall target="checkcore"/>
+        <antcall target="checkjars"/>
+    </target>
+	
+    <!--<target name="checkgui" unless="gui.present">
+        <echo message="*******************************************************"/>
+        <echo message="*******  YOU MUST CHECKOUT THE gui MODULE *************"/>
+        <echo message="**** and place it as a sibling to this daap module ****"/>
+        <echo message="*******************************************************"/>
+    </target>-->
+    
+    <target name="checkcore" unless="core.present">
+        <echo message="*******************************************************"/>
+        <echo message="*******  YOU MUST CHECKOUT THE core MODULE ************"/>
+        <echo message="**** and place it as a sibling to this daap module ****"/>
+        <echo message="*******************************************************"/>
+    </target>
+    
+    <target name="checkjars" unless="jars.present">
+        <echo message="*******************************************************"/>
+        <echo message="*******  YOU MUST CHECKOUT THE lib MODULE *************"/>
+        <echo message="**** and place it as a sibling to this daap module ****"/>
+        <echo message="*******************************************************"/>
+    </target>
+    
+	<target name="build" depends="init">
+		<javac srcdir="${basedir}" destdir="${basedir}" excludes="com/**/*.java">
+            <classpath refid="default.classpath"/>
+        </javac>
+	</target>
+    
+	<target name="run" depends="init">
+        <java classname="de.kapsi.net.daap.Main">
+            <classpath>
+                <pathelement location="${basedir}"/>
+            </classpath>
+            <classpath refid="default.classpath"/>
+        </java>
+	</target>
+	
+    <target name="javadoc">
+		
+		<mkdir dir="${javadoc}"/>
+		
+		<javadoc 
+			destdir="${javadoc}"
+			author="true"
+			version="true"
+			use="true">
+			
+			<classpath refid="default.classpath"/>
+			
+			<packageset dir="${basedir}"/>
+				
+		</javadoc>
+	</target>
+	
+	<target name="daap">
+		<jar destfile="daap.jar" 
+				basedir="${basedir}" 
+				includes="**/*.class **/*.java build.xml"
+				excludes="**/Main.*"/>
+	</target>
+	
+	<target name="clean" description="clean up">
+		<delete>
+			<fileset dir="${basedir}">
+				<include name="**/*.class"/>
+			</fileset>
+		</delete>
+	</target>
+</project>

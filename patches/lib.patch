@@ -1,0 +1,26 @@
+? jars/daap.jar
+? jars/jmdns.jar
+Index: messagebundles/MessagesBundle.properties
+===================================================================
+RCS file: /usr/local/tigris/data/helm/cvs/repository/lib/messagebundles/MessagesBundle.properties,v
+retrieving revision 1.40
+diff -u -r1.40 MessagesBundle.properties
+--- messagebundles/MessagesBundle.properties	2004/02/19 18:36:58	1.40
++++ messagebundles/MessagesBundle.properties	2004/02/21 23:55:43
+@@ -1100,6 +1100,16 @@
+ OPTIONS_ITUNES_PREFERENCE_TITLE=iTunes options
+ OPTIONS_ITUNES_PREFERENCE_LABEL=You can enable iTunes support.
+ 
++OPTIONS_ITUNES_DAAP_PREFERENCE_TITLE=Digital Audio Access Protocol
++OPTIONS_ITUNES_DAAP_PREFERENCE_LABEL=You can share your Music on the Local Area Network and make it accessible for iTunes. 
++OPTIONS_ITUNES_DAAP_SUPPORT_CHECKBOX_LABEL=Share my Music
++OPTIONS_ITUNES_DAAP_SUPPORT_SHARED_LABEL=Shared name:
++
++OPTIONS_ITUNES_DAAP_PASSWORD_TITLE=Require password
++OPTIONS_ITUNES_DAAP_PASSWORD_LABEL=You can limit the access to this service with a password.
++OPTIONS_ITUNES_DAAP_PASSWORD_CHECKBOX_LABEL=Require password:
++OPTIONS_ITUNES_DAAP_PASSWORD_TEXTFIELD_LABEL=Password:
++
+ ################################################################################
+ # Key/Value pairs for url handler options
+ ################################################################################
