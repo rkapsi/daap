@@ -62,10 +62,10 @@ public interface DaapConnection {
     public boolean isUndef();
     
     /**
-     * Returns <tt>true</tt> if the type of this connection
-     * is currently indetermined.
+     * Returns the protocol version of this connection or
+     * DaapUtil.UNDEF_VALUE if it is currently unknown
      * 
-     * @return <tt>true</tt> if connection is indetermined
+     * @return protocol version of this connection
      */
     public int getProtocolVersion();
     
