@@ -174,7 +174,7 @@ public class DaapServer {
      * on success. False is retuned in the following cases: Max connections
      * reached or server is down.
      */
-    private synchronized boolean addConnection(DaapConnection connection) {
+    public synchronized boolean addConnection(DaapConnection connection) {
         
         if (!isRunning()) {
             
@@ -216,16 +216,6 @@ public class DaapServer {
                         LOG.info("Connection limit reached");
                     }
                     
-                    // This allows us to disconnect iTunes silently. We
-                    // process the first request (/server-info) and don't
-                    // keep the connection alive. An alternative would be
-                    // to 'return false' but iTunes displays a misleading
-                    // error dialog then...
-                    // TODO: someone has to check which of these two options
-                    // is the default behaviour)
-                    
-                    //connection.setKeepAlive(-1); // silent disconnect
-                    
                     return false;
                 }
             }
@@ -237,8 +227,8 @@ public class DaapServer {
     /**
      * Called by DaapAcceptor
      */
-    boolean accept(Socket socket)
-    throws IOException {
+    public boolean accept(Socket socket)
+        throws IOException {
         
         
         if (filter != null &&
@@ -252,48 +242,6 @@ public class DaapServer {
         }
         
         DaapConnection connection = new DaapConnection(this, socket);
-        
-        // Set the timeout to an acceptable value and read the first request.
-        // This is necessary as we have to know which type of connection this
-        // is and we don't want block the DaapAcceptorThread for too long. We
-        // could start a DaapConnectionThread immediately but that conflicts
-        // with the Library/DaapServer update logic and would need more logic
-        // and processsing resources to make sure so that don't issue an update
-        // on an uninitialized connection etc...
-        
-        int oldTimeout = socket.getSoTimeout();
-        socket.setSoTimeout(10*1000); // 10 seconds timeout
-        DaapRequest request = connection.getDaapRequest();
-        socket.setSoTimeout(oldTimeout);
-        
-        if (!request.isSongRequest() &&
-        !request.isServerInfoRequest()) {
-            
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Illegal request: " + request);
-            }
-            
-            // disconnect as the first request must be
-            // either a song or server-info request!
-            return false;
-        }
-        
-        // a connection can be either a song request (a audio stream)
-        // or a standart DAAP connection.
-        connection.setAudioStream(request.isSongRequest());
-        
-        // AudioStreams have a session-id and we must check the id
-        if (connection.isAudioStream()) {
-            //System.out.println(request);
-            if (isSessionIdValid(request.getSessionId()) == false) {
-                return false;
-            }
-        }
-        
-        // add connection to the connection pool
-        if ( ! addConnection(connection) ) {
-            return false;
-        }
         
         Thread connThread = new Thread(connection, "DaapConnectionThread-" + (++threadNo));
         connThread.setDaemon(true);
@@ -324,8 +272,8 @@ public class DaapServer {
     /**
      *
      */
-    void processRequest(DaapConnection connection, DaapRequest request)
-    throws IOException {
+    public void processRequest(DaapConnection connection, DaapRequest request)
+            throws IOException {
         
         boolean complete = false;
         
@@ -337,23 +285,23 @@ public class DaapServer {
     }
     
     /**
-     *
+     * Removes connection from the internal connection pool
      */
-    void removeConnection(DaapConnection conn) {
+    public void removeConnection(DaapConnection connection) {
         
-        if (conn.isAudioStream()) {
+        if (connection.isAudioStream()) {
             
             synchronized(streams) {
-                streams.remove(conn);
+                streams.remove(connection);
             }
             
         } else {
             
             synchronized(connections) {
-                connections.remove(conn);
+                connections.remove(connection);
             }
             
-            DaapSession session = conn.getSession(false);
+            DaapSession session = connection.getSession(false);
             if (session != null) {
                 session.invalidate();
                 
@@ -367,14 +315,14 @@ public class DaapServer {
     /**
      * Returns <tt>true</tt> if sessionId is known and valid
      */
-    private boolean isSessionIdValid(int sessionId) {
+    public boolean isSessionIdValid(int sessionId) {
         return isSessionIdValid(new Integer(sessionId));
     }
     
     /**
      * Returns <tt>true</tt> if sessionId is known and valid
      */
-    private boolean isSessionIdValid(Integer sessionId) {
+    public boolean isSessionIdValid(Integer sessionId) {
         synchronized(sessionIds) {
             return sessionIds.contains(sessionId);
         }

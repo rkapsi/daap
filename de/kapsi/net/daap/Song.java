@@ -45,7 +45,7 @@ import java.util.HashMap;
 
 /**
  * There isn't much to say: a Song is a Song.<p>
- * Note: although mentioned in StringChunk already I'd like to
+ * Note: although already mentioned in StringChunk I'd like to
  * point out that <tt>null</tt> a valid value for DAAP is. Use
  * it to reset Strings. See StringChunk for more information!
  */

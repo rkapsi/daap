@@ -47,8 +47,7 @@ public class DaapConnection implements Runnable {
     }
     
     /**
-     * A <tt>friendly</tt> Method to set if this connection is
-     * an Audio stream
+     * Sets if this connection is an Audio stream
      */
     private void setAudioStream(boolean audioStream) {
         this.audioStream = audioStream;
