@@ -1,5 +1,6 @@
 
 <project name="DAAP" default="build" basedir=".">
+    <!-- test -->
     <description>DAAP support</description>
 	
     <property name="basedir" value="."/>
