@@ -137,7 +137,6 @@ public final class OptionsConstructor {
 		final String RESULTS_KEY        = "OPTIONS_RESULTS_MAIN_TITLE";
 		final String MESSAGES_KEY       = "OPTIONS_MESSAGES_MAIN_TITLE";
 		final String ADVANCED_KEY       = "OPTIONS_ADVANCED_MAIN_TITLE";
-		final String COMPRESSION_KEY    = "OPTIONS_COMPRESSION_MAIN_TITLE";
 		final String PREFERENCING_KEY   = "OPTIONS_PREFERENCING_MAIN_TITLE";
 		final String PORT_KEY           = "OPTIONS_PORT_MAIN_TITLE";
 		final String FIREWALL_KEY       = "OPTIONS_FIREWALL_MAIN_TITLE";
@@ -289,10 +288,7 @@ public final class OptionsConstructor {
 
 		// add the advanced options group
 		addGroupTreeNode(OptionsMediator.ROOT_NODE_KEY, ADVANCED_KEY);
-		final OptionsPane compressionPane = 
-            new OptionsPaneImpl(COMPRESSION_KEY);
-		compressionPane.add(new CompressionPaneItem("COMPRESSION"));
-		addOption(ADVANCED_KEY, compressionPane);
+
 
 		final OptionsPane preferencingPane = 
             new OptionsPaneImpl(PREFERENCING_KEY);

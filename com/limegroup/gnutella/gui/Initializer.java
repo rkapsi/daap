@@ -140,6 +140,11 @@ public final class Initializer {
             SplashWindow.setStatusText(
                 GUIMediator.getStringResource("SPLASH_STATUS_SHARED_FILES"));
         }
+
+        // update the repaintInterval after the Splash is created,
+        // so that the splash gets the smooth animation.
+        if(CommonUtils.isMacOSX() && CommonUtils.isJava14OrLater())
+            UIManager.put("ProgressBar.repaintInterval", new Integer(500));        
         
         //Initialize the bug manager
         //(make sure the BugSettings class can be loaded first)
@@ -242,7 +247,6 @@ public final class Initializer {
                 "setProperty",
                 new Class[] { String.class, String.class });
             if (CommonUtils.isJava14OrLater()) {
-                UIManager.put("ProgressBar.repaintInterval", new Integer(500));
                 setPropertyMethod.invoke(null, new String[] {
                     "apple.laf.useScreenMenuBar", "true"});
             } else {
