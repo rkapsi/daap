@@ -443,26 +443,9 @@ public final class DaapMediator implements FinalizeListener {
     }
     
     /**
-     * Returns true if Song has maybe meta data.
-     */
-    private boolean hasMetaData(Song song) {
-        
-        String format = song.getFormat();
-        
-        if (format == null) {
-            return false;
-        } else {
-            return format.equals("mp3");
-        }
-    }
-    
-    /**
      * Sets the meta data
      */
     private boolean updateSongMeta(Song song, FileDesc desc) {
-        
-        if (! hasMetaData(song))
-            return false;
         
         SchemaReplyCollectionMapper map = SchemaReplyCollectionMapper.instance();
         LimeXMLReplyCollection collection = map.getReplyCollection(AUDIO_SCHEMA);
