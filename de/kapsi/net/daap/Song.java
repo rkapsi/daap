@@ -520,7 +520,7 @@ public class Song {
     
     /**
      * Sets the start time of this Song in 
-     * <tt>milli seconds</tt>.
+     * <tt>milliseconds</tt>.
      */
     public void setStartTime(int startTime) {
         this.startTime.setValue(startTime);
@@ -535,7 +535,7 @@ public class Song {
     
     /**
      * Sets the stop time of this Song in 
-     * <tt>milli seconds</tt>.
+     * <tt>milliseconds</tt>.
      */
     public void setStopTime(int stopTime) {
         this.stopTime.setValue(stopTime);
@@ -550,7 +550,7 @@ public class Song {
     
     /**
      * Sets the time (length) of this Song in
-     * <tt>milli seconds</tt>.
+     * <tt>milliseconds</tt>.
      */
     public void setTime(int time) {
         this.time.setValue(time);

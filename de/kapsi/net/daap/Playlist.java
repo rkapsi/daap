@@ -20,11 +20,12 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,7 +46,6 @@ import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
 import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
 import de.kapsi.net.daap.chunks.impl.Status;
 import de.kapsi.net.daap.chunks.impl.UpdateType;
-import de.kapsi.util.ArrayIterator;
 
 /**
  * The name is self explaining. A Playlist is a set of Songs.
@@ -607,7 +607,8 @@ public class Playlist implements Cloneable {
                 ListingItem listingItem = new ListingItem();
                 Song song = (Song)it.next();
 
-                Iterator properties = new ArrayIterator(DaapUtil.PLAYLIST_SONGS_META);
+                Iterator properties = Arrays.asList(
+                        DaapUtil.PLAYLIST_SONGS_META).iterator();
                 while(properties.hasNext()) {
                     String key = (String)properties.next();
 

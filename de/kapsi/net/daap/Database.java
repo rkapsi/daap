@@ -20,10 +20,11 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +40,6 @@ import de.kapsi.net.daap.chunks.impl.ReturnedCount;
 import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
 import de.kapsi.net.daap.chunks.impl.Status;
 import de.kapsi.net.daap.chunks.impl.UpdateType;
-import de.kapsi.util.ArrayIterator;
 
 /**
  * A Database is a container for Playlists and it keeps track of 
@@ -660,8 +660,8 @@ public class Database implements Cloneable {
         private ListingItem toListingItem(Playlist playlist) {
             ListingItem listingItem = new ListingItem();
 
-            Iterator properties = new ArrayIterator(
-                    DaapUtil.DATABASE_PLAYLISTS_META);
+            Iterator properties = Arrays.asList(
+                    DaapUtil.DATABASE_PLAYLISTS_META).iterator();
             while (properties.hasNext()) {
                 String key = (String) properties.next();
                 Chunk chunk = playlist.getProperty(key);
@@ -725,8 +725,8 @@ public class Database implements Cloneable {
                 ListingItem listingItem = new ListingItem();
                 Song song = (Song) it.next();
 
-                Iterator properties = new ArrayIterator(
-                        DaapUtil.DATABASE_SONGS_META);
+                Iterator properties = Arrays.asList(
+                        DaapUtil.DATABASE_SONGS_META).iterator();
                 while (properties.hasNext()) {
 
                     String key = (String) properties.next();
