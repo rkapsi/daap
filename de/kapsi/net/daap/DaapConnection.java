@@ -22,15 +22,28 @@ package de.kapsi.net.daap;
 import java.io.IOException;
 
 /**
- * An interface for DaapConnections.
+ * An abstract base class for DaapConnections.
  *
  * @author  Roger Kapsi
  */
-public interface DaapConnection {
+public abstract class DaapConnection {
    
-    static final int UNDEF  = 0;
-    static final int NORMAL = 1;
-    static final int AUDIO  = 2;
+    protected static final int UNDEF  = DaapUtil.UNDEF_VALUE;
+    protected static final int NORMAL = 1;
+    protected static final int AUDIO  = 2;
+    
+    protected final DaapResponseWriter writer;
+    
+    private DaapServer server;
+    private DaapSession session;
+    
+    private int type = UNDEF;
+    private int protocolVersion = UNDEF;
+
+    public DaapConnection(DaapServer server) {
+        this.server = server;
+        writer = new DaapResponseWriter();
+    }
     
     /**
      * Call this to initiate an update which causes the 
@@ -38,14 +51,38 @@ public interface DaapConnection {
      *
      * @throws IOException
      */    
-    public void update() throws IOException;
+    public abstract void update() throws IOException;
     
     /**
-     * 
-     * @param create
+     *
+     * @throws IOException
      * @return
-     */    
-    public DaapSession getSession(boolean create);
+     */ 
+    public boolean write() throws IOException {
+        
+        if (writer.write()) {
+
+            if (isAudioStream()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    /**
+     * Called when a DaapConnection is beeing removed
+     * from the connection pool.
+     */
+    public void close() {
+        
+        writer.clear();
+        
+        if (session != null) {
+            session.invalidate();
+            session = null;
+        }
+    }
     
     /**
      * Returns the DaapServer to which this DaapConnection is
@@ -54,15 +91,33 @@ public interface DaapConnection {
      * Returns the DaapServer
      * @return
      */    
-    public DaapServer getServer();
+    public DaapServer getServer() {
+        return server;
+    }
+    
+    /**
+     * Sets the type of this connection
+     */
+    protected void setConnectionType(int type) {
+        this.type = type;
+    }
+    
+    /**
+     * Sets the protocol version of this connection
+     */
+    protected void setProtocolVersion(int protocolVersion) {
+        this.protocolVersion = protocolVersion;
+    }
     
     /**
      * Returns <tt>true</tt> if this connection is an audio
      * stream.
      *
      * @return
-     */    
-    public boolean isAudioStream();
+     */ 
+    public boolean isAudioStream() {
+        return (type==DaapConnection.AUDIO);
+    }
     
     /**
      * Returns <tt>true</tt> if this connection is a normal
@@ -70,7 +125,9 @@ public interface DaapConnection {
      *
      * @return
      */    
-    public boolean isNormal();
+    public boolean isNormal() {
+        return (type==DaapConnection.NORMAL);
+    }
     
     /**
      * Returns <tt>true</tt> if the type of this connection
@@ -78,7 +135,9 @@ public interface DaapConnection {
      * 
      * @return <tt>true</tt> if connection is indetermined
      */    
-    public boolean isUndef();
+    public boolean isUndef() {
+        return (type==DaapConnection.UNDEF);
+    }
     
     /**
      * Returns the protocol version of this connection or
@@ -86,11 +145,22 @@ public interface DaapConnection {
      * 
      * @return protocol version of this connection
      */
-    public int getProtocolVersion();
+    public int getProtocolVersion() {
+        return protocolVersion;
+    }
     
     /**
-     * Called when a DaapConnection is beeing removed
-     * from the connection pool.
-     */
-    public void close();
+     * Creates if nessesary a new DaapSession and returns it.
+     *
+     * @param create
+     * @return
+     */    
+    public DaapSession getSession(boolean create) {
+        
+        if (session == null && create) {
+            session = new DaapSession(server.createSessionId());
+        }
+        
+        return session;
+    }
 }

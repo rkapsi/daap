@@ -171,6 +171,7 @@ public class DaapServerBIO implements DaapServer {
      * Stops the DAAP Server
      */
     public synchronized void stop() {
+        
         if (!running)
             return;
             
@@ -194,7 +195,7 @@ public class DaapServerBIO implements DaapServer {
         synchronized(connections) {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
-                ((DaapConnectionBIO)it.next()).close();
+                ((DaapConnectionBIO)it.next()).disconnect();
             }
             connections.clear();
         }
@@ -202,7 +203,7 @@ public class DaapServerBIO implements DaapServer {
         synchronized(streams) {
             Iterator it = streams.iterator();
             while(it.hasNext()) {
-                ((DaapConnectionBIO)it.next()).close();
+                ((DaapConnectionBIO)it.next()).disconnect();
             }
             streams.clear();
         }
@@ -273,8 +274,7 @@ public class DaapServerBIO implements DaapServer {
         throws IOException {
         
         
-        if (filter != null &&
-        filter.accept(socket.getInetAddress()) == false) {
+        if (filter != null && !filter.accept(socket.getInetAddress())) {
             
             if (LOG.isInfoEnabled()) {
                 LOG.info("DaapFilter refused connection from " + socket);

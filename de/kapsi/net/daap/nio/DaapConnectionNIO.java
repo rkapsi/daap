@@ -41,77 +41,23 @@ import de.kapsi.net.daap.DaapResponseWriter;
  *
  * @author  Roger Kapsi
  */
-public class DaapConnectionNIO implements DaapConnection {
+public class DaapConnectionNIO extends DaapConnection {
     
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
-        
+     
     private DaapServerNIO server;
     private SocketChannel channel;
-    
     private DaapRequestReaderNIO reader;
-    private DaapResponseWriter writer;
-    private DaapSession session;
-    
-    private int type = DaapConnection.UNDEF;
-    private int protocolVersion = DaapUtil.UNDEF_VALUE;
     
     /** Creates a new instance of DaapConnection */
     public DaapConnectionNIO(DaapServerNIO server, SocketChannel channel) {
+        super(server);
+        
         this.server = server;
         this.channel = channel;
         
         reader = new DaapRequestReaderNIO(this);
-        writer = new DaapResponseWriter();
-    }
-    
-    /**
-     *
-     * @param create
-     * @return
-     */    
-    public DaapSession getSession(boolean create) {
-        
-        if (session == null && create) {
-            session = new DaapSession(server.createSessionId());
-        }
-        
-        return session;
-    }
-    
-    /**
-     * Returns <tt>true</tt> if this is an Audio Stream
-     *
-     * @return
-     */    
-    public boolean isAudioStream() {
-        return (type==DaapConnection.AUDIO);
-    }
-    
-    /**
-     * Returns <tt>true</tt> if this is a normal connection
-     * 
-     * @return
-     */    
-    public boolean isNormal() {
-        return (type==DaapConnection.NORMAL);
-    }
-    
-    /**
-     * Returns <tt>true</tt> if this is an indetermined
-     * connection
-     *
-     * @return
-     */    
-    public boolean isUndef() {
-        return (type==DaapConnection.UNDEF);
-    }
-    
-    /**
-     *
-     */
-    public int getProtocolVersion() {
-        return protocolVersion;
     }
     
     /**
@@ -119,7 +65,7 @@ public class DaapConnectionNIO implements DaapConnection {
      *
      * @return
      */    
-    public int interrestOps() {
+    int interrestOps() {
         
         if (isUndef()) {
             return SelectionKey.OP_READ;
@@ -137,14 +83,6 @@ public class DaapConnectionNIO implements DaapConnection {
             // isAudioStream
             return SelectionKey.OP_WRITE;
         }
-    }
-    
-    /**
-     *
-     * @return
-     */    
-    public DaapServer getServer() {
-        return server;
     }
     
     /**
@@ -171,7 +109,7 @@ public class DaapConnectionNIO implements DaapConnection {
                 if (isUndef()) {
                     
                     if (request.isSongRequest()) {
-                        type = DaapConnection.AUDIO;
+                        setConnectionType(DaapConnection.AUDIO);
                         
                         // AudioStreams have a session-id and we must check the id
                         Integer sid = new Integer(request.getSessionId());
@@ -190,12 +128,12 @@ public class DaapConnectionNIO implements DaapConnection {
                         // the request header (we could use the User-Agent header
                         // but that breaks compatibility to non iTunes hosts and
                         // they would have to fake their request header.
-                        protocolVersion = connection.getProtocolVersion();
+                        setProtocolVersion(connection.getProtocolVersion());
                         
                     } else if (request.isServerInfoRequest()) {
                         
-                        type = DaapConnection.NORMAL;
-                        protocolVersion = DaapUtil.getProtocolVersion(request);
+                        setConnectionType(DaapConnection.NORMAL);
+                        setProtocolVersion(DaapUtil.getProtocolVersion(request));
                         
                     } else {
                         
@@ -204,8 +142,8 @@ public class DaapConnectionNIO implements DaapConnection {
                         throw new IOException("Illegal first request: " + request);
                     }
                     
-                    if (protocolVersion < DaapUtil.VERSION_2) {
-                        throw new IOException("Unsupported Protocol Version: " + protocolVersion);
+                    if (getProtocolVersion() < DaapUtil.VERSION_2) {
+                        throw new IOException("Unsupported Protocol Version: " + getProtocolVersion());
                     }
                     
                     // All checks passed successfully...
@@ -213,34 +151,16 @@ public class DaapConnectionNIO implements DaapConnection {
                 }
                 
                 DaapResponse response = PROCESSOR.process(request);
-               
+                
                 if (response != null) {
                     writer.add(response);
                 }
                 
                 return true;
             }
-            
         }
         
         return false;
-    }
-    
-    /**
-     *
-     * @throws IOException
-     * @return
-     */    
-    public boolean write() throws IOException {
-        
-        if (writer.write()) {
-            
-            if (isAudioStream()) {
-                return false;
-            }
-        }
-        
-        return true;
     }
     
     /**
@@ -275,14 +195,8 @@ public class DaapConnectionNIO implements DaapConnection {
     }
     
     public void close() {
-        
-        if (session != null) {
-            session.invalidate();
-        }
-        
-        session = null;
+        super.close();
         reader = null;
-        writer = null;
     }
     
     /**

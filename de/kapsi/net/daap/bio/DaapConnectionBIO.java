@@ -48,7 +48,7 @@ import de.kapsi.net.daap.DaapStreamException;
  *
  * @author  Roger Kapsi
  */
-public class DaapConnectionBIO implements DaapConnection, Runnable {
+public class DaapConnectionBIO extends DaapConnection implements Runnable {
     
     private static final Log LOG = LogFactory.getLog(DaapConnectionBIO.class);
     
@@ -63,50 +63,19 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
     private OutputStream out;
     
     private DaapSession session;
-    private DaapResponseWriter writer;
     
-    private int type = DaapConnection.UNDEF;
-    private int protocolVersion = DaapUtil.UNDEF_VALUE;
+    private boolean connected = false;
     
     public DaapConnectionBIO(DaapServerBIO server, Socket socket) throws IOException {
+        super(server);
         
         this.server = server;
         this.socket = socket;
         
-        writer = new DaapResponseWriter();
-       
         in = new BufferedInputStream(socket.getInputStream());
         out = socket.getOutputStream();
-    }
-    
-    public DaapServer getServer() {
-        return server;
-    }
-    
-    
-    public boolean isUndef() {
-        return (type == DaapConnection.UNDEF);
-    }
-    
-    /**
-     * Returns true if this connection is an Audio stream
-     */
-    public boolean isAudioStream() {
-        return (type == DaapConnection.AUDIO);
-    }
-    
-    /**
-     *
-     */
-    public boolean isNormal() {
-        return (type == DaapConnection.NORMAL);
-    }
-    
-    /**
-     *
-     */
-    public int getProtocolVersion() {
-        return protocolVersion;
+        
+        connected = true;
     }
     
     private boolean read() throws IOException {
@@ -114,11 +83,11 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
         DaapRequest request = readRequest();
             
         if (!isAudioStream()) {
-
+            
             if (isUndef()) {
                 
                 if (request.isSongRequest()) {
-                    type = DaapConnection.AUDIO;
+                    setConnectionType(DaapConnection.AUDIO);
                     
                     // AudioStreams have a session-id and we must check the id
                     Integer sid = new Integer(request.getSessionId());
@@ -137,11 +106,11 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
                     // the request header (we could use the User-Agent header
                     // but that breaks compatibility to non iTunes hosts and
                     // they would have to fake their request header.
-                    protocolVersion = connection.getProtocolVersion();
+                    setProtocolVersion(connection.getProtocolVersion());
                         
                 } else if (request.isServerInfoRequest()) {
-                    type = DaapConnection.NORMAL;
-                    protocolVersion = DaapUtil.getProtocolVersion(request);
+                    setConnectionType(DaapConnection.NORMAL);
+                    setProtocolVersion(DaapUtil.getProtocolVersion(request));
                     
                 } else {
                     
@@ -150,8 +119,8 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
                     throw new IOException("Illegal first request: " + request);
                 }
                 
-                if (protocolVersion < DaapUtil.VERSION_2) {
-                    throw new IOException("Unsupported Protocol Version: " + protocolVersion);
+                if (getProtocolVersion() < DaapUtil.VERSION_2) {
+                    throw new IOException("Unsupported Protocol Version: " + getProtocolVersion());
                 }
                 
                 // add connection to the connection pool
@@ -170,28 +139,14 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
         
         throw new IOException("Cannot read requests from audio stream");
     }
-    
-    private boolean write() throws IOException {
 
-        boolean ret = true;
-
-            if (writer.write()) {
-
-                if (isAudioStream()) {
-                    ret = false;
-                }
-            }
-
-        return ret;
-    }
-    
     public void run() {
         
         try {
             
             do {
                 read();
-            } while(write());
+            } while(connected && write());
            
         } catch (DaapStreamException err) {
             
@@ -223,7 +178,7 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
             // is already running, it will autumatically update to the
             // lates revision of the library!
 
-            if (session != null && !session.hasAttribute("UPDATE_LOCK")) {
+            if (session != null/* && !session.hasAttribute("UPDATE_LOCK")*/) {
 
                 Integer sessionId = session.getSessionId();
                 Integer delta = (Integer)session.getAttribute("DELTA");
@@ -243,13 +198,14 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
         }
     }
     
+    void disconnect() {
+        connected = false;
+        close();
+    }
+    
     public void close() {
         
-        if (session != null)
-            session.invalidate();
-        
-        if (writer != null)
-            writer.clear();
+        super.close();
         
         try {
             if (in != null)
@@ -272,18 +228,8 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
             LOG.error("Error while closing connection", err);
         }
         
-        
-        server.removeConnection(this);
-    }
-    
-    public DaapSession getSession(boolean create) {
-        
-        if (session == null && create) {
-            Integer sessionId = server.createSessionId();
-            session = new DaapSession(sessionId);
-        }
-        
-        return session;
+        if (connected)
+            server.removeConnection(this);
     }
     
     public InputStream getInputStream() {

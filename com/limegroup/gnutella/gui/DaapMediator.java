@@ -675,9 +675,14 @@ public final class DaapMediator implements FinalizeListener {
          */
         public boolean accept(InetAddress address) {
             
-            // Is address a private address?
-            if ( ! NetworkUtils.isPrivateAddress(address))
+            try {
+                // Is address a private address?
+                if ( ! NetworkUtils.isPrivateAddress(address))
+                    return false;
+            } catch (IllegalArgumentException err) {
+                LOG.error(err);
                 return false;
+            }
             
             // Is it a annoying fellow? >:-)
             return IPFilter.instance().allow(address.getAddress());
