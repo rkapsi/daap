@@ -181,22 +181,22 @@ public class MetaFileManager extends FileManager {
     }
     
     public FileDesc renameFileIfShared(File oldName, File newName) {
-        FileDesc ofd = getFileDescForFile(oldName);
-        if (ofd == null)
+        FileDesc oldFile = getFileDescForFile(oldName);
+        if (oldFile == null)
             return null;
             
-        FileDesc nfd = super.renameFileIfShared(oldName, newName);
+        FileDesc newFile = super.renameFileIfShared(oldName, newName);
         
         // Notify the GUI...
-        if (nfd != null) {
+        if (newFile != null) {
             MetaFileManagerEvent evt = new MetaFileManagerEvent(this, 
                                             MetaFileManagerEvent.RENAME, 
-                                            new FileDesc[]{ofd,nfd});
+                                            new FileDesc[]{oldFile,newFile});
                                             
             RouterService.getCallback().handleMetaFileManagerEvent(evt);
         }
         
-        return nfd;
+        return newFile;
     }
     
     /**

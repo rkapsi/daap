@@ -226,12 +226,13 @@ public final class VisualConnectionCallback implements ActivityCallback {
 			public void run() {
 				try {
 					LIBRARY_MEDIATOR.setAnnotateEnabled(enabled);
-                    DAAP_MEDIATOR.setAnnotateEnabled(enabled);
 				} catch(Throwable e) {
 					GUIMediator.showInternalError(e, "setAnnotateEnabled");
 				}
 			}
 		});
+        
+        DAAP_MEDIATOR.setAnnotateEnabled(enabled);
 	}
 
 

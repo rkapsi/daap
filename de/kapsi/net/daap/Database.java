@@ -64,6 +64,7 @@ public class Database {
 	
 	public void setName(String name) {
 		this.name = name;
+        masterPlaylist.setName(name);
 	}
 	
 	public String getPersistentId() {

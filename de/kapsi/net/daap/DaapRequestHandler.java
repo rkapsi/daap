@@ -453,9 +453,8 @@ public class DaapRequestHandler {
             
         try {
             
-            // DO NOT THIS TO SET THIS TOO HIGH AS IT 
-            // CAUSES RE-BUFFERING AT THE BEGINNING 
-            // OF HIGH BIT RATE SONGS (WAV AND AIFF) !!! 
+            // DO NOT SET THIS TOO HIGH AS IT CAUSES RE-BUFFERING
+            // AT THE BEGINNING OF HIGH BIT RATE SONGS (WAV AND AIFF) !!!
             byte[] buffer = new byte[512];
             
             int total = 0;
@@ -465,7 +464,7 @@ public class DaapRequestHandler {
                 in.skip(begin);
             }
             
-            while((len = in.read(buffer, 0, buffer.length)) != -1 && total < length) {
+            while((len = in.read(buffer, 0, buffer.length)) != -1 && total <= length) {
                 out.write(buffer, 0, len);
                 
                 // DO NOT FLUSH AS IT CAUSES RE-BUFFERING AT THE 

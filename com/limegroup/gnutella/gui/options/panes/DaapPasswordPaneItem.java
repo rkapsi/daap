@@ -74,14 +74,13 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
         boolean changed = CHECK_BOX.isSelected() != 
                                 iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
         
-		iTunesSettings.DAAP_REQUIRES_PASSWORD.setValue(CHECK_BOX.isSelected());
-		
 		String text = TEXT_FIELD.getText().trim();
 		
 		if (text.length()==0 && CHECK_BOX.isSelected()) { 
 			throw new IOException(); 
 		}
 		
+        iTunesSettings.DAAP_REQUIRES_PASSWORD.setValue(CHECK_BOX.isSelected());
 		iTunesSettings.DAAP_PASSWORD.setValue(text);
         
         if (changed) {

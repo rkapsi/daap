@@ -161,8 +161,10 @@ public final class DaapMediator {
     public synchronized void updateService() 
             throws IOException {
             
-        if (CommonUtils.isJava14OrLater() && isServerRunning())
+        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
             rendezvous.updateService();
+            updateWorker.setName(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
+        }
     }
     
     /**
@@ -210,9 +212,10 @@ public final class DaapMediator {
                 if (song != null) {
                     
                     FileDesc newDesc = evt.getFileDesc()[1];
-                    
                     map.put(song, newDesc.getSHA1Urn());
-                    
+                    String format = song.getFormat();
+                            
+                    // Any changes in the meta data?
                     if ( updateSongMeta(song, newDesc) ) {
                         updateWorker.update(song);
                     }
@@ -291,12 +294,11 @@ public final class DaapMediator {
                         if (song != null) {
                             
                             tmpMap.put(song, file.getSHA1Urn());
+                            String format = song.getFormat();
                             
                             // Any changes in the meta data?
-                            if (song.getFormat().equals("mp3")) {
-                                if ( updateSongMeta(song, file) ) {
-                                    updateWorker.update(song);
-                                }
+                            if ( updateSongMeta(song, file) ) {
+                                updateWorker.update(song);
                             }
                             
                         // URN was unknown and we must create a
@@ -352,9 +354,7 @@ public final class DaapMediator {
             
             song.setFormat(ext);
             
-            if (ext.equals("mp3")) {
-                updateSongMeta(song, desc);
-            }
+            updateSongMeta(song, desc);
         }
         
         return song;
@@ -365,6 +365,12 @@ public final class DaapMediator {
      */
     private boolean updateSongMeta(Song song, FileDesc desc) {
 		
+        String format = song.getFormat();
+        
+        // Meta Data is only available for MP3s
+        if (format == null || format.equals("mp3") == false)
+            return false;
+        
         com.sun.java.util.collections.List docs = desc.getLimeXMLDocuments();
         
         boolean update = false;
@@ -714,8 +720,11 @@ public final class DaapMediator {
      */
     private final class UpdateWorker implements Runnable {
         
+        private static final int SLEEP = 5*1000; // 5 seconds
+        
         private final Object LOCK = new Object();
         
+        private String name = null;
         private HashSet add = new HashSet();
         private HashSet remove = new HashSet();
         private HashSet update = new HashSet();
@@ -724,6 +733,12 @@ public final class DaapMediator {
         private boolean enabled = true;
         
         public UpdateWorker() {
+        }
+        
+        public void setName(String name) {
+            synchronized(LOCK) {
+                this.name = name;
+            }
         }
         
         public void add(Song song) {
@@ -760,7 +775,7 @@ public final class DaapMediator {
 
                 do {
                 
-                    Thread.sleep(5*1000);
+                    Thread.sleep(SLEEP);
                     
                     if (running && enabled) {
                         
@@ -769,10 +784,16 @@ public final class DaapMediator {
                         synchronized(LOCK) {
                             if (add.size() != 0 || 
                                     remove.size() != 0 || 
-                                    update.size() != 0) {
+                                    update.size() != 0 || 
+                                    name != null) {
                                     
                                 synchronized(library) {
                                     library.open();
+                                    
+                                    if (name != null) {
+                                        library.setName(name);
+                                        name = null;
+                                    }
                                     
                                     // It makes no sense to remove or update
                                     // songs if Library is empty...
@@ -812,7 +833,7 @@ public final class DaapMediator {
                         }
                         
                         if (extraSleep && running)
-                            Thread.sleep(5*1000);
+                            Thread.sleep(SLEEP);
                     }
                     
                 } while(running);
@@ -832,8 +853,17 @@ public final class DaapMediator {
             return running;
         }
         
+        public void clear() {
+            synchronized(LOCK) {
+                add.clear();
+                remove.clear();
+                update.clear();
+            }
+        }
+
         public void stop() {
             running = false;
+            clear();
         }
     }
     
