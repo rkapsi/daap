@@ -21,7 +21,7 @@ import org.apache.commons.httpclient.Header;
  *
  * @author  roger
  */
-public class DaapRequestReader {
+public class DaapRequestReaderNIO {
     
     private long bytesRead = 0;
     
@@ -29,18 +29,19 @@ public class DaapRequestReader {
     
     private String requestLine;
     private ArrayList headers;
-    private DaapLineReader lineReader;
+    
+    private DaapLineReaderNIO lineReader;
     
     private LinkedList pending;
     
     /** Creates a new instance of DaapRequestReader */
-    public DaapRequestReader(SocketChannel channel) {
+    public DaapRequestReaderNIO(SocketChannel channel) {
         
         in = ByteBuffer.allocate(1024);
         in.clear();
         in.flip();
         
-        lineReader = new DaapLineReader(channel);
+        lineReader = new DaapLineReaderNIO(channel);
         headers = new ArrayList();
         pending = new LinkedList();
     }

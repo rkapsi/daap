@@ -26,28 +26,28 @@ import de.kapsi.net.daap.DaapResponseWriter;
  *
  * @author  roger
  */
-public class DaapConnectionImpl implements DaapConnection {
+public class DaapConnectionNIO implements DaapConnection {
     
     private DaapServerNIO server;
     private SocketChannel channel;
     
     private DaapRequestProcessor processor;
-    private DaapRequestReader reader;
+    private DaapRequestReaderNIO reader;
     private DaapResponseWriter writer;
     private DaapSession session;
     
     private int type = DaapConnection.UNDEF;
     
     /** Creates a new instance of DaapConnection */
-    public DaapConnectionImpl(DaapServerNIO server, SocketChannel channel) {
+    public DaapConnectionNIO(DaapServerNIO server, SocketChannel channel) {
         this.server = server;
         this.channel = channel;
         
-        DaapResponseFactory factory = new DaapResponseFactoryImpl(this);
+        DaapResponseFactory factory = new DaapResponseFactoryNIO(this);
         
         processor = new DaapRequestProcessor(this, factory);
         
-        reader = new DaapRequestReader(channel);
+        reader = new DaapRequestReaderNIO(channel);
         writer = new DaapResponseWriter();
     }
     

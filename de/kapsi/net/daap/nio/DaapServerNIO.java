@@ -28,6 +28,7 @@ import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.SimpleConfig;
 import de.kapsi.net.daap.DaapSession;
+import de.kapsi.net.daap.DaapStreamException;
 
 import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
 import de.kapsi.net.daap.chunks.ServerInfoResponseImpl;
@@ -453,7 +454,7 @@ public class DaapServerNIO implements DaapServer {
             channel.configureBlocking(false);
 
             DaapConnection connection 
-                = new DaapConnectionImpl(this, channel);
+                = new DaapConnectionNIO(this, channel);
             
             SelectionKey key = channel.register(selector, SelectionKey.OP_READ, connection);
             
@@ -475,7 +476,7 @@ public class DaapServerNIO implements DaapServer {
         if (!sk.isValid())
             return;
         
-        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment(); 
+        DaapConnectionNIO connection = (DaapConnectionNIO)sk.attachment(); 
         SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;
@@ -498,7 +499,7 @@ public class DaapServerNIO implements DaapServer {
         if (!sk.isValid())
             return;
         
-        DaapConnectionImpl connection = (DaapConnectionImpl)sk.attachment();
+        DaapConnectionNIO connection = (DaapConnectionNIO)sk.attachment();
         SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;

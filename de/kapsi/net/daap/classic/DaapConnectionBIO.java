@@ -1,5 +1,5 @@
 
-package de.kapsi.net.daap.classic;
+package de.kapsi.net.daap.bio;
 
 import java.io.*;
 import java.net.*;
@@ -20,16 +20,17 @@ import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapResponseFactory;
 import de.kapsi.net.daap.DaapRequestProcessor;
 import de.kapsi.net.daap.DaapResponseWriter;
+import de.kapsi.net.daap.DaapStreamException;
 
 /**
  * This class is a cover for an incoming connection. An connection
  * can either be a general DAAP connection or an Audio request.
  */
-public class DaapConnectionImpl implements DaapConnection, Runnable {
+public class DaapConnectionBIO implements DaapConnection, Runnable {
     
-    private static final Log LOG = LogFactory.getLog(DaapConnectionImpl.class);
+    private static final Log LOG = LogFactory.getLog(DaapConnectionBIO.class);
     
-    private DaapServerImpl server;
+    private DaapServerBIO server;
     
     private Socket socket;
     
@@ -43,12 +44,12 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
     
     private int type = DaapConnection.UNDEF;
     
-    public DaapConnectionImpl(DaapServerImpl server, Socket socket) throws IOException {
+    public DaapConnectionBIO(DaapServerBIO server, Socket socket) throws IOException {
         
         this.server = server;
         this.socket = socket;
         
-        DaapResponseFactory factory = new DaapResponseFactoryImpl(this);
+        DaapResponseFactory factory = new DaapResponseFactoryBIO(this);
         processor = new DaapRequestProcessor(this, factory);
         
         writer = new DaapResponseWriter();
@@ -142,10 +143,17 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
             do {
                 read();
             } while(write());
+           
+        } catch (DaapStreamException err) {
+            
+            // LOG.info(err);
+            // This exception can be ignored as it's thrown
+            // whenever the user presses the pause, fast-forward
+            // and so on button
             
         } catch (SocketException err) {
-            //LOG.info(err);
             
+            // LOG.info(err);
             // This exception can be ignored as it's thrown
             // whenever the user disconnects...
             

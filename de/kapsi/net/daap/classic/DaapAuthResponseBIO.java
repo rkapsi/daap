@@ -4,7 +4,7 @@
  * Created on April 5, 2004, 9:45 PM
  */
 
-package de.kapsi.net.daap.classic;
+package de.kapsi.net.daap.bio;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,16 +17,16 @@ import de.kapsi.net.daap.DaapAuthResponse;
  *
  * @author  roger
  */
-public class DaapAuthResponseImpl extends DaapAuthResponse {
+public class DaapAuthResponseBIO extends DaapAuthResponse {
     
     private boolean headerWritten = false;
     private OutputStream out;
     
     /** Creates a new instance of DaapAuthResponse */
-    public DaapAuthResponseImpl(DaapConnection connection) {
+    public DaapAuthResponseBIO(DaapConnection connection) {
         super(connection);
         
-        out = ((DaapConnectionImpl)connection).getOutputStream();
+        out = ((DaapConnectionBIO)connection).getOutputStream();
     }
     
     

@@ -20,7 +20,7 @@ import de.kapsi.net.daap.DaapChunkResponse;
  *
  * @author  roger
  */
-public class DaapChunkResponseImpl extends DaapChunkResponse {
+public class DaapChunkResponseNIO extends DaapChunkResponse {
     
     private SocketChannel channel;
     
@@ -28,10 +28,10 @@ public class DaapChunkResponseImpl extends DaapChunkResponse {
     private ByteBuffer dataBuffer;
     
     /** Creates a new instance of DaapChunkResponse */
-    public DaapChunkResponseImpl(DaapConnection connection, byte[] data) {
+    public DaapChunkResponseNIO(DaapConnection connection, byte[] data) {
         super(connection, data);
         
-        channel = ((DaapConnectionImpl)connection).getChannel();
+        channel = ((DaapConnectionNIO)connection).getChannel();
         
         headerBuffer = ByteBuffer.wrap(header);
         dataBuffer = ByteBuffer.wrap(data);

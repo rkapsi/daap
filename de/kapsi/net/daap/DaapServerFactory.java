@@ -6,7 +6,7 @@
 
 package de.kapsi.net.daap;
 
-import de.kapsi.net.daap.classic.DaapServerImpl;
+import de.kapsi.net.daap.bio.DaapServerBIO;
 import de.kapsi.net.daap.nio.DaapServerNIO;
 
 /**
@@ -31,7 +31,7 @@ public class DaapServerFactory {
         if (nio) {
             return createNIOServer(library);
         } else {
-            return createClassicServer(library);
+            return createBIOServer(library);
         }
     }
     
@@ -46,7 +46,7 @@ public class DaapServerFactory {
         if (nio) {
             return createNIOServer(library, port);
         } else {
-            return createClassicServer(library, port);
+            return createBIOServer(library, port);
         }
     }
     
@@ -61,7 +61,7 @@ public class DaapServerFactory {
         if (nio) {
             return createNIOServer(library, config);
         } else {
-            return createClassicServer(library, config);
+            return createBIOServer(library, config);
         }
     }
     
@@ -70,8 +70,8 @@ public class DaapServerFactory {
      * @param library
      * @return
      */    
-    public static DaapServer createClassicServer(Library library) {
-        return new DaapServerImpl(library);
+    public static DaapServer createBIOServer(Library library) {
+        return new DaapServerBIO(library);
     }
     
     /**
@@ -80,8 +80,8 @@ public class DaapServerFactory {
      * @param port
      * @return
      */    
-    public static DaapServer createClassicServer(Library library, int port) {
-        return new DaapServerImpl(library, port);
+    public static DaapServer createBIOServer(Library library, int port) {
+        return new DaapServerBIO(library, port);
     }
     
     /**
@@ -90,8 +90,8 @@ public class DaapServerFactory {
      * @param config
      * @return
      */    
-    public static DaapServer createClassicServer(Library library, DaapConfig config) {
-        return new DaapServerImpl(library, config);
+    public static DaapServer createBIOServer(Library library, DaapConfig config) {
+        return new DaapServerBIO(library, config);
     }
     
     /**

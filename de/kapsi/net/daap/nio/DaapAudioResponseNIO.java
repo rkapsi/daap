@@ -16,25 +16,26 @@ import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapAudioResponse;
 import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapStreamException;
 
 /**
  *
  * @author  roger
  */
-public class DaapAudioResponseImpl extends DaapAudioResponse {
+public class DaapAudioResponseNIO extends DaapAudioResponse {
     
     private ByteBuffer headerBuffer;
     private FileChannel chIn;
     private SocketChannel channel;
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponseImpl(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
+    public DaapAudioResponseNIO(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
         super(connection, song, in, pos, end);
         
         headerBuffer = ByteBuffer.wrap(header);
         
         chIn = in.getChannel();
-        channel = ((DaapConnectionImpl)connection).getChannel();
+        channel = ((DaapConnectionNIO)connection).getChannel();
     }
     
     public boolean hasRemainig() {

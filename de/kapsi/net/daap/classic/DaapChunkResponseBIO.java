@@ -4,7 +4,7 @@
  * Created on April 5, 2004, 9:37 PM
  */
 
-package de.kapsi.net.daap.classic;
+package de.kapsi.net.daap.bio;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,7 +19,7 @@ import de.kapsi.net.daap.DaapChunkResponse;
  *
  * @author  roger
  */
-public class DaapChunkResponseImpl extends DaapChunkResponse {
+public class DaapChunkResponseBIO extends DaapChunkResponse {
     
     private boolean headerWritten = false;
     private boolean dataWritten = false;
@@ -27,10 +27,10 @@ public class DaapChunkResponseImpl extends DaapChunkResponse {
     private OutputStream out;
     
     /** Creates a new instance of DaapChunkResponse */
-    public DaapChunkResponseImpl(DaapConnection connection, byte[] data) {
+    public DaapChunkResponseBIO(DaapConnection connection, byte[] data) {
         super(connection, data);
         
-        out = ((DaapConnectionImpl)connection).getOutputStream();
+        out = ((DaapConnectionBIO)connection).getOutputStream();
     }
     
     public boolean hasRemainig() {

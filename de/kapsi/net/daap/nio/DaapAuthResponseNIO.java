@@ -18,16 +18,16 @@ import de.kapsi.net.daap.DaapAuthResponse;
  *
  * @author  roger
  */
-public class DaapAuthResponseImpl extends DaapAuthResponse {
+public class DaapAuthResponseNIO extends DaapAuthResponse {
     
     private ByteBuffer headerBuffer;
     private SocketChannel channel;
     
     /** Creates a new instance of DaapAuthResponse */
-    public DaapAuthResponseImpl(DaapConnection connection) {
+    public DaapAuthResponseNIO(DaapConnection connection) {
         super(connection);
         
-        channel = ((DaapConnectionImpl)connection).getChannel();
+        channel = ((DaapConnectionNIO)connection).getChannel();
         headerBuffer = ByteBuffer.wrap(header);
     }
     

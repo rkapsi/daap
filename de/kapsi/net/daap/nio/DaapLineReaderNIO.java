@@ -14,7 +14,7 @@ import java.nio.channels.SocketChannel;
  *
  * @author  roger
  */
-public class DaapLineReader {
+public class DaapLineReaderNIO {
     
     private static final char CR = '\r';
     private static final char LF = '\n';
@@ -26,7 +26,7 @@ public class DaapLineReader {
     private boolean complete;
    
     /** Creates a new instance of DaapLineReader */
-    public DaapLineReader(SocketChannel channel) {
+    public DaapLineReaderNIO(SocketChannel channel) {
         this.channel = channel;
         lineBuf = new StringBuffer();
     }

@@ -1,19 +1,13 @@
-/*
- * DaapStreamException.java
- *
- * Created on April 9, 2004, 1:01 PM
- */
 
-package de.kapsi.net.daap.nio;
+package de.kapsi.net.daap;
 
 import java.io.IOException;
 
 /**
  * iTunes closes audio streams abruptly when the user
  * presses the pause button, on fast-forward and so on.
- * NIO throws in that case an IOException which is not
- * very helpful to differ real IOExceptions from these
- * daily exceptions. 
+ * This Exception is thrown whenever a SocketException (BIO)
+ * or IOException (NIO) occurs in an audio stream.
  */
 public class DaapStreamException extends IOException {
     

@@ -19,24 +19,24 @@ import de.kapsi.net.daap.DaapResponseFactory;
  *
  * @author  roger
  */
-class DaapResponseFactoryImpl implements DaapResponseFactory {
+class DaapResponseFactoryNIO implements DaapResponseFactory {
     
     private DaapConnection connection;
     
-    /** Creates a new instance of DaapResponseFactoryImpl */
-    DaapResponseFactoryImpl(DaapConnection connection) {
+    /** Creates a new instance of DaapResponseFactoryNIO */
+    DaapResponseFactoryNIO(DaapConnection connection) {
         this.connection = connection;
     }
     
     public DaapResponse createAudioResponse(Song song, FileInputStream in, int pos, int end) throws IOException {
-        return new DaapAudioResponseImpl(connection, song, in, pos, end);
+        return new DaapAudioResponseNIO(connection, song, in, pos, end);
     }
     
     public DaapResponse createAuthResponse() {
-        return new DaapAuthResponseImpl(connection);
+        return new DaapAuthResponseNIO(connection);
     }
     
     public DaapResponse createChunkResponse(byte[] data) {
-        return new DaapChunkResponseImpl(connection, data);
+        return new DaapChunkResponseNIO(connection, data);
     }
 }

@@ -4,22 +4,24 @@
  * Created on April 5, 2004, 9:47 PM
  */
 
-package de.kapsi.net.daap.classic;
+package de.kapsi.net.daap.bio;
 
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapAudioResponse;
 import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapStreamException;
 
 /**
  *
  * @author  roger
  */
-public class DaapAudioResponseImpl extends DaapAudioResponse {
+public class DaapAudioResponseBIO extends DaapAudioResponse {
     
     private boolean headerWritten = false;
     private boolean audioWritten = false;
@@ -27,10 +29,10 @@ public class DaapAudioResponseImpl extends DaapAudioResponse {
     private OutputStream out;
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponseImpl(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
+    public DaapAudioResponseBIO(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
         super(connection, song, in, pos, end);
         
-        out = ((DaapConnectionImpl)connection).getOutputStream();
+        out = ((DaapConnectionBIO)connection).getOutputStream();
     }
     
     public boolean hasRemainig() {
@@ -38,22 +40,28 @@ public class DaapAudioResponseImpl extends DaapAudioResponse {
     }
     
     public boolean write() throws IOException {
-             
-        if (!headerWritten) {
-            
-            try {
-                
-                out.write(header, 0, header.length);
-                out.flush();
-                headerWritten = true;
-                
-            } catch (IOException err) {
-                in.close();
-                throw err;
-            }
-        }
         
-        return stream();
+        try {
+            
+            if (!headerWritten) {
+
+                try {
+
+                    out.write(header, 0, header.length);
+                    out.flush();
+                    headerWritten = true;
+
+                } catch (IOException err) {
+                    in.close();
+                    throw err;
+                }
+            }
+
+            return stream();
+            
+        } catch (SocketException err) {
+            throw new DaapStreamException(err);
+        }
     }
     
     private boolean stream() throws IOException {

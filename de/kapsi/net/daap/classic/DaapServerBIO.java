@@ -1,5 +1,5 @@
 
-package de.kapsi.net.daap.classic;
+package de.kapsi.net.daap.bio;
 
 import java.io.IOException;
 
@@ -37,9 +37,9 @@ import org.apache.commons.logging.LogFactory;
  * This DAAP server is written with the standard 1 Thread per
  * connection pattern.
  */
-public class DaapServerImpl implements DaapServer {
+public class DaapServerBIO implements DaapServer {
     
-    private static final Log LOG = LogFactory.getLog(DaapServerImpl.class);
+    private static final Log LOG = LogFactory.getLog(DaapServerBIO.class);
     
     private int threadNo = 0;
     
@@ -62,15 +62,15 @@ public class DaapServerImpl implements DaapServer {
     
     private boolean running = false;
     
-    public DaapServerImpl(Library library) {
+    public DaapServerBIO(Library library) {
         this(library, new SimpleConfig());
     }
     
-    public DaapServerImpl(Library library, int port) {
+    public DaapServerBIO(Library library, int port) {
         this(library, new SimpleConfig(port));
     }
     
-    public DaapServerImpl(Library library, DaapConfig config) {
+    public DaapServerBIO(Library library, DaapConfig config) {
         
         this.library = library;
         this.config = config;
@@ -139,7 +139,7 @@ public class DaapServerImpl implements DaapServer {
         ssocket.bind(bindAddr, backlog);
         
         if (LOG.isInfoEnabled()) {
-            LOG.info("DaapServer bound to " + bindAddr);
+            LOG.info("DaapServerBIO bound to " + bindAddr);
         }
     }
     
@@ -179,7 +179,7 @@ public class DaapServerImpl implements DaapServer {
         synchronized(connections) {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
-                ((DaapConnectionImpl)it.next()).close();
+                ((DaapConnectionBIO)it.next()).close();
             }
             connections.clear();
         }
@@ -187,7 +187,7 @@ public class DaapServerImpl implements DaapServer {
         synchronized(streams) {
             Iterator it = streams.iterator();
             while(it.hasNext()) {
-                ((DaapConnectionImpl)it.next()).close();
+                ((DaapConnectionBIO)it.next()).close();
             }
             streams.clear();
         }
@@ -202,7 +202,7 @@ public class DaapServerImpl implements DaapServer {
      * on success. False is retuned in the following cases: Max connections
      * reached or server is down.
      */
-    public synchronized boolean addConnection(DaapConnectionImpl connection) {
+    public synchronized boolean addConnection(DaapConnectionBIO connection) {
         
         if (!isRunning()) {
             
@@ -268,7 +268,7 @@ public class DaapServerImpl implements DaapServer {
             return false;
         }
         
-        DaapConnectionImpl connection = new DaapConnectionImpl(this, socket);
+        DaapConnectionBIO connection = new DaapConnectionBIO(this, socket);
         
         Thread connThread = new Thread(connection, "DaapConnectionThread-" + (++threadNo));
         connThread.setDaemon(true);
@@ -285,7 +285,7 @@ public class DaapServerImpl implements DaapServer {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
                 
-                DaapConnectionImpl conn = (DaapConnectionImpl)it.next();
+                DaapConnectionBIO conn = (DaapConnectionBIO)it.next();
                 
                 try {
                     conn.update();
@@ -299,7 +299,7 @@ public class DaapServerImpl implements DaapServer {
     /**
      * Removes connection from the internal connection pool
      */
-    public void removeConnection(DaapConnectionImpl connection) {
+    public void removeConnection(DaapConnectionBIO connection) {
         
         if (connection.isAudioStream()) {
             
