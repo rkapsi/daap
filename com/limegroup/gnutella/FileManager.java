@@ -838,7 +838,8 @@ public abstract class FileManager {
      *  added, otherwise <tt>null</tt>
      */
     public FileDesc addFileIfShared(File file, List metadata) {
-        FileDesc fd = addFile(file, metadata);
+       
+        FileDesc fd = addFile(file);
         
         // Notify the GUI...
         if (fd != null) {
@@ -847,6 +848,19 @@ public abstract class FileManager {
                                             new FileDesc[]{fd});
                                             
             RouterService.getCallback().handleFileManagerEvent(evt);
+            
+            return addFile(file, fd, metadata);
+        }
+        
+        return fd;
+    }
+   
+    protected FileDesc addFile(File file, List metadata) {
+        
+        FileDesc fd = addFile(file);
+        
+        if (fd != null) {
+            return addFile(file, fd, metadata);
         }
         
         return fd;
@@ -855,7 +869,7 @@ public abstract class FileManager {
     /**
      * The actual implementation of addFileIfShared(File,List)
      */
-    protected abstract FileDesc addFile(File file, List metadata);
+    protected abstract FileDesc addFile(File file, FileDesc fd, List metadata);
     
     /**
      * @requires the given file exists and is in a shared directory

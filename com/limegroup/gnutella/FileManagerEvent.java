@@ -59,7 +59,7 @@ public class FileManagerEvent extends EventObject {
     }
     
     public String toString() {
-        StringBuffer buffer = new StringBuffer("MetaFileManagerEvent: [event=");
+        StringBuffer buffer = new StringBuffer("FileManagerEvent: [event=");
         
         switch(kind) {
             case ADD:

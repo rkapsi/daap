@@ -183,8 +183,7 @@ public class MetaFileManager extends FileManager {
      *
      * @return The FileDesc that was added, or null if nothing added.
      */
-     protected FileDesc addFile(File file, List metadata) {
-        FileDesc fd = super.addFile(file);
+    protected FileDesc addFile(File file, FileDesc fd, List metadata) {
         
         // if not added, exit.
         if( fd == null )

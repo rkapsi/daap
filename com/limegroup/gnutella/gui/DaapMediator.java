@@ -223,8 +223,10 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void handleFileManagerEvent(FileManagerEvent evt) {
         
+        //System.out.println(evt);
+        
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
-            
+              
             if (evt.isChangeEvent()) {
                 
                 FileDesc oldDesc = evt.getFileDesc()[0];
@@ -244,7 +246,7 @@ public final class DaapMediator implements FinalizeListener {
                 }
                 
             } else if (evt.isAddEvent()) {
-                
+             
                 FileDesc file = evt.getFileDesc()[0];
                 
                 if (!(file instanceof IncompleteFileDesc)) {
@@ -551,7 +553,7 @@ public final class DaapMediator implements FinalizeListener {
         
         public FileInputStream getSource(Song song) throws IOException {
             URN urn = map.get(song);
-            
+            System.out.println(urn);
             if (urn != null) {
                 FileDesc fileDesc = RouterService.getFileManager().getFileDescForUrn(urn);
                 
