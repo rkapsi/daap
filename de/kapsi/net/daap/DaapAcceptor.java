@@ -20,10 +20,16 @@ public class DaapAcceptor implements Runnable {
     
     private boolean running = false;
     
-    public DaapAcceptor(DaapServer server, int port, int backlog, InetAddress bindAddr) 
-            throws UnknownHostException, IOException {
+    public DaapAcceptor(DaapServer server) 
+            throws IOException {
             
         this.server = server;
+        
+        DaapConfig config = server.getConfig();
+        
+        int port = config.getPort();
+        int backlog = config.getBacklog();
+        InetAddress bindAddr = config.getBindAddress();
         
         ssocket = new ServerSocket(port, backlog, bindAddr);
         
@@ -63,10 +69,16 @@ public class DaapAcceptor implements Runnable {
                 try {
                     
                     if ( ! server.accept(socket) ) {
+                        
+                        if (LOG.isInfoEnabled()) {
+                            LOG.info("DaapServer declined incoming connection " + socket);
+                        }
+                        
                         socket.close();
                     }
                     
                 } catch (IOException sErr) {
+                    LOG.error(sErr);
                     socket.close();
                 }
                 

@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * The famous DaapServer.
  */
-public class DaapServer implements DaapConfig {
+public class DaapServer {
 	
 	private static final Log LOG = LogFactory.getLog(DaapServer.class);
 	
@@ -36,22 +36,28 @@ public class DaapServer implements DaapConfig {
     private Thread acceptThread;
     private DaapAcceptor acceptor;
     
-	private int port;
-	private int maxConnections;
-    
 	private HashSet sessionIds;
 	private HashSet connections;
     private HashSet streams;
 	
+    private DaapConfig config;
+    
 	private DaapRequestHandler requestHandler;
 	private DaapAudioRequestHandler audioRequestHandler;
 	
-	public DaapServer(Library library, int port) 
-			throws IOException {
+    public DaapServer(Library library) {
+        this(library, null);
+    }
+    
+    public DaapServer(Library library, int port) {
+        this(library, new SimpleConfig(port));
+    }
+    
+	public DaapServer(Library library, DaapConfig config) {
 			
 		this.library = library;
-		this.port = port;
-		
+		this.config = config;
+        
 		serverInfo = new ServerInfoResponseImpl(library.getName());
 		contentCodes = new ContentCodesResponseImpl();
 		
@@ -61,16 +67,10 @@ public class DaapServer implements DaapConfig {
         sessionIds = new HashSet();
         connections = new HashSet();
         streams = new HashSet();
-        
-        maxConnections = 1;
 	}
     
-	public int getPort() {
-		return port;
-	}
-	
-    public int getBacklog() {
-        return 0;
+    public void setConfig(DaapConfig config) {
+        this.config = config;
     }
 
 	public void setAuthenticator(DaapAuthenticator authenticator) {
@@ -88,21 +88,9 @@ public class DaapServer implements DaapConfig {
 	public DaapAudioStream getAudioStream() {
 		return audioRequestHandler.getAudioStream();
 	}
-	
-    public void setMaxConnections(int maxConnections) {
-        this.maxConnections = maxConnections;
-    }
-    
-    public int getMaxConnections() {
-        return maxConnections;
-    }
-    
-    public String getServerName() {
-        return "iTunes/4.2 (Mac OS X)";
-    }
     
     public DaapConfig getConfig() {
-        return this;
+        return config;
     }
     
     public boolean isRunning() {
@@ -116,7 +104,7 @@ public class DaapServer implements DaapConfig {
         
         threadNo = 0;
         
-        acceptor = new DaapAcceptor(this, port, 0, InetAddress.getLocalHost());
+        acceptor = new DaapAcceptor(this);
         
         acceptThread = new Thread(acceptor, "DaapAcceptorThread");
         acceptThread.start();
@@ -173,7 +161,11 @@ public class DaapServer implements DaapConfig {
         
         if (!request.isSongRequest() && 
                 !request.isServerInfoRequest()) {
-                
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Illegal request: " + request);
+            }
+            
             // disconnect as the first request must be
             // either a song or server-info request!
             return false;
@@ -186,9 +178,14 @@ public class DaapServer implements DaapConfig {
         if (connection.isAudioStream()) {
             
             synchronized(streams) {
-                if (streams.size() < maxConnections) {
+                if (streams.size() < config.getMaxConnections()) {
                     streams.add(connection);
                 } else {
+                
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("Connection limit reached");
+                    }
+                    
                     return false;
                 }
             }
@@ -197,17 +194,22 @@ public class DaapServer implements DaapConfig {
             
             synchronized(connections) {
                 
-                if (connections.size() < maxConnections) {
+                if (connections.size() < config.getMaxConnections()) {
                     connection.connectionKeepAlive();
                     connections.add(connection);
                 } else {
                 
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("Connection limit reached");
+                    }
+                    
                     // This allows us to disconnect iTunes silently. We
                     // process the first request (/server-info) and don't
                     // keep the connection alive. An alternative would be
                     // to 'return false' but iTunes displays a misleading
                     // error dialog then... (TODO: someone has to check
                     // which of these two options is the default behaviour)
+                    
                     connection.setKeepAlive(-1);
                 }
             }

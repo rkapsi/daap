@@ -185,4 +185,18 @@ public class DaapConnection implements Runnable {
         
 		return request;
     }
+    
+    public String toString() {
+        StringBuffer buffer = new StringBuffer("DaapConnection [");
+        
+        buffer.append("Host: ").append(socket.getInetAddress()).append(":")
+            .append(socket.getPort());
+        
+        buffer.append(", audioStream: ").append(isAudioStream());
+        buffer.append(", keepAlive: ").append(keepAlive > 0);
+        buffer.append(", hasSession: ").append(getSession(false)!=null);
+        buffer.append(", lastRequest: ").append(request);
+        
+        return buffer.append("]").toString();
+    }
 }

@@ -49,6 +49,7 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
     private Playlist playlist0;
     private Playlist playlist1;
     private Playlist playlist2;
+    private Playlist playlist3;
     
 	private Song updateSong;
 	private Song removeSong;
@@ -65,12 +66,14 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
         playlist0 = new Playlist("Rock Music");
         playlist1 = new Playlist("Rock & Roll");
         playlist2 = new Playlist("Punk Music");
+        playlist3 = new Playlist("All");
         
 		library.open();
 		
         library.addPlaylist(playlist0);
         library.addPlaylist(playlist1);
         library.addPlaylist(playlist2);
+        library.addPlaylist(playlist3);
         
         for(int i = 0; i < 100; i++) {
             
@@ -84,12 +87,14 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
                 playlist2.addSong(song);
             }
             
+            playlist3.addSong(song);
+            
             if (removeSong == null)
                 removeSong = song;
                 
             updateSong = song;
         }
-		
+        
 		library.close();
 		
 		server = new DaapServer(library, PORT);
@@ -167,6 +172,8 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
                 updateSong.setName("0 " + NAMES[index_names]);
                 updateSong.setArtist("0 " + ARTISTS[index_artists]);
                 updateSong.setAlbum("0 " + ALBUMS[index_albums]);
+                updateSong.setUserRating((updateSong.getUserRating()+20)%120);
+                
                 updateSong.update();
                 
                 library.close();
