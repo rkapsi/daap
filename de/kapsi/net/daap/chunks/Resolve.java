@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class Resolve extends ContainerChunk {
-	
-	public Resolve() {
-		super("arsv", "daap.resolve", new ArrayList());
-	}
+    
+    public Resolve() {
+        super("arsv", "daap.resolve");
+    }
 }

@@ -23,6 +23,9 @@ import de.kapsi.net.daap.chunks.ReturnedCount;
 import de.kapsi.net.daap.chunks.ItemId;
 import de.kapsi.net.daap.chunks.DatabasePlaylists;
 
+/**
+ * This class is an implementation of DatabasePlaylists
+ */
 public final class DatabasePlaylistsImpl extends DatabasePlaylists {
     
     private static final Log LOG = LogFactory.getLog(DatabasePlaylistsImpl.class);
@@ -33,55 +36,55 @@ public final class DatabasePlaylistsImpl extends DatabasePlaylists {
         super();
         
         add(new Status(200));
-		add(new UpdateType(updateType));
-		
-		int specifiedTotalCount = containers.size()-deletedContainers.size();
-		int returnedCount = specifiedTotalCount;
-		
-		add(new SpecifiedTotalCount(specifiedTotalCount));
-		add(new ReturnedCount(returnedCount));
-			
-		Listing listing = new Listing();
-		
-		Iterator it = containers.iterator();
-		while(it.hasNext()) {
-			ListingItem listingItem = new ListingItem();
-			Playlist playlist = (Playlist)it.next();
-			
-			Iterator properties = new ArrayIterator(DaapUtil.DATABASE_PLAYLISTS_META);
-			while(properties.hasNext()) {
-				String key = (String)properties.next();
-				Chunk chunk = playlist.getProperty(key);
-				
-				if (chunk != null) {
-					listingItem.add(chunk);
-					
-				} else if (LOG.isInfoEnabled()) {
-					LOG.info("Unknown chunk type: " + key);
-				}
-			}
-			
-			listing.add(listingItem);
-		}
-		
-		add(listing);
-			
-		if (updateType) {
-			
-			it = deletedContainers.iterator();
-			
-			if (it.hasNext()) {
-				
-				DeletedIdListing deletedListing = new DeletedIdListing();
-				
-				while(it.hasNext()) {
-					Integer itemId = (Integer)it.next();
-					deletedListing.add(new ItemId(itemId.intValue()));
-				}
-		
-				add(deletedListing);
-			}
-		}
+        add(new UpdateType(updateType));
+        
+        int specifiedTotalCount = containers.size()-deletedContainers.size();
+        int returnedCount = specifiedTotalCount;
+        
+        add(new SpecifiedTotalCount(specifiedTotalCount));
+        add(new ReturnedCount(returnedCount));
+        
+        Listing listing = new Listing();
+        
+        Iterator it = containers.iterator();
+        while(it.hasNext()) {
+            ListingItem listingItem = new ListingItem();
+            Playlist playlist = (Playlist)it.next();
+            
+            Iterator properties = new ArrayIterator(DaapUtil.DATABASE_PLAYLISTS_META);
+            while(properties.hasNext()) {
+                String key = (String)properties.next();
+                Chunk chunk = playlist.getProperty(key);
+                
+                if (chunk != null) {
+                    listingItem.add(chunk);
+                    
+                } else if (LOG.isInfoEnabled()) {
+                    LOG.info("Unknown chunk type: " + key);
+                }
+            }
+            
+            listing.add(listingItem);
+        }
+        
+        add(listing);
+        
+        if (updateType) {
+            
+            it = deletedContainers.iterator();
+            
+            if (it.hasNext()) {
+                
+                DeletedIdListing deletedListing = new DeletedIdListing();
+                
+                while(it.hasNext()) {
+                    Integer itemId = (Integer)it.next();
+                    deletedListing.add(new ItemId(itemId.intValue()));
+                }
+                
+                add(deletedListing);
+            }
+        }
     }
     
     public void serialize(OutputStream os) throws IOException {

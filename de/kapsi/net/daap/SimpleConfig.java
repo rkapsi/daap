@@ -18,7 +18,7 @@ public class SimpleConfig implements DaapConfig {
     public SimpleConfig() {
         this(DEFAULT_SERVER_NAME, DEFAULT_PORT, DEFAULT_BACKLOG, null);
     }
-
+    
     public SimpleConfig(String serverName) {
         this(serverName, DEFAULT_PORT, DEFAULT_BACKLOG, null);
     }
@@ -57,9 +57,9 @@ public class SimpleConfig implements DaapConfig {
     }
     
     public int getPort() {
-		return port;
-	}
-	
+        return port;
+    }
+    
     public void setBacklog(int backlog) {
         this.backlog = backlog;
     }
@@ -75,7 +75,7 @@ public class SimpleConfig implements DaapConfig {
     public InetAddress getBindAddress() {
         return bindAddr;
     }
-
+    
     public void setMaxConnections(int maxConnections) {
         this.maxConnections = maxConnections;
     }

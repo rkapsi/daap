@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class BrowseAlbumListing extends ContainerChunk {
-	
-	public BrowseAlbumListing() {
-		super("abal", "daap.browsealbumlisting", new ArrayList());
-	}
+    
+    public BrowseAlbumListing() {
+        super("abal", "daap.browsealbumlisting");
+    }
 }

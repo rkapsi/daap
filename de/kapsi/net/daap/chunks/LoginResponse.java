@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Container for the <tt>/login</tt> request.
  */
 public class LoginResponse extends ContainerChunk {
-	
-	public LoginResponse() {
-		super("mlog", "dmap.loginresponse", new ArrayList());
-	}
+    
+    public LoginResponse() {
+        super("mlog", "dmap.loginresponse");
+    }
 }

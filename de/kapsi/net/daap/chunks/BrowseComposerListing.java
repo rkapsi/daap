@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class BrowseComposerListing extends ContainerChunk {
-	
-	public BrowseComposerListing() {
-		super("abcp", "daap.browsecomposerlisting", new ArrayList());
-	}
+    
+    public BrowseComposerListing() {
+        super("abcp", "daap.browsecomposerlisting");
+    }
 }

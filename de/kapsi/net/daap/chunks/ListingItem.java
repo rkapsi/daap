@@ -9,8 +9,8 @@ import java.util.ArrayList;
  * for example a song.
  */
 public class ListingItem extends ContainerChunk {
-	
-	public ListingItem() {
-		super("mlit", "dmap.listingitem", new ArrayList());
-	}
+    
+    public ListingItem() {
+        super("mlit", "dmap.listingitem");
+    }
 }

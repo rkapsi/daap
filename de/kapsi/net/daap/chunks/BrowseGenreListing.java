@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class BrowseGenreListing extends ContainerChunk {
-	
-	public BrowseGenreListing() {
-		super("abgn", "daap.browsegenrelisting", new ArrayList());
-	}
+    
+    public BrowseGenreListing() {
+        super("abgn", "daap.browsegenrelisting");
+    }
 }

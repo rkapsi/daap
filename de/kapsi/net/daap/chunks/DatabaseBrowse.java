@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class DatabaseBrowse extends ContainerChunk {
-	
-	public DatabaseBrowse() {
-		super("abro", "daap.databasebrowse", new ArrayList());
-	}
+    
+    public DatabaseBrowse() {
+        super("abro", "daap.databasebrowse");
+    }
 }

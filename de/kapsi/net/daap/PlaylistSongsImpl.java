@@ -22,6 +22,9 @@ import de.kapsi.net.daap.chunks.ReturnedCount;
 import de.kapsi.net.daap.chunks.ItemId;
 import de.kapsi.net.daap.chunks.PlaylistSongs;
 
+/**
+ *
+ */
 public final class PlaylistSongsImpl extends PlaylistSongs {
     
     private static final Log LOG = LogFactory.getLog(PlaylistSongsImpl.class);
@@ -32,57 +35,57 @@ public final class PlaylistSongsImpl extends PlaylistSongs {
         super();
         
         add(new Status(200));
-		add(new UpdateType(updateType));
-	
-		int secifiedTotalCount = items.size()-deletedItems.size();
-		int returnedCount = newItems.size();
-		
-		add(new SpecifiedTotalCount(secifiedTotalCount));
-		add(new ReturnedCount(returnedCount));
-		
-		Listing listing = new Listing();
-		
-		Iterator it = ((updateType) ? newItems : items).iterator();
-		
-		while(it.hasNext()) {
-			ListingItem listingItem = new ListingItem();
-			Song song = (Song)it.next();
-			
-			Iterator properties = new ArrayIterator(DaapUtil.PLAYLIST_SONGS_META);
-			while(properties.hasNext()) {
-				String key = (String)properties.next();
-				
-				Chunk chunk = song.getProperty(key);
-				
-				if (chunk != null) {
-					listingItem.add(chunk);
+        add(new UpdateType(updateType));
+        
+        int secifiedTotalCount = items.size()-deletedItems.size();
+        int returnedCount = newItems.size();
+        
+        add(new SpecifiedTotalCount(secifiedTotalCount));
+        add(new ReturnedCount(returnedCount));
+        
+        Listing listing = new Listing();
+        
+        Iterator it = ((updateType) ? newItems : items).iterator();
+        
+        while(it.hasNext()) {
+            ListingItem listingItem = new ListingItem();
+            Song song = (Song)it.next();
+            
+            Iterator properties = new ArrayIterator(DaapUtil.PLAYLIST_SONGS_META);
+            while(properties.hasNext()) {
+                String key = (String)properties.next();
+                
+                Chunk chunk = song.getProperty(key);
+                
+                if (chunk != null) {
+                    listingItem.add(chunk);
                     
-				} else if (LOG.isInfoEnabled()) {
-					LOG.info("Unknown chunk type: " + key);
-				}
-			}
-			
-			listing.add(listingItem);
-		}
-	
-		add(listing);
-		
-		if (updateType) {
-		
-			it = deletedItems.iterator();
-			
-			if (it.hasNext()) {
-				
-				DeletedIdListing deletedListing = new DeletedIdListing();
-				
-				while(it.hasNext()) {
-					Integer itemId = (Integer)it.next();
-					deletedListing.add(new ItemId(itemId.intValue()));
-				}
-		
-				add(deletedListing);
-			}
-		}
+                } else if (LOG.isInfoEnabled()) {
+                    LOG.info("Unknown chunk type: " + key);
+                }
+            }
+            
+            listing.add(listingItem);
+        }
+        
+        add(listing);
+        
+        if (updateType) {
+            
+            it = deletedItems.iterator();
+            
+            if (it.hasNext()) {
+                
+                DeletedIdListing deletedListing = new DeletedIdListing();
+                
+                while(it.hasNext()) {
+                    Integer itemId = (Integer)it.next();
+                    deletedListing.add(new ItemId(itemId.intValue()));
+                }
+                
+                add(deletedListing);
+            }
+        }
     }
     
     public void serialize(OutputStream os) throws IOException {

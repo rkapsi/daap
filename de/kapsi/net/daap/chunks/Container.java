@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class Container extends ContainerChunk {
-	
-	public Container() {
-		super("mcon", "dmap.container", new ArrayList());
-	}
+    
+    public Container() {
+        super("mcon", "dmap.container");
+    }
 }

@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Unknown purpose.
  */
 public class ResolveInfo extends ContainerChunk {
-	
-	public ResolveInfo() {
-		super("arif", "daap.resolveinfo", new ArrayList());
-	}
+    
+    public ResolveInfo() {
+        super("arif", "daap.resolveinfo");
+    }
 }

@@ -24,8 +24,11 @@ import de.kapsi.net.daap.chunks.ItemCount;
 import de.kapsi.net.daap.chunks.ContainerCount;
 import de.kapsi.net.daap.chunks.ServerDatabases;
 
+/**
+ * This class implements the ServerDatabases
+ */
 public final class ServerDatabasesImpl extends ServerDatabases {
-
+    
     private static final Log LOG = LogFactory.getLog(ServerDatabasesImpl.class);
     
     private byte[] serialized = null;
@@ -34,34 +37,34 @@ public final class ServerDatabasesImpl extends ServerDatabases {
         super();
         
         add(new Status(200));
-		add(new UpdateType(updateType));
-		
-		add(new SpecifiedTotalCount(databases.size()));
-		add(new ReturnedCount(databases.size()));
-		
-		Listing listing = new Listing();
-		
-		Iterator it = databases.iterator();
-		while(it.hasNext()) {
-			ListingItem listingItem = new ListingItem();
-			
+        add(new UpdateType(updateType));
+        
+        add(new SpecifiedTotalCount(databases.size()));
+        add(new ReturnedCount(databases.size()));
+        
+        Listing listing = new Listing();
+        
+        Iterator it = databases.iterator();
+        while(it.hasNext()) {
+            ListingItem listingItem = new ListingItem();
+            
             Database database = (Database)it.next();
-			
-			listingItem.add(new ItemId(database.getId()));
-			listingItem.add(new PersistentId(database.getPersistentId()));
-			listingItem.add(new ItemName(database.getName()));
-			
+            
+            listingItem.add(new ItemId(database.getId()));
+            listingItem.add(new PersistentId(database.getPersistentId()));
+            listingItem.add(new ItemName(database.getName()));
+            
             Playlist playlist = database.getMasterPlaylist();
             int itemCount = ((updateType) ? playlist.getNewSongs() : playlist.getSongs()).size();
             int containerCount = database.getPlaylists().size();
             
-			listingItem.add(new ItemCount(itemCount));
-			listingItem.add(new ContainerCount(containerCount));
-			
-			listing.add(listingItem);
-		}
-		
-		add(listing);
+            listingItem.add(new ItemCount(itemCount));
+            listingItem.add(new ContainerCount(containerCount));
+            
+            listing.add(listingItem);
+        }
+        
+        add(listing);
     }
     
     public void serialize(OutputStream os) throws IOException {

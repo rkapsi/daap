@@ -10,8 +10,8 @@ import java.util.ArrayList;
  * @see Listing
  */
 public class DeletedIdListing extends ContainerChunk {
-	
-	public DeletedIdListing() {
-		super("mudl", "dmap.deletedidlisting", new ArrayList());
-	}
+    
+    public DeletedIdListing() {
+        super("mudl", "dmap.deletedidlisting");
+    }
 }

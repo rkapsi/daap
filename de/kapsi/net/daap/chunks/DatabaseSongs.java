@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Container for the <tt>/databases/id/items</tt> request.
  */
 public class DatabaseSongs extends ContainerChunk {
-	
-	public DatabaseSongs() {
-		super("adbs", "dapp.databasesongs", new ArrayList());
-	}
+    
+    public DatabaseSongs() {
+        super("adbs", "dapp.databasesongs");
+    }
 }

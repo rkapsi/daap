@@ -8,8 +8,8 @@ import java.util.ArrayList;
  * Container for the <tt>/server-info</tt> request
  */
 public class ServerInfoResponse extends ContainerChunk {
-	
-	public ServerInfoResponse() {
-		super("msrv", "dmap.serverinforesponse", new ArrayList());
-	}
+    
+    public ServerInfoResponse() {
+        super("msrv", "dmap.serverinforesponse");
+    }
 }

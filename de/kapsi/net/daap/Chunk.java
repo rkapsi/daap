@@ -9,10 +9,10 @@ public interface Chunk {
     public static final int BYTE_TYPE       = 1;
     
     // That's correct. A boolean is a byte! 0 = false, !0 = true
-    // (i.e. everything else except 0). As we're on the server side 
-    // and do not have to deal with parsing etc. it's not important 
+    // (i.e. everything else except 0). As we're on the server side
+    // and do not have to deal with parsing etc. it's not important
     // for us but keep it in mind.
-    public static final int BOOLEAN_TYPE    = BYTE_TYPE; 
+    public static final int BOOLEAN_TYPE    = BYTE_TYPE;
     
     public static final int SHORT_TYPE      = 3;
     public static final int INT_TYPE        = 5;
@@ -23,23 +23,23 @@ public interface Chunk {
     public static final int CONTAINER_TYPE  = 12;
     
     /**
-     * Returns the total size (header+payload) of a chunk 
+     * Returns the total size (header+payload) of a chunk
      * in bytes.
      */
-	public int getSize();
+    public int getSize();
     
     /**
      * Returns the payload of a chunk in bytes.
      */
-	public int getLength();
+    public int getLength();
     
     /**
      * Returns the type of a chunk (BOOLEAN_TYPE etc).
      */
-	public int getType();
+    public int getType();
     
     /**
      * Writes 'this' to 'out'
      */
-	public void serialize(OutputStream out) throws IOException;
+    public void serialize(OutputStream out) throws IOException;
 }
