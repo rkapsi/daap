@@ -135,9 +135,9 @@ public final class DaapMediator implements FinalizeListener {
                             int port = DaapSettings.DAAP_PORT.getValue()+1;
                             config.setInetSocketAddress(port);
                             DaapSettings.DAAP_PORT.setValue(port);
-			} else {
-			    throw bindErr;
-			}
+                        } else {
+                            throw bindErr;
+                        }
                     }
 		}
                 
