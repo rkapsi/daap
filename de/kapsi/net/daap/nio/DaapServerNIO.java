@@ -380,16 +380,14 @@ public class DaapServerNIO implements DaapServer {
     public void disconnectAll() {
         if (selector != null) {
             Set keys = selector.keys();
-            //synchronized(keys) {
-                Iterator it = keys.iterator();
-                while(it.hasNext()) {
-                    SelectionKey sk = (SelectionKey)it.next();
-                    SelectableChannel channel = (SelectableChannel)sk.channel();
-                    if (channel instanceof SocketChannel) {
-                        cancel(sk);
-                    }
+            Iterator it = keys.iterator();
+            while(it.hasNext()) {
+                SelectionKey sk = (SelectionKey)it.next();
+                SelectableChannel channel = (SelectableChannel)sk.channel();
+                if (channel instanceof SocketChannel) {
+                    cancel(sk);
                 }
-            //}
+            }
         }
     }
    
@@ -560,33 +558,30 @@ public class DaapServerNIO implements DaapServer {
      */
     private void processUpdate() {
         
-        Set keys = selector.keys();
+        Set keys = selector.keys(); 
+        Iterator it = keys.iterator();
+        while(it.hasNext()) {
+            SelectionKey sk = (SelectionKey)it.next();
+            SelectableChannel channel = (SelectableChannel)sk.channel();
             
-        //synchronized(keys) {
-            Iterator it = keys.iterator();
-            while(it.hasNext()) {
-                SelectionKey sk = (SelectionKey)it.next();
-                SelectableChannel channel = (SelectableChannel)sk.channel();
+            if (channel instanceof SocketChannel) {
                 
-                if (channel instanceof SocketChannel) {
-                    
-                    DaapConnection connection = (DaapConnection)sk.attachment();
-                    
-                    if (connection.isNormal()) {
-                        try {
-                            connection.update();
-                            sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-                        } catch (ClosedChannelException err) {
-                            cancel(sk);
-                            LOG.error("DaapConnection.update()", err);
-                        }  catch (IOException err) {
-                            cancel(sk);
-                            LOG.error("DaapConnection.update()", err);
-                        }
+                DaapConnection connection = (DaapConnection)sk.attachment();
+                
+                if (connection.isNormal()) {
+                    try {
+                        connection.update();
+                        sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                    } catch (ClosedChannelException err) {
+                        cancel(sk);
+                        LOG.error("DaapConnection.update()", err);
+                    }  catch (IOException err) {
+                        cancel(sk);
+                        LOG.error("DaapConnection.update()", err);
                     }
                 }
             }
-        //}
+        }
     }
     
     /**
