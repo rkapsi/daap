@@ -1,6 +1,6 @@
 
 <project name="DAAP" default="build" basedir=".">
-	<description>DAAP support</description>
+    <description>DAAP support</description>
 	
     <property name="basedir" value="."/>
     <property name="javadoc" value="${basedir}/javadoc"/>
@@ -50,53 +50,70 @@
         <echo message="*******************************************************"/>
     </target>
     
-	<target name="build" depends="init,copy">
-		<javac srcdir="${basedir}" destdir="${basedir}" deprecation="no">
+    <target name="build" depends="init,copy">
+        <javac srcdir="${basedir}" destdir="${basedir}" deprecation="no">
             <classpath refid="default.classpath"/>
         </javac>
-	</target>
-    
-	<target name="run" depends="init">
+    </target>
+
+    <target name="runTest" depends="init">
         <java classname="de.kapsi.net.daap.Main">
             <classpath refid="default.classpath"/>
         </java>
-	</target>
-	
+    </target>
+    
+    <target name="runLime" depends="init,copy">
+        <java classname="com.limegroup.gnutella.gui.Main" fork="true">
+            
+            <sysproperty key="java.library.path" value="../lib/native"/>
+            <sysproperty key="java.util.logging.config.file" 
+                                value="jdk14.logging.properties"/>
+            
+            <classpath refid="default.classpath"/>
+            
+            <classpath>
+                <pathelement location="/System/Library/Java"/>
+                <pathelement location="../lib/messagebundles"/>
+            </classpath>
+            
+        </java>
+    </target>
+    
     <target name="copy" depends="init">
         <copy file="${gui}/gpl.txt" todir="${basedir}"/>
         <copy file="${gui}/update.ver" todir="${basedir}"/>
         <copy file="${gui}/xml.war" todir="${basedir}"/>
-	</target>
+    </target>
     
     <target name="javadoc">
 		
-		<mkdir dir="${javadoc}"/>
-		
-		<javadoc 
-			destdir="${javadoc}"
-			author="true"
-			version="true"
-			use="true">
-			
-			<classpath refid="default.classpath"/>
-			
-			<packageset dir="${basedir}"/>
-				
-		</javadoc>
-	</target>
-	
-	<target name="daap">
-		<jar destfile="daap.jar" 
-				basedir="${basedir}" 
-				includes="**/*.class"
-				excludes="**/Main.* com/limegroup/**/*.*"/>
-	</target>
-	
-	<target name="clean" description="clean up">
-		<delete>
-			<fileset dir="${basedir}">
-				<include name="**/*.class"/>
-			</fileset>
-		</delete>
-	</target>
+        <mkdir dir="${javadoc}"/>
+
+        <javadoc 
+                destdir="${javadoc}"
+                author="true"
+                version="true"
+                use="true">
+
+                <classpath refid="default.classpath"/>
+
+                <packageset dir="${basedir}"/>
+
+        </javadoc>
+    </target>
+
+    <target name="daap">
+        <jar destfile="daap.jar" 
+                        basedir="${basedir}" 
+                        includes="**/*.class"
+                        excludes="**/Main.* com/limegroup/**/*.*"/>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete>
+            <fileset dir="${basedir}">
+                <include name="**/*.class"/>
+            </fileset>
+        </delete>
+    </target>
 </project>
