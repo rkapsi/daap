@@ -72,8 +72,10 @@ public final class DaapMediator implements FinalizeListener {
     private boolean annotateEnabled = false;
     
     private DaapMediator() {
-    		if (CommonUtils.isJava14OrLater() == false)
-    			throw new RuntimeException("Cannot instance DaapMediator");
+        if (CommonUtils.isJava14OrLater() == false)
+            throw new RuntimeException("Cannot instance DaapMediator");
+        
+        GUIMediator.addFinalizeListener(this);
     }
     
     /**

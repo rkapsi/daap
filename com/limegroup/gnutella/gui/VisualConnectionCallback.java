@@ -205,8 +205,8 @@ public final class VisualConnectionCallback implements ActivityCallback {
         
     public void handleFileManagerEvent(FileManagerEvent evt) {
         if (CommonUtils.isJava14OrLater()) {
-			DaapMediator.instance().handleFileManagerEvent(evt);
-		}
+            DaapMediator.instance().handleFileManagerEvent(evt);
+        }
     }
     
 	public void clearSharedFiles() 
@@ -234,7 +234,7 @@ public final class VisualConnectionCallback implements ActivityCallback {
 		});
         
 		if (CommonUtils.isJava14OrLater()) {
-			DaapMediator.instance().setAnnotateEnabled(enabled);
+		    DaapMediator.instance().setAnnotateEnabled(enabled);
 		}
 	}
 
