@@ -88,7 +88,7 @@ public class DaapUtil {
 		return formatter.format(new Date());
 	}
 	
-	public static final byte[] serialize(ChunkSerializer chunk) throws IOException {
+	public static final byte[] serialize(Chunk chunk) throws IOException {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		GZIPOutputStream gzip = new GZIPOutputStream(buffer);
 		

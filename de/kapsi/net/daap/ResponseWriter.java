@@ -14,10 +14,16 @@ public class ResponseWriter extends FilterWriter {
     public ResponseWriter(OutputStream outStream) throws UnsupportedEncodingException {
         this(outStream, CRLF);
     }
-    public ResponseWriter(OutputStream outStream, String lineSeparator) throws UnsupportedEncodingException {
+    
+    public ResponseWriter(OutputStream outStream, String lineSeparator) 
+            throws UnsupportedEncodingException {
+            
         this(outStream, lineSeparator, ISO_8859_1);
     }
-    public ResponseWriter(OutputStream outStream, String lineSeparator, String encoding) throws UnsupportedEncodingException {
+    
+    public ResponseWriter(OutputStream outStream, String lineSeparator, String encoding) 
+            throws UnsupportedEncodingException {
+            
         super(new BufferedWriter(new OutputStreamWriter(outStream, encoding)));
         this.outStream = outStream;
         this.encoding = encoding;

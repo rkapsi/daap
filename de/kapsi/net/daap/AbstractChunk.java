@@ -6,44 +6,48 @@ import java.io.IOException;
 
 public abstract class AbstractChunk implements Chunk {
 	
-	private String chunkType;
-	private String chunkName;
+    // 4 bytes for the content code and 4 bytes for
+    // the size of the playload
+    private static final int HEADER_SIZE = 4+4;
+    
+	private String contentCode;
+	private String name;
 	
-	public AbstractChunk(String chunkType, String chunkName) {
+	public AbstractChunk(String contentCode, String name) {
 	
-		if (chunkType.length() != 4) {
-			throw new IndexOutOfBoundsException("ChunkType must have 4 characters");
+		if (contentCode.length() != 4) {
+			throw new IndexOutOfBoundsException("Content Code must have 4 characters");
 		}
 		
-		this.chunkType = chunkType;
-		this.chunkName = chunkName;
+		this.contentCode = contentCode;
+		this.name = name;
 	}
 	
-	public String getChunkType() {
-		return chunkType;
+	public String getContentCode() {
+		return contentCode;
 	}
 	
-	public String getChunkName() {
-		return chunkName;
+	public String getName() {
+		return name;
 	}
 	
-	public int chunkSize() {
-		return 4+4+chunkLength();
+	public int getSize() {
+		return HEADER_SIZE + getLength();
 	}
 	
-	public abstract int chunkLength();
-	public abstract int chunkTypeCode();
+	public abstract int getLength();
+	public abstract int getType();
 	
 	public void serialize(OutputStream out) throws IOException {
-		byte[] buffer = new byte[4+4];
+		byte[] buffer = new byte[HEADER_SIZE];
 		
-		ByteUtil.toByteBE(chunkType, buffer, 0);
-		ByteUtil.toByteBE(chunkLength(), buffer, 4);
+		ByteUtil.toByteBE(contentCode, buffer, 0);
+		ByteUtil.toByteBE(getLength(), buffer, 4);
 		
 		out.write(buffer, 0, buffer.length);
 	}
 	
 	public String toString() {
-		return chunkName + "('" + chunkType + "')";
+		return name + "('" + contentCode + "')";
 	}
 }

@@ -29,17 +29,17 @@ public final class ContentCodesResponseImpl extends ContentCodesResponse {
 			try {
 				Class clazz = Class.forName(names[i]);
 				
-				Method methodChunkType = clazz.getMethod("getChunkType", arg1);
-				Method methodChunkName = clazz.getMethod("getChunkName", arg1);
-				Method methodChunkTypeCode = clazz.getMethod("chunkTypeCode", arg1);
+				Method methodContentCode = clazz.getMethod("getContentCode", arg1);
+				Method methodName = clazz.getMethod("getName", arg1);
+				Method methodType = clazz.getMethod("getType", arg1);
 				
 				Object inst = clazz.newInstance();
 				
-				String type = (String)methodChunkType.invoke(inst, arg2);
-				String name = (String)methodChunkName.invoke(inst, arg2);
-				int code = ((Integer)methodChunkTypeCode.invoke(inst, arg2)).intValue();
+				String cotentCode = (String)methodContentCode.invoke(inst, arg2);
+				String name = (String)methodName.invoke(inst, arg2);
+				int type = ((Integer)methodType.invoke(inst, arg2)).intValue();
 				
-				add(new ContentCode(type, name, code));
+				add(new ContentCode(cotentCode, name, type));
 				
 			} catch (ClassNotFoundException err) {
 				LOG.error(err);

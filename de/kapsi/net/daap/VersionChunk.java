@@ -56,8 +56,8 @@ public class VersionChunk extends IntChunk {
 		return this.patchlevel;
 	}
 	
-	public int chunkTypeCode() {
-		return 11;
+	public int getType() {
+		return Chunk.VERSION_TYPE;
 	}
 	
 	public String toString() {

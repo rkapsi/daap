@@ -21,18 +21,16 @@ public class BooleanChunk extends AbstractChunk {
 		this.value = value;
 	}
 	
-	public int chunkLength() {
+	public int getLength() {
 		return 1;
 	}
 	
-	public int chunkTypeCode() {
-		return 1;
+	public int getType() {
+		return Chunk.BOOLEAN_TYPE;
 	}
 	
 	public void serialize(OutputStream out) throws IOException {
-		
 		super.serialize(out);
-		
 		out.write((getValue()) ? (byte)1 : (byte)0);
 	}
 	

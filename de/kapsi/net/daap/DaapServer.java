@@ -92,7 +92,8 @@ public class DaapServer implements Runnable {
 			while(serve && !Thread.interrupted()) {
 			
 				Socket socket = serverSocket.accept();
-				
+				socket.setSoTimeout(1800*1000); 
+                
 				DaapConnection conn = new DaapConnection(this, socket);
 				
 				synchronized(connections) {

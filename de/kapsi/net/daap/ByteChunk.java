@@ -21,12 +21,12 @@ public class ByteChunk extends AbstractChunk {
 		this.value = (byte)(value & 0xFF);
 	}
 	
-	public int chunkLength() {
+	public int getLength() {
 		return 1;
 	}
 	
-	public int chunkTypeCode() {
-		return 1;
+	public int getType() {
+		return Chunk.BYTE_TYPE;
 	}
 	
 	public void serialize(OutputStream out) throws IOException {

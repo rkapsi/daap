@@ -40,20 +40,20 @@ public class ContainerChunk extends AbstractChunk {
 		return collection.size();
 	}
 
-	public int chunkLength() {
+	public int getLength() {
 		int length = 0;
 		
 		Iterator it = collection.iterator();
 		
 		while(it.hasNext()) {
-			length += ((Chunk)it.next()).chunkSize();
+			length += ((Chunk)it.next()).getSize();
 		}
 		
 		return length;
 	}
 	
-	public int chunkTypeCode() {
-		return 12;
+	public int getType() {
+		return Chunk.CONTAINER_TYPE;
 	}
 	
 	public void serialize(OutputStream os) throws IOException {

@@ -46,12 +46,12 @@ public class LongChunk extends AbstractChunk {
 		this.value = value;
 	}
 	
-	public int chunkLength() {
+	public int getLength() {
 		return 8;
 	}
 	
-	public int chunkTypeCode() {
-		return 7;
+	public int getType() {
+		return Chunk.LONG_TYPE;
 	}
 	
 	public void serialize(OutputStream out) throws IOException {
@@ -59,9 +59,9 @@ public class LongChunk extends AbstractChunk {
 		super.serialize(out);
 		
 		byte[] bytes = value.toByteArray();
-		byte[] tmp = new byte[chunkLength()];
+		byte[] tmp = new byte[getLength()];
 		
-		int i = chunkLength()-1;
+		int i = getLength()-1;
 		int j = bytes.length-1;
 		
 		while(i >= 0 && j >= 0) {

@@ -33,7 +33,7 @@ public class DaapResponse {
 		return (new DaapResponse("HTTP/1.1 200 OK", header, null));
 	}
 	
-	public static DaapResponse createResponse(ChunkSerializer chunk) throws IOException {
+	public static DaapResponse createResponse(Chunk chunk) throws IOException {
 		byte[] body = DaapUtil.serialize(chunk);
 		return createResponse(body, "gzip");
 	}

@@ -21,12 +21,12 @@ public class StringChunk extends AbstractChunk {
 		this.value = value;
 	}
 	
-	public int chunkLength() {
+	public int getLength() {
 		return (value != null) ? value.length() : 0;
 	}
 	
-	public int chunkTypeCode() {
-		return 9;
+	public int getType() {
+		return Chunk.STRING_TYPE;
 	}
 	
 	public void serialize(OutputStream out) throws IOException {

@@ -7,7 +7,7 @@ public class DateChunk extends IntChunk {
 		super(type, name, date);
 	}
 	
-	public int chunkTypeCode() {
-		return 10;
+	public int getType() {
+		return Chunk.DATE_TYPE;
 	}
 }

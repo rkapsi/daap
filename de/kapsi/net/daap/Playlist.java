@@ -90,7 +90,7 @@ public class Playlist implements SongListener {
 	}
 	
 	private void add(AbstractChunk chunk) {
-		properties.put(chunk.getChunkName(), chunk);
+		properties.put(chunk.getName(), chunk);
 	}
 	
 	Chunk getProperty(String property) {

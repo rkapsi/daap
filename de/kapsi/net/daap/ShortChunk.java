@@ -22,12 +22,12 @@ public class ShortChunk extends AbstractChunk {
 		this.value = (value & 0xFFFF);
 	}
 	
-	public int chunkLength() {
+	public int getLength() {
 		return 2;
 	}
 	
-	public int chunkTypeCode() {
-		return 3;
+	public int getType() {
+		return Chunk.SHORT_TYPE;
 	}
 	
 	public void serialize(OutputStream out) throws IOException {

@@ -57,4 +57,20 @@ public final class ServerInfoResponseImpl extends ServerInfoResponse {
 		add(supportsResolve);
 		add(databaseCount);
 	}
+    
+    public void setName(String name) {
+        itemName.setValue(name);
+    }
+    
+    public String getName() {
+        return itemName.getValue();
+    }
+    
+    public void setTimeout(int timeout) {
+        this.timeout.setValue(timeout);
+    }
+    
+    public int getTimeout() {
+        return timeout.getValue();
+    }
 }
