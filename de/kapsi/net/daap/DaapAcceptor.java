@@ -71,7 +71,7 @@ public class DaapAcceptor implements Runnable {
                     if ( ! server.accept(socket) ) {
                         
                         if (LOG.isInfoEnabled()) {
-                            LOG.info("DaapServer declined incoming connection " + socket);
+                            LOG.info("DaapServer refused incoming connection " + socket);
                         }
                         
                         socket.close();

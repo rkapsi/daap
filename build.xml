@@ -66,7 +66,6 @@
         <copy file="${gui}/gpl.txt" todir="${basedir}"/>
         <copy file="${gui}/update.ver" todir="${basedir}"/>
         <copy file="${gui}/xml.war" todir="${basedir}"/>
-        <copy file="${gui}/jdk14.logging.properties" todir="${basedir}"/>
 	</target>
     
     <target name="javadoc">
