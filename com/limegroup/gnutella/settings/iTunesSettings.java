@@ -50,10 +50,11 @@ public class iTunesSettings extends LimeProps {
 	
     /**
      * The maximum number of simultaneous connections. Note: There
-     * is an audio stream per connection (i.e. DAAP_MAX_CONNECTIONS*2)
+     * is an audio stream per connection (i.e. there are actually 
+     * DAAP_MAX_CONNECTIONS*2)
      */
     public static IntSetting DAAP_MAX_CONNECTIONS =
-        FACTORY.createIntSetting("DAAP_MAX_CONNECTIONS", 4);
+        FACTORY.createIntSetting("DAAP_MAX_CONNECTIONS", 5);
         
     /**
      * The port where the DaapServer is running

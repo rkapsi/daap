@@ -282,7 +282,35 @@ public class DaapServerNIO implements DaapServer {
         if (sessionIds != null)
             sessionIds.clear();
         
+        if (connections != null)
+            connections.clear();
+        
         sessionIds = null;
+        connections = null;
+    }
+    
+    private SelectionKey register(DaapConnection connection, int op) 
+            throws ClosedChannelException {
+        SocketChannel channel = connection.getChannel();
+        SelectionKey sk = channel.register(selector, op, connection);
+        connections.add(connection);
+        return sk;
+    }
+    
+    private void cancel(SelectionKey sk) {
+        
+        DaapConnection connection = (DaapConnection)sk.attachment();
+        
+        if (connection != null)
+            connections.remove(connection);
+        
+        try {
+            sk.channel().close();
+        } catch (IOException err) {
+            LOG.error(err);
+        }
+        
+        sk.cancel();
     }
     
     private void processAccept(SelectionKey sk) throws IOException {
@@ -293,30 +321,23 @@ public class DaapServerNIO implements DaapServer {
         ServerSocketChannel ssc = (ServerSocketChannel)sk.channel();
         SocketChannel channel = ssc.accept();
 
-        if (channel.isOpen() && accept(channel.socket().getInetAddress())) {
+        if (channel.isOpen() 
+                && connections.size() < (config.getMaxConnections()*2) 
+                && accept(channel.socket().getInetAddress())) {
 
             channel.configureBlocking(false);
 
             DaapConnection connection 
                 = new DaapConnection(this, channel);
             
-            SelectionKey key 
-                = channel.register(selector, SelectionKey.OP_READ, connection);
+            SelectionKey key = register(connection, SelectionKey.OP_READ);
             
         } else {
-
-            cancel(sk);
-        }
-    }
-    
-    private void cancel(SelectionKey sk) {
-        
-        sk.cancel();
-        
-        try {
-            sk.channel().close();
-        } catch (IOException err) {
-            LOG.error(err);
+            try {
+                channel.close();
+            } catch (IOException err) {
+                LOG.error(err);
+            }
         }
     }
     
@@ -373,15 +394,17 @@ public class DaapServerNIO implements DaapServer {
                     
                     DaapConnection connection = (DaapConnection)sk.attachment();
                     
-                    try {
-                        connection.update();
-                        channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, connection);
-                    } catch (ClosedChannelException err) {
-                        LOG.error("Error while updating", err);
-                        cancel(sk);
-                    }  catch (IOException err) {
-                        LOG.error("Error while updating", err);
-                        cancel(sk);
+                    if (connection.isNormal()) {
+                        try {
+                            connection.update();
+                            channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, connection);
+                        } catch (ClosedChannelException err) {
+                            LOG.error("Error while updating", err);
+                            cancel(sk);
+                        }  catch (IOException err) {
+                            LOG.error("Error while updating", err);
+                            cancel(sk);
+                        }
                     }
                 }
             }

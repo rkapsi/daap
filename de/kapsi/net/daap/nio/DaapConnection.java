@@ -117,26 +117,32 @@ public class DaapConnection {
     
     public void update() throws IOException {
         
-        DaapSession session = getSession(false);
-        
-        if (session != null) {
-            
-            Integer sessionId = session.getSessionId();
-            Integer delta = (Integer)session.getAttribute("DELTA");
-            Integer revisionNumber = (Integer)session.getAttribute("REVISION-NUMBER");
-            
-            if (delta != null && revisionNumber != null) {
-                
-                DaapRequest request =
-                    new DaapRequest(sessionId.intValue(),
-                        revisionNumber.intValue(), delta.intValue());
-                
-                DaapResponse response = processor.process(request);
-                
-                if (response != null) {
-                    writer.add(response);
+        if (isNormal()) {
+            DaapSession session = getSession(false);
+
+            if (session != null) {
+
+                Integer sessionId = session.getSessionId();
+                Integer delta = (Integer)session.getAttribute("DELTA");
+                Integer revisionNumber = (Integer)session.getAttribute("REVISION-NUMBER");
+
+                if (delta != null && revisionNumber != null) {
+
+                    DaapRequest request =
+                        new DaapRequest(sessionId.intValue(),
+                            revisionNumber.intValue(), delta.intValue());
+
+                    DaapResponse response = processor.process(request);
+
+                    if (response != null) {
+                        writer.add(response);
+                    }
                 }
             }
         }
+    }
+    
+    public String toString() {
+        return channel.toString();
     }
 }

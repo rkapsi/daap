@@ -553,7 +553,7 @@ public final class DaapMediator implements FinalizeListener {
         
         public FileInputStream getSource(Song song) throws IOException {
             URN urn = map.get(song);
-            System.out.println(urn);
+            
             if (urn != null) {
                 FileDesc fileDesc = RouterService.getFileManager().getFileDescForUrn(urn);
                 

@@ -52,8 +52,14 @@ public class DaapAudioResponse implements DaapResponse {
     private boolean stream() throws IOException {
         
         if (position < end) {
+            
+            if (!channel.isOpen()) {
+                close();
+                return true;
+            }
+            
             try {
-
+                
                 position += in.transferTo(position, 512, channel);
 
                 if (position >= end) {
@@ -72,6 +78,7 @@ public class DaapAudioResponse implements DaapResponse {
     }
     
     private void close() throws IOException {
+        position = end;
         in.close();
     }
     

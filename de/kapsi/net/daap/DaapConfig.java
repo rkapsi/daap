@@ -14,7 +14,7 @@ public interface DaapConfig {
     
     public static final int DEFAULT_PORT = 3689; // the default iTunes port
     public static final int DEFAULT_BACKLOG = 0; // 
-    public static final int DEFAULT_MAX_CONNECTIONS = 4; // like iTunes
+    public static final int DEFAULT_MAX_CONNECTIONS = 5; // like iTunes
 
     public String getServerName();
     
