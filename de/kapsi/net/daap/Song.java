@@ -59,6 +59,9 @@ import de.kapsi.net.daap.chunks.impl.PersistentId;
 import de.kapsi.net.daap.chunks.impl.NormVolume;
 import de.kapsi.net.daap.chunks.impl.SongTrackNumber;
 
+//import de.kapsi.net.daap.chunks.impl.SongCodecType;
+//import de.kapsi.net.daap.chunks.impl.SongCodecSubtype;
+        
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -73,7 +76,7 @@ import java.util.HashMap;
  */
 public class Song {
     
-    private static int ID = 1;
+    private static int ID = 0;
     
     private final HashMap properties = new HashMap();
     private final HashSet listener = new HashSet();
@@ -112,6 +115,9 @@ public class Song {
     private final SongYear year = new SongYear();
     private final SongGrouping grouping = new SongGrouping();
     
+    //private final SongCodecType codecType = new SongCodecType();
+    //private final SongCodecSubtype codecSubtype = new SongCodecSubtype();
+    
     private final ContainerItemId containerItemId = new ContainerItemId();
     
     private final PersistentId persistentId = new PersistentId();
@@ -123,7 +129,7 @@ public class Song {
     public Song() {
         
         synchronized(Song.class) {
-            itemId.setValue(ID++);
+            itemId.setValue(++ID);
         }
         
         persistentId.setValue(itemId.getValue());
@@ -165,6 +171,9 @@ public class Song {
         add(grouping);
         add(persistentId);
         add(normVolume);
+        
+        //add(codecType);
+        //add(codecSubtype);
     }
     
     /**

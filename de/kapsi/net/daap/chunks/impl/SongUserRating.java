@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.ByteChunk;
 /**
  * You can use this class to assign a rating to a song to indicate how much
  * you like it. iTunes displays this rating as a set of stars.
+ *
+ * @author  Roger Kapsi
  */
 public class SongUserRating extends ByteChunk {
     

@@ -25,7 +25,9 @@ import java.io.IOException;
 import de.kapsi.net.daap.ByteUtil;
 
 /**
- * An abstract base class whereof 
+ * An abstract base class Chunks 
+ *
+ * @author  Roger Kapsi
  */
 public abstract class AbstractChunk implements Chunk {
     
@@ -70,7 +72,7 @@ public abstract class AbstractChunk implements Chunk {
     public void serialize(OutputStream out) throws IOException {
         byte[] buffer = new byte[HEADER_SIZE];
         
-        ByteUtil.toContentCodeBytes(contentCode, buffer, 0);
+        ByteUtil.toFourCharBytes(contentCode, buffer, 0);
         ByteUtil.toByteBE(getLength(), buffer, 4);
         
         out.write(buffer, 0, buffer.length);

@@ -27,6 +27,8 @@ import de.kapsi.net.daap.DaapUtil;
  * a 32bit int where the two upper 2 bytes are the major version,
  * the 3rd byte minor and the last byte is the patch level.
  * <code>0x00020000 = 2.0.0</code>
+ *
+ * @author  Roger Kapsi
  */
 public class VersionChunk extends IntChunk {
     

@@ -23,7 +23,9 @@ import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
  * This class describes if a song is either
- * a Radio stream or DAAP stream.
+ * a Radio stream or DAAP stream. 
+ *
+ * @author  Roger Kapsi
  */
 public class SongDataKind extends ByteChunk {
     

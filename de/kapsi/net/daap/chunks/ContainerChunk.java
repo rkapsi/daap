@@ -28,6 +28,8 @@ import java.util.ArrayList;
 
 /**
  * A container contains a series of other chunks.
+ *
+ * @author  Roger Kapsi
  */
 public class ContainerChunk extends AbstractChunk {
     

@@ -26,6 +26,8 @@ import java.io.IOException;
 /**
  * A long chunk is a 8 byte value encoded as Hex String.
  * The greatest number is "FFFFFFFFFFFFFFFF".
+ *
+ * @author  Roger Kapsi
  */
 public class LongChunk extends AbstractChunk {
     

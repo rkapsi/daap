@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 /**
  * Used for the <tt>/update</tt> request and represents
  * the current revisionNumber of the Library.
+ *
+ * @author  Roger Kapsi
  */
 public class ServerRevision extends IntChunk {
     

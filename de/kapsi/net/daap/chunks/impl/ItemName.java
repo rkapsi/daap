@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
  * The name of an item (e.g. song or playlist)
+ * 
+ * @author  Roger Kapsi
  */
 public class ItemName extends StringChunk {
     

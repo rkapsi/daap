@@ -24,6 +24,8 @@ import java.util.ArrayList;
 
 /**
  * Container for the <tt>/update</tt> request.
+ *
+ * @author  Roger Kapsi
  */
 public class UpdateResponse extends ContainerChunk {
     

@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 /**
  * Seems to be the equivalent to HTTP/1.1 200 OK but it's never
  * changing even if an error occurs.
+ *
+ * @author  Roger Kapsi
  */
 public class Status extends IntChunk {
     

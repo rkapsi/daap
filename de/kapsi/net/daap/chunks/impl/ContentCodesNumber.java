@@ -21,6 +21,13 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.IntChunk;
 
+/**
+ * The number of a ContentCode (it's actually a four character code). 
+ * It is needed to build a list of capabilities of the Server which is 
+ * send to the client...
+ *
+ * @author  Roger Kapsi
+ */
 public class ContentCodesNumber extends IntChunk {
     
     public ContentCodesNumber() {

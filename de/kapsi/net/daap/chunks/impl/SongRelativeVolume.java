@@ -22,8 +22,12 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
- * Unknown purpose
+ * SongRelativeVolume is the volume balancer/adjuster.
+ *
+ * @author  Roger Kapsi
  */
+// TODO: It looks like that this isn't a ByteChunk anymore!
+// The new type is 2 which is at the moment Unknown.
 public class SongRelativeVolume extends ByteChunk {
     
     /**

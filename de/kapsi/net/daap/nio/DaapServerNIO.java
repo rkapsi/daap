@@ -311,7 +311,7 @@ public class DaapServerNIO implements DaapServer {
    /**
     * Stops the DAAP Server
     */
-    public synchronized void stop() {
+    public void stop() {
         if (selector != null) {
             if (running) {
                 running = false;

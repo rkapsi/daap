@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
  * The composer of this song. You can maybe map this to an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongComposer extends StringChunk {
     

@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.ShortChunk;
 /**
  * The count of tracks the album has where this song
  * belongs to. You can maybe map this to an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongTrackCount extends ShortChunk {
     

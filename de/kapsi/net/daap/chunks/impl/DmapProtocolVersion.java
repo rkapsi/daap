@@ -22,7 +22,10 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.VersionChunk;
 
 /**
- * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfoResponseImpl ServerInfoResponseImpl}
+ * The protocol version of DMAP. DMAPs are basically these classes.
+ * See Library for more information.
+ *
+ * @author  Roger Kapsi
  */
 public class DmapProtocolVersion extends VersionChunk {
     

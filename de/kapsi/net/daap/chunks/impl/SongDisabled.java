@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.BooleanChunk;
 /**
  * Enables or disables this song. Default is enabled. iTunes shows this
  * as the small checkbox next to the song name.
+ *
+ * @author  Roger Kapsi
  */
 public class SongDisabled extends BooleanChunk {
     

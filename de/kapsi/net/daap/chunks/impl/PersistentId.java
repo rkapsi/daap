@@ -25,6 +25,8 @@ import java.math.BigInteger;
 /**
  * In theory used for global unique IDs and afaik only required
  * for the <tt>/resolve</tt> request.
+ *
+ * @author  Roger Kapsi
  */
 public class PersistentId extends LongChunk {
     

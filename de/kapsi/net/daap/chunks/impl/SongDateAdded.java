@@ -26,6 +26,8 @@ import de.kapsi.net.daap.chunks.DateChunk;
  * the current time and midnight, January 1, 1970 UTC in <u>seconds</u>!
  *
  * <p>int date = (int)(System.currentTimeMillis()/1000);</p>
+ *
+ * @author  Roger Kapsi
  */
 public class SongDateAdded extends DateChunk {
     

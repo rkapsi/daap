@@ -22,6 +22,10 @@ package de.kapsi.net.daap.chunks;
 import java.io.OutputStream;
 import java.io.IOException;
 
+/**
+ *
+ * @author  Roger Kapsi
+ */
 public interface Chunk {
     
     public static final int BYTE_TYPE       = 1;

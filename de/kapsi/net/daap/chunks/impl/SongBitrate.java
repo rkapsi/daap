@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.ShortChunk;
 /**
  * The bitrate of this song in kilo bits per second (kbps).
  * You can maybe map this to an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongBitrate extends ShortChunk {
     

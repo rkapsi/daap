@@ -26,6 +26,8 @@ import de.kapsi.net.daap.ByteUtil;
 
 /**
  * A short is a 16bit value
+ *
+ * @author  Roger Kapsi
  */
 public class ShortChunk extends AbstractChunk {
     

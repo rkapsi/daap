@@ -25,6 +25,8 @@ import de.kapsi.net.daap.chunks.impl.UpdateResponse;
 
 /**
  * This class implements the UpdateResponse
+ *
+ * @author  Roger Kapsi
  */
 public final class UpdateResponseImpl extends UpdateResponse {
     

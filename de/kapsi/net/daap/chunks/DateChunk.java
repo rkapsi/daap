@@ -23,6 +23,8 @@ package de.kapsi.net.daap.chunks;
  * This class is an implementation of a date chunk.
  * The date is an integer with seconds since 1970
  * (standard UNIX time).
+ *
+ * @author  Roger Kapsi
  */
 public class DateChunk extends IntChunk {
     

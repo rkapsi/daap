@@ -21,6 +21,11 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.IntChunk;
 
+/**
+ * The ID of a Container (Playlist).
+ *
+ * @author  Roger Kapsi
+ */
 public class ContainerItemId extends IntChunk {
     
     public ContainerItemId() {

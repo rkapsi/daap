@@ -22,7 +22,9 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.BooleanChunk;
 
 /**
- * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfoResponseImpl ServerInfoResponseImpl}
+ * Unknown purpose. 
+ *
+ * @author  Roger Kapsi
  */
 public class SupportsUpdate extends BooleanChunk {
     

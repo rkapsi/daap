@@ -22,7 +22,10 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.ShortChunk;
 
 /**
- * The year this song was released. You can maybe map this to an IDv2/IDv3 Tag.
+ * The year this song was released. You can maybe map this to 
+ * an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongYear extends ShortChunk {
     

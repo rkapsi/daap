@@ -30,6 +30,8 @@ import de.kapsi.net.daap.chunks.impl.Dictionary;
 
 /**
  * A content code is essentially a description of a chunk.
+ *
+ * @author  Roger Kapsi
  */
 public final class ContentCode extends Dictionary {
     

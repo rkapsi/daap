@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 /**
  * This is the description of the song format and not of the song!
  * For example is the description of a MP3 file 'MPEG audio file'.
+ *
+ * @author  Roger Kapsi
  */
 public class SongDescription extends StringChunk {
     

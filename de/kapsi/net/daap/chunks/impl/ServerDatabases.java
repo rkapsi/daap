@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.ContainerChunk;
 
 /**
  * Container for the <tt>/databases</tt> request
+ *
+ * @author  Roger Kapsi
  */
 public class ServerDatabases extends ContainerChunk {
     

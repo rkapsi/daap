@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
  * The size of this song in bytes.
+ *
+ * @author  Roger Kapsi
  */
 public class SongSize extends IntChunk {
     

@@ -22,7 +22,9 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
- * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfoResponseImpl ServerInfoResponseImpl}
+ * Unknown purpose.
+ *
+ * @author  Roger Kapsi
  */
 public class TimeoutInterval extends IntChunk {
     

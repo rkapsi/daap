@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.ContainerChunk;
 
 /**
  * Unknown purpose.
+ *
+ * @author  Roger Kapsi
  */
 public class DatabaseBrowse extends ContainerChunk {
     

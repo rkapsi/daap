@@ -555,11 +555,11 @@ public class Library {
 
                     Object inst = clazz.newInstance();
 
-                    String cotentCode = (String)methodContentCode.invoke(inst, arg2);
+                    String contentCode = (String)methodContentCode.invoke(inst, arg2);
                     String name = (String)methodName.invoke(inst, arg2);
                     int type = ((Integer)methodType.invoke(inst, arg2)).intValue();
 
-                    add(new ContentCode(cotentCode, name, type));
+                    add(new ContentCode(contentCode, name, type));
 
                 } catch (ClassNotFoundException err) {
                     LOG.error(err);

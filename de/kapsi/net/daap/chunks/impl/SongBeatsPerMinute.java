@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.ShortChunk;
 
 /**
  * Beats per minute? One of those needless things...
+ *
+ * @author  Roger Kapsi
  */
 public class SongBeatsPerMinute extends ShortChunk {
     

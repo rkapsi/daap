@@ -21,6 +21,13 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.ShortChunk;
 
+/**
+ * The type of a ContentCode (i.e. boolean or String etc. etc.). It is 
+ * needed to build a list of capabilities of the Server which is send 
+ * to the client...
+ *
+ * @author  Roger Kapsi
+ */
 public class ContentCodesType extends ShortChunk {
     
     public ContentCodesType() {

@@ -23,10 +23,12 @@ import de.kapsi.net.daap.chunks.ContainerChunk;
 
 /**
  * Container for the <tt>/databases/id/items</tt> request.
+ *
+ * @author  Roger Kapsi
  */
 public class DatabaseSongs extends ContainerChunk {
     
     public DatabaseSongs() {
-        super("adbs", "dapp.databasesongs");
+        super("adbs", "daap.databasesongs");
     }
 }

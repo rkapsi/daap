@@ -21,6 +21,12 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.BooleanChunk;
 
+/**
+ * Used by Playlist to mark itself as smart or not smart (default).
+ * The only difference is a slightly different icon.
+ *
+ * @author  Roger Kapsi
+ */
 public class SmartPlaylist extends BooleanChunk {
     
     public SmartPlaylist() {

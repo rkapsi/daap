@@ -32,6 +32,8 @@ import org.apache.commons.logging.LogFactory;
  * Note: <tt>null</tt> is valid value for DAAP and should
  * be favored over "" for empty Strings as this saves 
  * 1 byte per String.
+ *
+ * @author  Roger Kapsi
  */
 public class StringChunk extends AbstractChunk {
     

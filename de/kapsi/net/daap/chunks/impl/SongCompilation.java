@@ -22,7 +22,9 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.BooleanChunk;
 
 /**
+ * A Song is either part of a compilation or not (default).
  *
+ * @author  Roger Kapsi
  */
 public class SongCompilation extends BooleanChunk {
     

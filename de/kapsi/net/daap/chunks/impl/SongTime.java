@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 /**
  * The length of this song in milliseconds. You can maybe
  * map this to an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongTime extends IntChunk {
     

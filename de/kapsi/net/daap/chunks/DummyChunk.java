@@ -27,6 +27,8 @@ import java.io.OutputStream;
  * Chunk with the difference that DummyChunks cannot be
  * serialized. It's used to workaround some consistency
  * checks of the Library...
+ *
+ * @author  Roger Kapsi
  */
 public final class DummyChunk extends AbstractChunk {
     

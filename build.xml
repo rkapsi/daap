@@ -106,7 +106,9 @@
         <jar destfile="daap.jar" 
                         basedir="${basedir}" 
                         includes="**/*.class"
-                        excludes="**/Main.* com/limegroup/**/*.*"/>
+                        excludes="**/Main.* 
+                            com/limegroup/**/*.* 
+                            de/kapsi/net/daap/tools/**/*.*"/>
     </target>
 
     <target name="clean" description="clean up">

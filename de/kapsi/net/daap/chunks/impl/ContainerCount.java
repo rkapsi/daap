@@ -21,6 +21,12 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.IntChunk;
 
+/**
+ * Containers are Playlists and this class tells the client how
+ * many Playlists are in the Library.
+ *
+ * @author  Roger Kapsi
+ */
 public class ContainerCount extends IntChunk {
     
     public ContainerCount() {

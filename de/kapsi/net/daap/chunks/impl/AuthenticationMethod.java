@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
  * Unknown purpose.
+ *
+ * @author  Roger Kapsi
  */
 public class AuthenticationMethod extends ByteChunk {
     

@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
  * The genre of this song. You can maybe map this to an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongGenre extends StringChunk {
     
@@ -31,7 +33,7 @@ public class SongGenre extends StringChunk {
     public static final String ALTERNATIVE	= "Alternative";
     public static final String BLUES_RB		= "Blues/R&B";
     public static final String BOOKS_SPOKEN	= "Books & Spoken";
-    public static final String CHILDRENS_MUSIC  = "Children’s Music";
+    public static final String CHILDRENS_MUSIC  = "Children's Music";
     public static final String CLASSICAL	= "Classical";
     public static final String COUNTRY		= "Country";
     public static final String DANCE		= "Dance";

@@ -25,6 +25,8 @@ import de.kapsi.net.daap.chunks.impl.LoginResponse;
 
 /**
  * This class implements the LoginResponse
+ *
+ * @author  Roger Kapsi
  */
 public final class LoginResponseImpl extends LoginResponse {
     

@@ -20,10 +20,13 @@
 package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.ContainerChunk;
-import java.util.ArrayList;
 
 /**
- * Used by {@link de.kapsi.net.daap.ContentCodesImpl ContentCodesImpl}
+ * The name is a bit misleading, i.e. it is NOT a Dictionary or
+ * Map like data structure. This is a List and it's used to create
+ * a List of ContentCode capabilities (see Library for more information).
+ *
+ * @author  Roger Kapsi
  */
 public class Dictionary extends ContainerChunk {
     

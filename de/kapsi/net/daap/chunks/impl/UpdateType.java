@@ -27,6 +27,8 @@ import de.kapsi.net.daap.chunks.BooleanChunk;
  * is always followed by a full response (e.g. the list of
  * all songs in the library) and thenceforward it's awlays
  * an update (a diff between client's and server's library).
+ *
+ * @author  Roger Kapsi
  */
 public class UpdateType extends BooleanChunk {
     

@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
  * The sample rate of this song in kHz.
+ *
+ * @author  Roger Kapsi
  */
 public class SongSampleRate extends IntChunk {
     

@@ -21,6 +21,13 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.ContainerChunk;
 
+/**
+ * The ContentCodesResponse is a list of ContentCodes-Numbers, Names and Types. 
+ * It is needed to build a list of capabilities of the Server which is 
+ * send to the client...
+ *
+ * @author  Roger Kapsi
+ */
 public class ContentCodesResponse extends ContainerChunk {
     
     public ContentCodesResponse() {

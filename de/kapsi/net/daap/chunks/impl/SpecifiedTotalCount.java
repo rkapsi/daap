@@ -26,6 +26,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * has. This chunk usually appears together with ReturnedCount.
  *
  * @see ReturnedCount
+ * @author  Roger Kapsi
  */
 public class SpecifiedTotalCount extends IntChunk {
     

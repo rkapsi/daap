@@ -22,9 +22,10 @@ package de.kapsi.net.daap.chunks.impl;
 import de.kapsi.net.daap.chunks.BooleanChunk;
 
 /**
- * Unknown purpose. Used by {@link de.kapsi.net.daap.ServerInfoResponseImpl ServerInfoResponseImpl}
- * but Auth requests are triggered by HTTP and iTunes doesn't care about
- * this chunk
+ * Unknown purpose. Auth requests are triggered by HTTP and iTunes 
+ * doesn't care about this chunk.
+ *
+ * @author  Roger Kapsi
  */
 public class LoginRequired extends BooleanChunk {
     

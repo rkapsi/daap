@@ -24,6 +24,8 @@ import java.io.IOException;
 
 /**
  * An implementation of a byte chunk
+ *
+ * @author  Roger Kapsi
  */
 public class ByteChunk extends AbstractChunk {
     

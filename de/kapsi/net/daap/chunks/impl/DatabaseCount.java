@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
  * Used to indicate the number of databases a library has.
+ *
+ * @author  Roger Kapsi
  */
 public class DatabaseCount extends IntChunk {
     

@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
  * Unknown
+ *
+ * @author  Roger Kapsi
  */
 public class SongDataUrl extends StringChunk {
     

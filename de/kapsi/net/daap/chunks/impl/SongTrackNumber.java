@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.ShortChunk;
 
 /**
  * The number of this track. You can maybe map this to an IDv2/IDv3 Tag.
+ *
+ * @author  Roger Kapsi
  */
 public class SongTrackNumber extends ShortChunk {
     

@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 
 /**
  * Used to tell the client its session-id
+ *
+ * @author  Roger Kapsi
  */
 public class SessionId extends IntChunk {
     

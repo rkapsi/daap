@@ -27,6 +27,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * SpecifiedTotalCount.
  *
  * @see SpecifiedTotalCount
+ * @author  Roger Kapsi
  */
 public class ReturnedCount extends IntChunk {
     

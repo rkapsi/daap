@@ -26,6 +26,8 @@ import de.kapsi.net.daap.ByteUtil;
 /**
  * This class is an implementation of an 4 byte
  * int chnunk.
+ *
+ * @author  Roger Kapsi
  */
 public class IntChunk extends AbstractChunk {
     

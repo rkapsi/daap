@@ -20,12 +20,12 @@
 package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.ContainerChunk;
-import java.util.ArrayList;
 
 /**
  * Container for deleted item IDs.
  *
  * @see Listing
+ * @author  Roger Kapsi
  */
 public class DeletedIdListing extends ContainerChunk {
     

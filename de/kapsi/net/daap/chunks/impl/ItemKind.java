@@ -23,13 +23,15 @@ import de.kapsi.net.daap.chunks.ByteChunk;
 
 /**
  * Unknown purpose. This chunk seems to be always 2
+ *
+ * @author  Roger Kapsi
  */
 public class ItemKind extends ByteChunk {
     
     public static final int KIND_2 = 2;
     
     public ItemKind() {
-        this(0);
+        this(KIND_2);
     }
     
     public ItemKind(int kind) {

@@ -21,6 +21,12 @@ package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.chunks.StringChunk;
 
+/**
+ * The name of a ContentCode. It is needed to build a list of capabilities
+ * of the Server which is send to the client...
+ *
+ * @author  Roger Kapsi
+ */
 public class ContentCodesName extends StringChunk {
     
     public ContentCodesName() {

@@ -24,6 +24,8 @@ import java.io.IOException;
 
 /**
  * An implementation of a boolean chunk.
+ *
+ * @author  Roger Kapsi
  */
 public class BooleanChunk extends AbstractChunk {
     

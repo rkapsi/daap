@@ -24,6 +24,8 @@ import de.kapsi.net.daap.chunks.IntChunk;
 /**
  * The ID of an item. This value must be unique for a certain set
  * of items (e.g. songs) and != 0
+ *
+ * @author  Roger Kapsi
  */
 public class ItemId extends IntChunk {
     

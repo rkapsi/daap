@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
  * Unknown purpose.
+ *
+ * @author  Roger Kapsi
  */
 public class StatusString extends StringChunk {
     

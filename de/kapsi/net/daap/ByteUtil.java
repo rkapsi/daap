@@ -62,19 +62,33 @@ public final class ByteUtil {
     }
     
     /**
-     * Used to copy the bytes of a content code (a four character string)
-     * to dst...
+     * Copies the first 4 characters of fourChars to dst
      */
-    public static final int toContentCodeBytes(String value, byte[] dst, int offset)
-    throws UnsupportedEncodingException {
+    public static final int toFourCharBytes(String fourChars, byte[] dst, int offset)
+            throws IllegalArgumentException {
         
-        byte[] bytes = value.getBytes("UTF-8");
+        final int length = fourChars.length();
+            
+        if (length > 4)
+            throw new IllegalArgumentException("Illegal fourChars length: " + length);
         
-        if (bytes.length != 4)
-            throw new UnsupportedEncodingException("Illegal content code length");
-        
-        System.arraycopy(bytes, 0, dst, offset, 4);
+        for(int i = 0; i < length; i++) {
+            dst[offset++] = (byte)(fourChars.charAt(i) & 0xFF);
+        }
+          
         return 4;
+    }
+    
+    /**
+     * This method converts the first 4 characters of fourChars to
+     * an integer. 
+     */
+    public static final int toFourCharCode(String fourChars) 
+            throws IllegalArgumentException {
+        
+        final byte[] dst = new byte[4];
+        toFourCharBytes(fourChars, dst, 0);
+        return toIntBE(dst, 0);
     }
     
     /**

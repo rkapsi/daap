@@ -23,6 +23,8 @@ import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
  * The selected equalizer for this song.
+ *
+ * @author  Roger Kapsi
  */
 public class SongEqPreset extends StringChunk {
     

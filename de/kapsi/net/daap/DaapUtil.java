@@ -202,15 +202,15 @@ public final class DaapUtil {
     
     public static final ArrayList parseMeta(String meta) {
         StringTokenizer tok = new StringTokenizer(meta, ",");
-        ArrayList list = new ArrayList();
+        ArrayList list = new ArrayList(tok.countTokens());
         while(tok.hasMoreTokens()) {
             String token = tok.nextToken();
             
-            //if (token.equals("dmap.itemkind")) {
-            //	list.add(0, token);
-            //} else if (!token.equals("com.apple.itunes.norm-volume")) {
-            list.add(token);
-            //}
+            if (token.equals("dmap.itemkind")) {
+            	list.add(0, token);
+            } else {
+                list.add(token);
+            }
         }
         return list;
     }
@@ -317,55 +317,4 @@ public final class DaapUtil {
         
         return DaapUtil.UNDEF_VALUE;
     }
-    
-    // Creates the ChunkClasses.java file...
-   /*public static void main(String[] args) throws IOException {
-    
-        final String name = "ChunkClasses";
-        final String javaname = name + ".java";
-        final String pakage = "de.kapsi.net.daap.chunks.impl";
-    
-        File fin = new File(pakage.replace('.', '/'));
-    
-        if (!fin.exists() || fin.isFile()) {
-            throw new IOException();
-        }
-    
-        File fout = (new File(fin, name + ".java")).getParentFile();
-    
-        BufferedWriter out = new BufferedWriter(new FileWriter(fout));
-        StringBuffer buffer = new StringBuffer();
-    
-        buffer.append("// This class is machine-made!").append("\n\n");
-        buffer.append("package ").append(pakage).append(";\n\n");
-        buffer.append("public final class ").append(name).append(" {\n");
-        buffer.append("\tpublic static final String[] names = {\n");
-    
-        String[] list = fin.list(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".java") && !javaname.equals(name);
-            }
-        });
-    
-        for(int i = 0; i < list.length; i++) {
-            buffer.append("\t\t").append("\"");
-    
-            String clazz = list[i];
-            int q = clazz.lastIndexOf(".");
-    
-            buffer.append(pakage + "." + clazz.substring(0, q));
-            buffer.append("\"");
-    
-            if (i < list.length-1) {
-                buffer.append(",");
-            }
-    
-            buffer.append("\n");
-        }
-        buffer.append("\t};\n");
-        buffer.append("}\n");
-    
-        out.write(buffer.toString());
-        out.close();
-    }*/
 }

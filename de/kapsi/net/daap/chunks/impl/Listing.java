@@ -25,6 +25,7 @@ import de.kapsi.net.daap.chunks.ContainerChunk;
  * Used to group ListingItems objects.
  *
  * @see ListingItem
+ * @author  Roger Kapsi
  */
 public class Listing extends ContainerChunk {
     
