@@ -7,34 +7,34 @@
     
     <property name="gui" value="${basedir}/../gui"/>
     <property name="core" value="${basedir}/../core"/>
-    <property name="lib" value="${basedir}/../lib"/>
     
+    <property name="lib" value="${basedir}/../lib"/>
     <property name="jars" value="${lib}/jars"/>
   
     <path id="default.classpath">
+        <pathelement location="${basedir}"/>
         <fileset dir="lib/jars" includes="*.jar"/>
-        
         <pathelement location="${core}"/>
-        <!--<fileset dir="${basedir}/../gui"/>-->
+        <pathelement location="${gui}"/>
 		<fileset dir="${jars}" includes="*.jar"/>
     </path>
     
     <target name="init">
-        <!--<available file="${gui}" type="dir" property="gui.present"/>-->
+        <available file="${gui}" type="dir" property="gui.present"/>
         <available file="${core}" type="dir" property="core.present"/>
         <available file="${jars}" type="dir" property="jars.present"/>
         <tstamp/>
-        <!--<antcall target="checkgui"/>-->
+        <antcall target="checkgui"/>
         <antcall target="checkcore"/>
         <antcall target="checkjars"/>
     </target>
 	
-    <!--<target name="checkgui" unless="gui.present">
+    <target name="checkgui" unless="gui.present">
         <echo message="*******************************************************"/>
         <echo message="*******  YOU MUST CHECKOUT THE gui MODULE *************"/>
         <echo message="**** and place it as a sibling to this daap module ****"/>
         <echo message="*******************************************************"/>
-    </target>-->
+    </target>
     
     <target name="checkcore" unless="core.present">
         <echo message="*******************************************************"/>
@@ -51,20 +51,24 @@
     </target>
     
 	<target name="build" depends="init">
-		<javac srcdir="${basedir}" destdir="${basedir}" excludes="com/**/*.java">
+		<javac srcdir="${basedir}" destdir="${basedir}">
             <classpath refid="default.classpath"/>
         </javac>
 	</target>
     
 	<target name="run" depends="init">
         <java classname="de.kapsi.net.daap.Main">
-            <classpath>
-                <pathelement location="${basedir}"/>
-            </classpath>
             <classpath refid="default.classpath"/>
         </java>
 	</target>
 	
+    <target name="copy" depends="init">
+        <copy file="${gui}/gpl.txt" todir="${basedir}"/>
+        <copy file="${gui}/update.ver" todir="${basedir}"/>
+        <copy file="${gui}/xml.war" todir="${basedir}"/>
+        <copy file="${gui}/jdk14.logging.properties" todir="${basedir}"/>
+	</target>
+    
     <target name="javadoc">
 		
 		<mkdir dir="${javadoc}"/>
@@ -85,8 +89,8 @@
 	<target name="daap">
 		<jar destfile="daap.jar" 
 				basedir="${basedir}" 
-				includes="**/*.class **/*.java build.xml"
-				excludes="**/Main.*"/>
+				includes="**/*.class"
+				excludes="**/Main.* com/limegroup/**/*.*"/>
 	</target>
 	
 	<target name="clean" description="clean up">

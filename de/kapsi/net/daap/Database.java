@@ -212,8 +212,8 @@ public class Database {
         databaseSongs = new DatabaseSongsImpl(items, newItems, deletedItems, false);
         databaseSongsUpdate = new DatabaseSongsImpl(items, newItems, deletedItems, true);
         
-        databasePlaylists = new DatabasePlaylistsImpl(this.containers, this.deletedContainers, false);
-        databasePlaylistsUpdate = new DatabasePlaylistsImpl(this.containers, this.deletedContainers, true);
+        databasePlaylists = new DatabasePlaylistsImpl(containers, deletedContainers, false);
+        databasePlaylistsUpdate = new DatabasePlaylistsImpl(containers, deletedContainers, true);
         
         Iterator it = containers.iterator();
 		while(it.hasNext()) {
