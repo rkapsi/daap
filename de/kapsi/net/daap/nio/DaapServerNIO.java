@@ -214,6 +214,12 @@ public class DaapServerNIO implements DaapServer {
             ssc = ServerSocketChannel.open();
             ServerSocket socket = ssc.socket();
             
+            // BugID: 4546610
+            // On Win2k, Mac OS X, XYZ it is possible to bind
+            // the same address without rising a SocketException
+            // (the Documentation lies)
+            socket.setReuseAddress(false);
+            
             try {
                 socket.bind(bindAddr, backlog);
             } catch (SocketException err) {

@@ -157,7 +157,7 @@ public class SimpleConfig implements DaapConfig {
      * @param port
      */
     public void setInetSocketAddress(int port) {
-	this.bindAddr = new InetSocketAddress(port);
+        this.bindAddr = new InetSocketAddress(port);
     }
     
     /**
@@ -166,7 +166,7 @@ public class SimpleConfig implements DaapConfig {
      * @param port
      */
     public void setInetSocketAddress(InetAddress addr, int port) {
-	this.bindAddr = new InetSocketAddress(addr, port);
+        this.bindAddr = new InetSocketAddress(addr, port);
     }
     
     /**
@@ -175,7 +175,7 @@ public class SimpleConfig implements DaapConfig {
      * @param port
      */
     public void setInetSocketAddress(String host, int port) {
-	this.bindAddr = new InetSocketAddress(host, port);
+        this.bindAddr = new InetSocketAddress(host, port);
     }
     
      /**
