@@ -51,7 +51,10 @@
     </target>
     
     <target name="build" depends="init,copy">
-        <javac srcdir="${basedir}" destdir="${basedir}" deprecation="no">
+        <javac srcdir="${basedir}" 
+        			destdir="${basedir}" 
+        			excludes="**/stubs/*" 
+        			deprecation="no">
             <classpath refid="default.classpath"/>
         </javac>
     </target>

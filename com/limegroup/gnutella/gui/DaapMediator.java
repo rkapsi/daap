@@ -255,7 +255,7 @@ public final class DaapMediator implements FinalizeListener {
      * Called by VisualConnectionCallback
      */
     public void handleFileManagerEvent(FileManagerEvent evt) {
-        
+        System.out.println(evt);
         if (isServerRunning()) {
               
             if (evt.isChangeEvent()) {
