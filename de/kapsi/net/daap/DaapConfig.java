@@ -3,6 +3,9 @@ package de.kapsi.net.daap;
 
 import java.net.InetAddress;
 
+/**
+ * Interface for DaapServer Settings
+ */
 public interface DaapConfig {
     
     // "iTunes/4.2 (Mac OS X)"

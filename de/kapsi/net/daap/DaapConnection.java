@@ -12,6 +12,9 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ *
+ */
 public class DaapConnection implements Runnable {
 	
 	private static final Log LOG = LogFactory.getLog(DaapConnection.class);

@@ -1,8 +1,14 @@
 
 package de.kapsi.net.daap;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
 
+/**
+ * A session object where session related information can be stored.
+ * It's currently a bit overdesigned but we need the features maybe
+ * in the future.
+ */
 public class DaapSession {
 	
 	private final long creationTime = System.currentTimeMillis();

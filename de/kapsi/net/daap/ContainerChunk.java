@@ -20,6 +20,7 @@ public class ContainerChunk extends AbstractChunk {
 		collection.add(chunk);
 	}
 	
+    // Only required for testing etc.
 	/*public boolean remove(Chunk chunk) {
 		return collection.remove(chunk);
 	}

@@ -70,26 +70,42 @@ public final class DaapPasswordPaneItem extends AbstractPaneItem {
 	 * @throws IOException if the options could not be applied for some reason
 	 */
 	public boolean applyOptions() throws IOException {
-    
-        boolean changed = CHECK_BOX.isSelected() != 
-                                iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
         
-		String text = TEXT_FIELD.getText().trim();
+        final boolean prevRequiresPassword = iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
+        final String prevPassword = iTunesSettings.DAAP_PASSWORD.getValue();
+        
+		String password = TEXT_FIELD.getText().trim();
 		
-		if (text.length()==0 && CHECK_BOX.isSelected()) { 
+		if (password.length()==0 && CHECK_BOX.isSelected()) { 
 			throw new IOException(); 
 		}
 		
-        iTunesSettings.DAAP_REQUIRES_PASSWORD.setValue(CHECK_BOX.isSelected());
-		iTunesSettings.DAAP_PASSWORD.setValue(text);
+        if (password.equals(prevPassword) == false)
+            iTunesSettings.DAAP_PASSWORD.setValue(password);
         
-        if (changed) {
+        if (CHECK_BOX.isSelected() != prevRequiresPassword) {
             
-            // A password is required now, disconnect all users...
-            if (iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue()) 
-                DaapMediator.instance().disconnectAll();
+            iTunesSettings.DAAP_REQUIRES_PASSWORD.setValue(CHECK_BOX.isSelected());
+        
+            try {
+            
+                // A password is required now, disconnect all users...
+                if (iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue()) 
+                    DaapMediator.instance().disconnectAll();
                 
-            DaapMediator.instance().updateService();
+                DaapMediator.instance().updateService();
+                
+            } catch (IOException err) {
+                
+                iTunesSettings.DAAP_REQUIRES_PASSWORD.setValue(prevRequiresPassword);
+                iTunesSettings.DAAP_PASSWORD.setValue(prevPassword);
+                
+                DaapMediator.instance().stop();
+                
+                initOptions();
+                
+                throw err;
+            }
         }
         
         return false;

@@ -55,7 +55,8 @@ public final class DaapSupportPaneItem extends AbstractPaneItem {
 	 * window is shown.
 	 */
 	public void initOptions() {
-        CHECK_BOX.setSelected(iTunesSettings.DAAP_SUPPORT_ENABLED.getValue());
+        CHECK_BOX.setSelected(iTunesSettings.DAAP_SUPPORT_ENABLED.getValue() && 
+                        DaapMediator.instance().isServerRunning());
 		TEXT_FIELD.setText(iTunesSettings.DAAP_SERVICE_NAME.getValue());
 	}
 
@@ -69,30 +70,45 @@ public final class DaapSupportPaneItem extends AbstractPaneItem {
 	 */
 	public boolean applyOptions() throws IOException {
         
-		boolean enabledChanged = CHECK_BOX.isSelected() != iTunesSettings.DAAP_SUPPORT_ENABLED.getValue();
+        final boolean prevSupportEnabled = iTunesSettings.DAAP_SUPPORT_ENABLED.getValue();
+        final String prevServiceName = iTunesSettings.DAAP_SERVICE_NAME.getValue();
         
-        String text = TEXT_FIELD.getText().trim();
-		boolean textChanged = text.equals(iTunesSettings.DAAP_SERVICE_NAME.getValue()) == false;
+        String serviceName = TEXT_FIELD.getText().trim();
         
-		if (text.length()==0 && CHECK_BOX.isSelected()) { 
+		if (serviceName.length()==0 && CHECK_BOX.isSelected()) { 
 			throw new IOException(); 
 		}
 		
         iTunesSettings.DAAP_SUPPORT_ENABLED.setValue(CHECK_BOX.isSelected());
-        iTunesSettings.DAAP_SERVICE_NAME.setValue(text);
-        iTunesSettings.DAAP_LIBRARY_NAME.setValue(text);
+        iTunesSettings.DAAP_SERVICE_NAME.setValue(serviceName);
+        iTunesSettings.DAAP_LIBRARY_NAME.setValue(serviceName);
+        
+        try {
             
-        if (enabledChanged) {
-            
-            if (iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
-                DaapMediator.instance().start();
-                DaapMediator.instance().init();
-            } else {
-                DaapMediator.instance().stop();
+            if (CHECK_BOX.isSelected() != prevSupportEnabled) {
+                
+                if (iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
+                    DaapMediator.instance().start();
+                    DaapMediator.instance().init();
+                } else {
+                    DaapMediator.instance().stop();
+                }
+                
+            } else if (serviceName.equals(prevServiceName) == false) {
+                DaapMediator.instance().updateService();
             }
             
-        } else if (textChanged) {
-            DaapMediator.instance().updateService();
+        } catch (IOException err) {
+        
+            iTunesSettings.DAAP_SUPPORT_ENABLED.setValue(prevSupportEnabled);
+            iTunesSettings.DAAP_SERVICE_NAME.setValue(prevServiceName);
+            iTunesSettings.DAAP_LIBRARY_NAME.setValue(prevServiceName);
+            
+            DaapMediator.instance().stop();
+            
+            initOptions();
+            
+            throw err;
         }
         
         return false;

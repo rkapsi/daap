@@ -4,6 +4,9 @@ package de.kapsi.net.daap;
 import java.io.IOException;
 import org.apache.commons.httpclient.Header;
 
+/**
+ * 
+ */
 public class DaapResponse {
 	
 	public static DaapResponse createResponse(DaapRequest request, byte[] body, String encoding) {

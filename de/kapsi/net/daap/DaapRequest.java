@@ -4,12 +4,14 @@ package de.kapsi.net.daap;
 import java.io.*;
 import java.text.*;
 import java.util.*;
-import java.util.zip.*;
 import org.apache.commons.httpclient.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ *
+ */
 public class DaapRequest {
 	
 	public static final int UNDEF_VALUE			= 0;	//  zero means not defined (system wide)
