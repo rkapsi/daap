@@ -168,6 +168,7 @@ public final class OptionsConstructor {
 		final OptionsPane downloadPane = new OptionsPaneImpl(DOWNLOAD_KEY);
 		downloadPane.add(new MaximumDownloadsPaneItem("DOWNLOAD_MAX"));
 		downloadPane.add(new AutoClearDownloadsPaneItem("DOWNLOAD_CLEAR"));
+		downloadPane.add(new DownloadBandwidthPaneItem("DOWNLOAD_BANDWIDTH"));
 		addOption(OptionsMediator.ROOT_NODE_KEY, downloadPane);
 
 
