@@ -43,17 +43,9 @@ public class LibraryTest extends TestCase {
         int revision = library.getRevision();
         String name = library.getName();
         
-        try {
-            library.setName("Error");
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertTrue(library.getName().equals(name));
-        }
-        
-        DaapTransaction transaction = DaapTransaction.open(library);
-        library.setName("OK");
-        transaction.commit();
+        Transaction txn = library.open(false);
+        library.setName(txn, "OK");
+        txn.commit();
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(library.getName().equals("OK"));
     }
@@ -63,18 +55,9 @@ public class LibraryTest extends TestCase {
         
         int revision = library.getRevision();
         
-        try {
-            library.add(database);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision()==revision);
-            assertTrue(library.size() == 0);
-            assertFalse(library.contains(database));
-        }
-        
-        DaapTransaction transaction = DaapTransaction.open(library);
-        library.add(database);
-        transaction.commit();
+        Transaction txn = library.open(false);
+        library.add(txn, database);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(library.size() == 1);
@@ -84,24 +67,15 @@ public class LibraryTest extends TestCase {
     public void testRemoveDatabase() {
         Database database = new Database("Database");
         
-        DaapTransaction transaction = DaapTransaction.open(library);
-        library.add(database);
-        transaction.commit();
+        Transaction txn = library.open(false);
+        library.add(txn, database);
+        txn.commit();
         
         int revision = library.getRevision();
         
-        try {
-            library.remove(database);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertTrue(library.size() == 1);
-            assertTrue(library.contains(database));
-        }
-        
-        transaction = DaapTransaction.open(library);
-        library.remove(database);
-        transaction.commit();
+        txn = library.open(false);
+        library.remove(txn, database);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(library.size() == 0);

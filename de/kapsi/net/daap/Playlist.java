@@ -136,40 +136,17 @@ public class Playlist implements Cloneable {
         notifyMasterPlaylistOnUpdate = orig.notifyMasterPlaylistOnUpdate;
     }
     
-    void commit() throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException("Current Thread is not associated with a transaction.");
+    Txn openTxn(Transaction txn) throws DaapException {
+        if (!txn.isOpen()) {
+            throw new DaapException("Transaction is not open");
         }
         
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj != null) {
-            obj.commit();
+        PlaylistTxn obj = (PlaylistTxn)txn.getAttribute(this);
+        if (obj == null) {
+            obj = new PlaylistTxn(this);
+            txn.setAttribute(this, obj);
         }
-        
-        itemCount.setValue(items.size());
-        
-        playlistSongs = (new PlaylistSongsImpl(this, false)).getBytes();
-        playlistSongsUpdate = (new PlaylistSongsImpl(this, true)).getBytes();
-    }
-    
-    void cleanup() {
-        newItems.clear();
-        deletedItems.clear();
-    }
-    
-    void rollback() throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException("Current Thread is not associated with a transaction.");
-        }
-        
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj != null) {
-            obj.rollback();
-        }
+        return obj;
     }
     
     void setMasterPlaylist(Playlist masterPlaylist) {
@@ -188,19 +165,8 @@ public class Playlist implements Cloneable {
         return (Chunk)properties.get(property);
     }
     
-    public void setName(String name) {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException("Current Thread is not associated with a transaction.");
-        }
-        
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj == null) {
-            obj = new PlaylistTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-        
+    public void setName(Transaction txn, String name) throws DaapException {
+        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
         obj.setName(name);
     }
     
@@ -241,19 +207,8 @@ public class Playlist implements Cloneable {
      * smart playlists have a star as an icon and they appear
      * at first in the list.
      */
-    public void setSmartPlaylist(boolean smart) {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException("Current Thread is not associated with a transaction.");
-        }
-        
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj == null) {
-            obj = new PlaylistTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-        
+    public void setSmartPlaylist(Transaction txn, boolean smart) throws DaapException {
+        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
         obj.setSmartPlaylist(smart);
     }
     
@@ -328,22 +283,11 @@ public class Playlist implements Cloneable {
      * @param song
      * @throws DaapTransactionException
      */
-    public void update(Song song) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException();
-        }
-        
+    public void update(Transaction txn, Song song) throws DaapException {
         if (!items.contains(song))
             return;
         
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj == null) {
-            obj = new PlaylistTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-        
+        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
         obj.update(song);
     }
     
@@ -353,19 +297,8 @@ public class Playlist implements Cloneable {
      * @param song
      * @throws DaapTransactionException
      */
-    public void add(Song song) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException("Current Thread is not associated with a transaction.");
-        }
-        
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj == null) {
-            obj = new PlaylistTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-        
+    public void add(Transaction txn, Song song) throws DaapException {
+        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
         obj.add(song);
     }
     
@@ -376,20 +309,8 @@ public class Playlist implements Cloneable {
      * @param song
      * @throws DaapTransactionException
      */
-    public void remove(Song song) throws DaapTransactionException {
-        
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException("Current Thread is not associated with a transaction.");
-        }
-        
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        PlaylistTransaction obj = (PlaylistTransaction)transaction.getAttribute(this);
-        
-        if (obj == null) {
-            obj = new PlaylistTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-        
+    public void remove(Transaction txn, Song song) throws DaapException {
+        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
         obj.remove(song);
     }
     
@@ -426,7 +347,10 @@ public class Playlist implements Cloneable {
         return getName();
     }
     
-    private static class PlaylistTransaction {
+    /**
+     * 
+     */
+    private static class PlaylistTxn implements Txn {
         
         private Playlist playlist;
         
@@ -437,7 +361,7 @@ public class Playlist implements Cloneable {
         private HashSet deletedItems = new HashSet();
         private HashSet updateItems = new HashSet();
         
-        private PlaylistTransaction(Playlist playlist) {
+        private PlaylistTxn(Playlist playlist) {
             this.playlist = playlist;
             this.name = playlist.getName();
             this.isSmartPlaylist = playlist.isSmartPlaylist();
@@ -473,70 +397,68 @@ public class Playlist implements Cloneable {
             }
         }
         
-        private void commit() {
-            
-            if (playlist.getName() != name) {
-                playlist.itemName.setValue(name);
-            }
-            
-            if (playlist.isSmartPlaylist()  != isSmartPlaylist) {
-                playlist.isSmartPlaylist = isSmartPlaylist;
+        public void commit(Transaction txn) {
+            synchronized(playlist) {
+                if (playlist.getName() != name) {
+                    playlist.itemName.setValue(name);
+                }
                 
-                if (isSmartPlaylist) {
-                    playlist.add(IS_SMART_PLAYLIST);
-                } else {
-                    playlist.add(IS_NOT_SMART_PLAYLIST);
-                }
-            }
-            
-            Playlist masterPlaylist = playlist.masterPlaylist;
-            
-            Iterator it = newItems.iterator();
-            while(it.hasNext()) {
-                Song song = (Song)it.next();
-                if (!playlist.items.contains(song)) {
-                    playlist.items.add(song);
-                    playlist.newItems.add(song);
-                    playlist.deletedItems.remove(song);                    
+                if (playlist.isSmartPlaylist()  != isSmartPlaylist) {
+                    playlist.isSmartPlaylist = isSmartPlaylist;
                     
-                    if (playlist.notifyMasterPlaylistOnAdd && masterPlaylist != null) {
-                        if (!masterPlaylist.items.contains(song)) {
-                            masterPlaylist.items.add(song);
-                            masterPlaylist.newItems.add(song);
-                            masterPlaylist.deletedItems.remove(song);
+                    if (isSmartPlaylist) {
+                        playlist.add(IS_SMART_PLAYLIST);
+                    } else {
+                        playlist.add(IS_NOT_SMART_PLAYLIST);
+                    }
+                }
+                
+                Playlist masterPlaylist = playlist.masterPlaylist;
+                
+                Iterator it = newItems.iterator();
+                while(it.hasNext()) {
+                    Song song = (Song)it.next();
+                    if (!playlist.items.contains(song)) {
+                        playlist.items.add(song);
+                        playlist.newItems.add(song);
+                        playlist.deletedItems.remove(song);
+                        
+                        if (playlist.notifyMasterPlaylistOnAdd && playlist.masterPlaylist != null) {
+                            playlist.masterPlaylist.add(txn, song);
                         }
                     }
                 }
-            }
-            
-            it = deletedItems.iterator();
-            while(it.hasNext()) {
-                Song song = (Song)it.next();
-                if (playlist.items.remove(song)) {
-                    playlist.newItems.remove(song);
-                    playlist.deletedItems.add(song);
-                    
-                    if (playlist.notifyMasterPlaylistOnRemove && masterPlaylist != null) {
-                        if (masterPlaylist.items.remove(song)) {
-                            masterPlaylist.newItems.remove(song);
-                            masterPlaylist.deletedItems.add(song);
+                
+                it = updateItems.iterator();
+                while(it.hasNext()) {
+                    Song song = (Song)it.next();
+                    if (playlist.items.contains(song) && !playlist.newItems.contains(song)) {
+                        playlist.newItems.add(song);
+                        
+                        if (playlist.notifyMasterPlaylistOnUpdate && playlist.masterPlaylist != null) {
+                            playlist.masterPlaylist.update(txn, song);
                         }
                     }
                 }
-            }
-            
-            it = updateItems.iterator();
-            while(it.hasNext()) {
-                Song song = (Song)it.next();
-                if (playlist.items.contains(song) && !playlist.newItems.contains(song)) {
-                    playlist.newItems.add(song);
-                    
-                    if (playlist.notifyMasterPlaylistOnUpdate && masterPlaylist != null) {
-                        if (masterPlaylist.items.contains(song) && !masterPlaylist.newItems.contains(song)) {
-                            masterPlaylist.newItems.add(song);
+                
+                it = deletedItems.iterator();
+                while(it.hasNext()) {
+                    Song song = (Song)it.next();
+                    if (playlist.items.remove(song)) {
+                        playlist.newItems.remove(song);
+                        playlist.deletedItems.add(song);
+                        
+                        if (playlist.notifyMasterPlaylistOnRemove && playlist.masterPlaylist != null) {
+                            playlist.masterPlaylist.remove(txn, song);
                         }
                     }
                 }
+                
+                // commit
+                playlist.itemCount.setValue(playlist.items.size());
+                
+                playlist.playlistSongs = new PlaylistSongsImpl(playlist, false).getBytes();
+                playlist.playlistSongsUpdate = new PlaylistSongsImpl(playlist, true).getBytes();
             }
             
             newItems.clear();
@@ -544,17 +466,56 @@ public class Playlist implements Cloneable {
             updateItems.clear();
         }
         
-        private void rollback() {
+        public void rollback(Transaction txn) {
             newItems.clear();
             deletedItems.clear();
             updateItems.clear();
+        }
+        
+        public void cleanup(Transaction txn) {
+            synchronized(playlist) {
+                playlist.newItems.clear();
+                playlist.deletedItems.clear();
+            }
+            
+            newItems.clear();
+            deletedItems.clear();
+            updateItems.clear();
+        }
+        
+        public void join(Txn value) {
+            PlaylistTxn obj = (PlaylistTxn)value;
+            
+            if (name != obj.name)
+                name = obj.name;
+            
+            isSmartPlaylist = obj.isSmartPlaylist;
+            
+            Iterator it = obj.newItems.iterator();
+            while(it.hasNext()) {
+                add((Song)it.next());
+            }
+            
+            it = obj.updateItems.iterator();
+            while(it.hasNext()) {
+                update((Song)it.next());
+            }
+            
+            it = obj.deletedItems.iterator();
+            while(it.hasNext()) {
+                remove((Song)it.next());
+            }
+        }
+        
+        public String toString() {
+            return "PlaylistTxn for " + playlist;
         }
     }
     
     /**
     * This class implements the PlaylistSongs
     */
-    private final class PlaylistSongsImpl extends PlaylistSongs {
+    private static final class PlaylistSongsImpl extends PlaylistSongs {
     
         private PlaylistSongsImpl(Playlist playlist, boolean updateType) {
             super();
@@ -597,7 +558,7 @@ public class Playlist implements Cloneable {
 
             if (updateType) {
 
-                it = deletedItems.iterator();
+                it = playlist.deletedItems.iterator();
 
                 if (it.hasNext()) {
 

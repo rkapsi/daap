@@ -40,9 +40,9 @@ public class DatabaseTest extends TestCase {
         database = new Database("DatabaseTest");
         
         assertTrue(library.size()==0 && library.getRevision()==0);
-        DaapTransaction trx = DaapTransaction.open(library);
-        library.add(database);
-        trx.commit();
+        Transaction txn = library.open(false);
+        library.add(txn, database);
+        txn.commit();
         assertTrue(library.size()==1 && library.getRevision()==1);
     }
     
@@ -52,17 +52,9 @@ public class DatabaseTest extends TestCase {
         int size = database.size();
         int revision = library.getRevision();
         
-        try {
-            database.add(playlist);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision()==revision);
-            assertTrue(database.size()==size); 
-        }
-        
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.add(playlist);
-        trx.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, playlist);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(database.size() == (size+1));
@@ -72,25 +64,16 @@ public class DatabaseTest extends TestCase {
     public void testRemovePlaylist() {
         Playlist playlist = new Playlist("Playlist");
         
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.add(playlist);
-        trx.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, playlist);
+        txn.commit();
         
         int size = database.size();
         int revision = library.getRevision();
-
-        try {
-            database.remove(playlist);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision()==revision);
-            assertTrue(database.size()==size);
-            assertTrue(database.contains(playlist));
-        }
         
-        trx = DaapTransaction.open(library);
-        database.remove(playlist);
-        trx.commit();
+        txn = library.open(false);
+        database.remove(txn, playlist);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(database.size() == (size-1));
@@ -101,19 +84,10 @@ public class DatabaseTest extends TestCase {
         
         int revision = library.getRevision();
         String name = database.getName();
-        
-        try {
-            database.setName("ERROR");
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision()==revision);
-            assertTrue(database.getName().equals(name));
-            assertTrue(database.getMasterPlaylist().getName().equals(name));
-        }
-        
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.setName("OK");
-        trx.commit();
+       
+        Transaction txn = library.open(false);
+        database.setName(txn, "OK");
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(database.getName().equals("OK"));
@@ -127,19 +101,10 @@ public class DatabaseTest extends TestCase {
         Song song = new Song("Song");
         Playlist playlist = new Playlist("Playlist");
         
-        try {
-            database.add(song);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertTrue(database.getMasterPlaylist().size()==0);
-            assertFalse(database.getMasterPlaylist().contains(song));
-        }
-        
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.add(song);
-        database.add(playlist);
-        trx.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, song);
+        database.add(txn, playlist);
+        txn.commit();
         
         assertTrue(library.getRevision()==(revision+1));
         assertTrue(database.getMasterPlaylist().size()==1);
@@ -154,25 +119,16 @@ public class DatabaseTest extends TestCase {
         Song song = new Song("Song");
         Playlist playlist = new Playlist("Playlist");
         
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.add(song);
-        database.add(playlist);
-        trx.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, song);
+        database.add(txn, playlist);
+        txn.commit();
         
         int revision = library.getRevision();
         
-        try {
-            database.remove(song);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertTrue(database.getMasterPlaylist().size()==1);
-            assertTrue(database.getMasterPlaylist().contains(song));
-        }
-        
-        trx = DaapTransaction.open(library);
-        database.remove(song);
-        trx.commit();
+        txn = library.open(false);
+        database.remove(txn, song);
+        txn.commit();
         
         assertTrue(library.getRevision()==(revision+1));
         assertTrue(database.getMasterPlaylist().size()==0);
@@ -186,16 +142,16 @@ public class DatabaseTest extends TestCase {
         
         Song song = new Song("Song");
         
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.add(song);
-        trx.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, song);
+        txn.commit();
         
         song.setName("Hello World");
         int revision = library.getRevision();
         
-        trx = DaapTransaction.open(library);
-        database.update(song);
-        trx.commit();
+        txn = library.open(false);
+        database.update(txn, song);
+        txn.commit();
         
         assertTrue(library.getRevision()==(revision+1));
         assertTrue(database.getMasterPlaylist().size()==1);

@@ -66,11 +66,11 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
  * modifiying operations must be performed as a "transaction" on the Library. 
  * 
  * <p><code>
- * DaapTransaction transaction = DaapTransaction.open(library);
- * library.setName("New Name");
- * library.add(new Database("Foobar"));
+ * Transaction txn = library.open(false);
+ * library.setName(txn, "New Name");
+ * library.add(txn, new Database("Foobar"));
  * ...
- * transaction.commit();
+ * txn.commit();
  * </code></p>
  * 
  * @author Roger Kapsi
@@ -125,24 +125,20 @@ public class Library {
     public synchronized int getRevision() {
         return revision;
     }
-
+       
     /**
      * Sets the name of this Library. Note: Library must be open or an
      * <tt>IllegalStateException</tt> will be thrown
      */
-    public void setName(String name) {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
+    public void setName(Transaction txn, String name) {
+        if (!txn.isOpen()) {
+            throw new DaapException("Transaction is not open");
         }
 
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        LibraryTransaction obj = (LibraryTransaction) transaction
-                .getAttribute(this);
+        LibraryTxn obj = (LibraryTxn) txn.getAttribute(this);
 
         if (obj == null) {
-            obj = new LibraryTransaction(this);
-            transaction.setAttribute(this, obj);
+            throw new DaapException();
         }
 
         obj.setName(name);
@@ -162,19 +158,15 @@ public class Library {
      * @param database
      * @throws DaapTransactionException
      */
-    public void add(Database database) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
+    public void add(Transaction txn, Database database) throws DaapException {
+        if (!txn.isOpen()) {
+            throw new DaapException("Transaction is not open");
         }
 
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        LibraryTransaction obj = (LibraryTransaction) transaction
-                .getAttribute(this);
+        LibraryTxn obj = (LibraryTxn) txn.getAttribute(this);
 
         if (obj == null) {
-            obj = new LibraryTransaction(this);
-            transaction.setAttribute(this, obj);
+            throw new DaapException();
         }
 
         obj.add(database);
@@ -186,19 +178,15 @@ public class Library {
      * @param database
      * @throws DaapTransactionException
      */
-    public void remove(Database database) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
+    public void remove(Transaction txn, Database database) throws DaapException {
+        if (!txn.isOpen()) {
+            throw new DaapException("Transaction is not open");
         }
 
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        LibraryTransaction obj = (LibraryTransaction) transaction
-                .getAttribute(this);
+        LibraryTxn obj = (LibraryTxn) txn.getAttribute(this);
 
         if (obj == null) {
-            obj = new LibraryTransaction(this);
-            transaction.setAttribute(this, obj);
+            throw new DaapException();
         }
 
         obj.remove(database);
@@ -213,96 +201,30 @@ public class Library {
     public boolean contains(Database database) {
         return databases.contains(database);
     }
-
-    synchronized void commit() throws CloneNotSupportedException {
-
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
-        try {
-            DaapTransaction transaction = DaapTransaction.getTransaction();
-
-            LibraryTransaction obj = (LibraryTransaction) transaction.getAttribute(this);
-
-            if (obj != null) {
-                obj.commit();
-            }
-            
-            // The difference between the original and the cloned
-            // Database is that the cloned Database has no longer
-            // references to the Songs because it no longer needs
-            // them!
-            
-            LibraryRevision current = revisions[(revision % revisions.length)];
-            
-            if (current != null) {
-                current.databases = new ArrayList();
-            }
-            
-            Iterator it = databases.iterator();
-            while (it.hasNext()) {
-                Database database = (Database) it.next();
-                if (current != null) {
-                    current.databases.add(database.clone()); // create a clone before...
-                }
-                database.commit(); // ...commiting the new items!!!
-            }
-            
-            revision++;
-            LibraryRevision newRevision = new LibraryRevision(revision);
-            newRevision.databases = databases;
-            
-            // 3.0.0 (iTunes 4.5 and up)
-            newRevision.serverInfo = new ServerInfoResponseImpl(this, DaapUtil.VERSION_3).getBytes();
-            
-            newRevision.serverDatabases = new ServerDatabasesImpl(this, false).getBytes();
-            newRevision.serverDatabasesUpdate = new ServerDatabasesImpl(this, true).getBytes();
-            
-            revisions[(revision % revisions.length)] = newRevision; 
-            
-            if (useLibraryGC && gcTimer == null) {
-                gcTimer = new Timer(true);
-                gcTimer.scheduleAtFixedRate(new LibraryGC(this), GC_TIMER_INTERVAL, GC_TIMER_INTERVAL);
-            }
-            
-        } finally {
-            Iterator it = databases.iterator();
-            while (it.hasNext()) {
-                Database database = (Database) it.next();
-                database.cleanup();
-            }
-        }
+    
+    /**
+     * Same as Library.open(true)
+     * @return
+     */
+    public synchronized Transaction open() {
+        return open(true);
     }
-
-    synchronized void rollback() throws DaapTransactionException {
-
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
+    
+    /**
+     * 
+     * @param autoCommit
+     * @return
+     */
+    public synchronized Transaction open(boolean autoCommit) {
+        Txn rootTxn = new LibraryTxn(this);
+        Transaction txn = new Transaction(this, rootTxn, autoCommit);
+        Iterator it = databases.iterator();
+        while(it.hasNext()) {
+            ((Database)it.next()).openTxn(txn);
         }
-        
-        try {
-            DaapTransaction transaction = DaapTransaction.getTransaction();
-            LibraryTransaction obj = (LibraryTransaction) transaction.getAttribute(this);
-
-            if (obj != null) {
-                obj.rollback();
-            }
-
-            Iterator it = databases.iterator();
-            while (it.hasNext()) {
-                ((Database) it.next()).rollback();
-            }
-        } finally {
-            Iterator it = databases.iterator();
-            while (it.hasNext()) {
-                ((Database) it.next()).cleanup();
-            }
-        }
+        return txn;
     }
-
+    
     /**
      * Returns some kind of Object or null if <tt>request</tt> didn't matched
      * for this Library (unknown request, unknown id, whatever). The returned
@@ -454,7 +376,7 @@ public class Library {
     /**
      * 
      */
-    private static final class LibraryTransaction {
+    private static final class LibraryTxn implements Txn {
 
         private Library library;
         private String name;
@@ -462,7 +384,7 @@ public class Library {
         private HashSet databases = new HashSet();
         private HashSet deletedDatabases = new HashSet();
 
-        private LibraryTransaction(Library library) {
+        private LibraryTxn(Library library) {
             this.library = library;
             this.name = library.getName();
         }
@@ -485,37 +407,123 @@ public class Library {
             }
         }
 
-        private void commit() {
-            if (library.getName() != name) {
-                library.itemName.setValue(name);
-            }
-
-            Iterator it = databases.iterator();
-            while (it.hasNext()) {
-                Database database = (Database) it.next();
-                if (!library.databases.contains(database)) {
-
-                    //if (library.databases.isEmpty()) {
-                    library.databases.add(database);
-                    //} else {
-                    //    library.databases.set(0, database);
-                    //}
+        public void commit(Transaction txn) {
+            synchronized(library) {
+                
+                // Step 1
+                // copy
+                if (library.getName() != name) {
+                    library.itemName.setValue(name);
+                }
+    
+                Iterator it = databases.iterator();
+                while (it.hasNext()) {
+                    Database database = (Database) it.next();
+                    if (!library.databases.contains(database)) {
+                        library.databases.add(database);
+                    }
+                }
+    
+                it = deletedDatabases.iterator();
+                while (it.hasNext()) {
+                    Database database = (Database) it.next();
+                    library.databases.remove(database);
+                }
+                
+                // Step 2
+                // commit
+                LibraryRevision current = library.revisions[(library.revision % library.revisions.length)];
+                
+                if (current != null) {
+                    current.databases = new ArrayList();
+                }
+                
+                try {
+                    it = library.databases.iterator();
+                    while (it.hasNext()) {
+                        Database database = (Database) it.next();
+                        if (current != null) {
+                            current.databases.add(database.clone()); // create a clone before...
+                        }
+                        
+                        // ...commiting the new items!!!
+                        Txn obj = txn.getAttribute(database);
+                        if (obj != null)
+                            obj.commit(txn);
+                    }
+                } catch (CloneNotSupportedException err) {
+                    throw new DaapException(err);
+                }
+                
+                library.revision++;
+                LibraryRevision newRevision = new LibraryRevision(library.revision);
+                newRevision.databases = library.databases;
+                
+                // 3.0.0 (iTunes 4.5 and up)
+                newRevision.serverInfo = new ServerInfoResponseImpl(library, DaapUtil.VERSION_3).getBytes();
+                
+                newRevision.serverDatabases = new ServerDatabasesImpl(library, false).getBytes();
+                newRevision.serverDatabasesUpdate = new ServerDatabasesImpl(library, true).getBytes();
+                
+                library.revisions[(library.revision % library.revisions.length)] = newRevision; 
+                
+                // Step 3
+                // cleanup
+                if (library.useLibraryGC && library.gcTimer == null) {
+                    library.gcTimer = new Timer(true);
+                    library.gcTimer.scheduleAtFixedRate(new LibraryGC(library), GC_TIMER_INTERVAL, GC_TIMER_INTERVAL);
                 }
             }
-
-            it = deletedDatabases.iterator();
-            while (it.hasNext()) {
-                Database database = (Database) it.next();
-                library.databases.remove(database);
-            }
-
+            
             databases.clear();
             deletedDatabases.clear();
         }
 
-        private void rollback() {
+        public void rollback(Transaction txn) {
+            synchronized(library) {
+                Iterator it = library.databases.iterator();
+                while (it.hasNext()) {
+                    Database database = (Database)it.next();
+                    Txn obj = txn.getAttribute(database);
+                    if (obj != null)
+                        obj.rollback(txn);
+                }
+            }
+            
             databases.clear();
             deletedDatabases.clear();
+        }
+        
+        public void cleanup(Transaction txn) {
+            synchronized(library) {
+                Iterator it = databases.iterator();
+                while (it.hasNext()) {
+                    Database database = (Database) it.next();
+                    Txn obj = txn.getAttribute(database);
+                    if (obj != null)
+                        obj.cleanup(txn);
+                }
+            }
+            
+            databases.clear();
+            deletedDatabases.clear();
+        }
+        
+        public void join(Txn value) {
+            LibraryTxn obj = (LibraryTxn)value;
+           
+            if (obj.name != name)
+                name = obj.name;
+            
+            Iterator it = obj.databases.iterator();
+            while(it.hasNext()) {
+                add((Database)it.next());
+            }
+            
+            it = obj.deletedDatabases.iterator();
+            while(it.hasNext()) {
+                remove((Database)it.next());
+            }
         }
     }
     

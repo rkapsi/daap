@@ -20,17 +20,36 @@
 package de.kapsi.net.daap;
 
 /**
- * Thrown by DaapTransaction and the involved Objects
  * 
  * @author Roger Kapsi
  */
-public class DaapTransactionException extends RuntimeException {
+interface Txn {
     
-    public DaapTransactionException() {
-        super();
-    }
+    /**
+     * 
+     * @param txn
+     * @throws DaapException
+     */
+    void commit(Transaction txn) throws DaapException;
     
-    public DaapTransactionException(String err) {
-        super(err);
-    }
+    /**
+     * 
+     * @param txn
+     * @throws DaapException
+     */
+    void rollback(Transaction txn) throws DaapException;
+    
+    /**
+     * 
+     * @param txn
+     * @throws DaapException
+     */
+    void cleanup(Transaction txn) throws DaapException;
+    
+    /**
+     * 
+     * @param value
+     * @throws DaapException
+     */
+    void join(Txn value) throws DaapException;
 }

@@ -43,7 +43,6 @@ import de.kapsi.util.ArrayIterator;
 
 /**
  * 
- * 
  * @author Roger Kapsi
  */
 public class Database implements Cloneable {
@@ -132,8 +131,8 @@ public class Database implements Cloneable {
      * 
      * @param name
      */
-    public void setName(String name) {
-        masterPlaylist.setName(name);
+    public void setName(Transaction txn, String name) {
+        masterPlaylist.setName(txn, name);
     }
 
     long getPersistentId() {
@@ -156,71 +155,17 @@ public class Database implements Cloneable {
         return Collections.unmodifiableSet(deletedContainers);
     }
 
-    void commit() throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
+    Txn openTxn(Transaction txn) throws DaapException {
+        if (!txn.isOpen()) {
+            throw new DaapException("Transaction is not open");
         }
-
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj != null) {
-            obj.commit();
+        
+        DatabaseTxn obj = (DatabaseTxn)txn.getAttribute(this);
+        if (obj == null) {
+            obj = new DatabaseTxn(this);
+            txn.setAttribute(this, obj);
         }
-
-        Iterator it = containers.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
-            if (playlist != masterPlaylist) {
-                playlist.setMasterPlaylist(masterPlaylist);
-                playlist.commit();
-            }
-        }
-
-        masterPlaylist.commit();
-
-        databaseSongs = new DatabaseSongsImpl(masterPlaylist, false).getBytes();
-        databaseSongsUpdate = new DatabaseSongsImpl(masterPlaylist, true)
-                .getBytes();
-
-        databasePlaylists = new DatabasePlaylistsImpl(this, false).getBytes();
-        databasePlaylistsUpdate = new DatabasePlaylistsImpl(this, true)
-                .getBytes();
-    }
-
-    void cleanup() {
-        Iterator it = containers.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
-            playlist.cleanup();
-        }
-    }
-
-    void rollback() throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj != null) {
-            obj.rollback();
-        }
-
-        Iterator it = containers.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
-            if (playlist != masterPlaylist) {
-                playlist.rollback();
-            }
-        }
-
-        masterPlaylist.rollback();
+        return obj;
     }
 
     /**
@@ -229,24 +174,11 @@ public class Database implements Cloneable {
      * @param playlist
      * @throws DaapTransactionException
      */
-    public void add(Playlist playlist) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
+    public void add(Transaction txn, Playlist playlist) throws DaapException {
         if (playlist == masterPlaylist)
-            throw new RuntimeException("You cannot add the master playlist.");
+            throw new DaapException("You cannot add the master playlist.");
 
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj == null) {
-            obj = new DatabaseTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-
+        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
         obj.add(playlist);
     }
 
@@ -257,24 +189,11 @@ public class Database implements Cloneable {
      * @return
      * @throws DaapTransactionException
      */
-    public void remove(Playlist playlist) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
+    public void remove(Transaction txn, Playlist playlist) throws DaapException {
         if (playlist == masterPlaylist)
-            throw new RuntimeException("You cannot remove the master playlist.");
+            throw new DaapException("You cannot remove the master playlist.");
 
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj == null) {
-            obj = new DatabaseTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-
+        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
         obj.remove(playlist);
     }
 
@@ -285,21 +204,8 @@ public class Database implements Cloneable {
      * @param song
      * @throws DaapTransactionException
      */
-    public void update(Song song) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj == null) {
-            obj = new DatabaseTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-
+    public void update(Transaction txn, Song song) throws DaapException {
+        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
         obj.update(song);
     }
     
@@ -308,21 +214,8 @@ public class Database implements Cloneable {
      * 
      * @param song
      */
-    public void add(Song song) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj == null) {
-            obj = new DatabaseTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-
+    public void add(Transaction txn, Song song) throws DaapException {
+        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
         obj.add(song);
     }
 
@@ -331,21 +224,8 @@ public class Database implements Cloneable {
      * 
      * @param song
      */
-    public void remove(Song song) throws DaapTransactionException {
-        if (!DaapTransaction.isOpen()) {
-            throw new DaapTransactionException(
-                    "Current Thread is not associated with a transaction.");
-        }
-
-        DaapTransaction transaction = DaapTransaction.getTransaction();
-        DatabaseTransaction obj = (DatabaseTransaction) transaction
-                .getAttribute(this);
-
-        if (obj == null) {
-            obj = new DatabaseTransaction(this);
-            transaction.setAttribute(this, obj);
-        }
-
+    public void remove(Transaction txn, Song song) throws DaapException {
+        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
         obj.remove(song);
     }
 
@@ -452,7 +332,10 @@ public class Database implements Cloneable {
         return "Database(" + getId() + ", " + getName() + ")";
     }
 
-    private static class DatabaseTransaction {
+    /**
+     * 
+     */
+    private static class DatabaseTxn implements Txn {
 
         private Database database;
         
@@ -463,7 +346,7 @@ public class Database implements Cloneable {
         private HashSet containers = new HashSet();
         private HashSet deletedContainers = new HashSet();
 
-        private DatabaseTransaction(Database database) {
+        private DatabaseTxn(Database database) {
             this.database = database;
         }
 
@@ -505,57 +388,153 @@ public class Database implements Cloneable {
             }
         }
 
-        private void commit() {
-            Iterator it = null;
-
-            it = containers.iterator();
-            while (it.hasNext()) {
-                Playlist playlist = (Playlist) it.next();
-                if (!database.containers.contains(playlist)) {
-                    database.containers.add(playlist);
-                    database.deletedContainers.remove(playlist);
+        public void commit(Transaction txn) {
+            synchronized(database) {
+                Iterator it = null;
+    
+                it = containers.iterator();
+                while (it.hasNext()) {
+                    Playlist playlist = (Playlist) it.next();
+                    if (!database.containers.contains(playlist)) {
+                        database.containers.add(playlist);
+                        database.deletedContainers.remove(playlist);
+                    }
                 }
-            }
-
-            it = deletedContainers.iterator();
-            while (it.hasNext()) {
-                Playlist playlist = (Playlist) it.next();
-                if (database.containers.remove(playlist))
-                    database.deletedContainers.add(playlist);
-            }
-
-            it = database.containers.iterator();
-            while (it.hasNext()) {
-                Playlist playlist = (Playlist) it.next();
+    
+                it = deletedContainers.iterator();
+                while (it.hasNext()) {
+                    Playlist playlist = (Playlist) it.next();
+                    if (database.containers.remove(playlist)) {
+                        database.deletedContainers.add(playlist);
+                        playlist.setMasterPlaylist(null);
+                    }
+                }
+    
+                it = database.containers.iterator();
+                while (it.hasNext()) {
+                    Playlist playlist = (Playlist) it.next();
+                    
+                    Iterator add = newItems.iterator();
+                    while (add.hasNext()) {
+                        Song song = (Song) add.next();
+                        playlist.add(txn, song);
+                    }
+                    
+                    Iterator update = updateItems.iterator();
+                    while (update.hasNext()) {
+                        Song song = (Song) update.next();
+                        playlist.update(txn, song);
+                    }
+                    
+                    Iterator remove = deletedItems.iterator();
+                    while (remove.hasNext()) {
+                        Song song = (Song) remove.next();
+                        playlist.remove(txn, song);
+                    }
+                }
                 
-                Iterator add = newItems.iterator();
-                while (add.hasNext()) {
-                    Song song = (Song) add.next();
-                    playlist.add(song);
+                // commit
+                it = database.containers.iterator();
+                while (it.hasNext()) {
+                    Playlist playlist = (Playlist) it.next();
+                    if (playlist != database.masterPlaylist) {
+                        Txn obj = txn.getAttribute(playlist);
+                        if (obj != null) {
+                            playlist.setMasterPlaylist(database.masterPlaylist);
+                            obj.commit(txn);
+                        }
+                    }
                 }
                 
-                Iterator remove = deletedItems.iterator();
-                while (remove.hasNext()) {
-                    Song song = (Song) remove.next();
-                    playlist.remove(song);
-                }
-                
-                Iterator update = updateItems.iterator();
-                while (update.hasNext()) {
-                    Song song = (Song) update.next();
-                    playlist.update(song);
-                }
-            }
+                Txn obj = txn.getAttribute(database.masterPlaylist);
+                if (obj != null)
+                    obj.commit(txn);
 
+                database.databaseSongs = new DatabaseSongsImpl(database.masterPlaylist, false).getBytes();
+                database.databaseSongsUpdate = new DatabaseSongsImpl(database.masterPlaylist, true)
+                        .getBytes();
+
+                database.databasePlaylists = new DatabasePlaylistsImpl(database, false).getBytes();
+                database.databasePlaylistsUpdate = new DatabasePlaylistsImpl(database, true)
+                        .getBytes();
+            }
+            
             containers.clear();
             deletedContainers.clear();
             updateItems.clear();
         }
 
-        private void rollback() {
+        public void rollback(Transaction txn) {
+            synchronized(database) {
+                Iterator it = containers.iterator();
+                while (it.hasNext()) {
+                    Playlist playlist = (Playlist) it.next();
+                    if (playlist != database.masterPlaylist) {
+                        Txn obj = txn.getAttribute(playlist);
+                        if (obj != null)
+                            obj.rollback(txn);
+                    }
+                }
+                
+                Txn obj = txn.getAttribute(database.masterPlaylist);
+                if (obj != null)
+                    obj.rollback(txn);
+            }
+            
             containers.clear();
             deletedContainers.clear();
             updateItems.clear();
+        }
+        
+        public void cleanup(Transaction txn) {
+            synchronized(database) {
+                Iterator it = containers.iterator();
+                while (it.hasNext()) {
+                    Playlist playlist = (Playlist) it.next();
+                    Txn obj = txn.getAttribute(playlist);
+                    if (obj != null)
+                        obj.cleanup(txn);
+                }
+            }
+            
+            containers.clear();
+            deletedContainers.clear();
+            updateItems.clear();
+        }
+        
+        public void join(Txn value) {
+            DatabaseTxn obj = (DatabaseTxn)value;
+            
+            // Songs
+            Iterator it = obj.newItems.iterator();
+            while(it.hasNext()) {
+                add((Song)it.next());
+            }
+            
+            it = obj.updateItems.iterator();
+            while(it.hasNext()) {
+                update((Song)it.next());
+            }
+            
+            it = obj.deletedItems.iterator();
+            while(it.hasNext()) {
+                remove((Song)it.next());
+            }
+            
+            // Playlists
+            it = obj.containers.iterator();
+            while(it.hasNext()) {
+                add((Playlist)it.next());
+            }
+            
+            it = obj.deletedContainers.iterator();
+            while(it.hasNext()) {
+                remove((Playlist)it.next());
+            }
+        }
+        
+        public String toString() {
+            return "DatabaseTxn for " + database;
         }
     }
 

@@ -40,20 +40,20 @@ public class DaapTransactionTest extends TestCase {
     
     public void testCommit() {
         assertTrue(library.getRevision()==0);
-        DaapTransaction transaction = DaapTransaction.open(library);
+        Transaction txn = library.open(false);
         Database database = new Database("Database");
-        library.add(database);
-        transaction.commit();
+        library.add(txn, database);
+        txn.commit();
         assertTrue(library.getRevision()==1);
         assertTrue(library.size()==1);
     }
     
     public void testRollback() {
         assertTrue(library.getRevision()==0);
-        DaapTransaction transaction = DaapTransaction.open(library);
+        Transaction txn = library.open(false);
         Database database = new Database("Database");
-        library.add(database);
-        transaction.rollback();
+        library.add(txn, database);
+        txn.rollback();
         assertTrue(library.getRevision()==0);
         assertTrue(library.size()==0);
     }
@@ -66,20 +66,20 @@ public class DaapTransactionTest extends TestCase {
         assertTrue(library.size()==0);
         assertTrue(database.size()==1); /* masterPlaylist!!! */ 
         
-        DaapTransaction transaction = DaapTransaction.open(library);
-        database.add(playlist);
-        library.add(database);
-        transaction.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, playlist);
+        library.add(txn, database);
+        txn.commit();
         
         assertTrue(library.getRevision()==1); /* incremeted with each commit */
         assertTrue(library.size()==1);
         assertTrue(database.size()==2);
         
-        DaapTransaction transaction2 = DaapTransaction.open(library);
-        database.setName("NewDatabaseName");
-        playlist.setName("NewPlaylistName");
-        library.setName("NewLibraryName");
-        transaction2.commit();
+        Transaction txn2 = library.open(false);
+        database.setName(txn2, "NewDatabaseName");
+        playlist.setName(txn2, "NewPlaylistName");
+        library.setName(txn2, "NewLibraryName");
+        txn2.commit();
         
         assertTrue(library.getRevision()==2);
         assertTrue(library.size()==1);
@@ -93,9 +93,9 @@ public class DaapTransactionTest extends TestCase {
         assertEquals(masterPlaylist.getName(), "NewDatabaseName");
         
         Song song1 = new Song("Song1");
-        DaapTransaction transaction3 = DaapTransaction.open(library);
-        playlist.add(song1);
-        transaction3.commit();
+        Transaction txn3 = library.open(false);
+        playlist.add(txn3, song1);
+        txn3.commit();
         
         assertTrue(library.getRevision()==3);
         assertTrue(library.size()==1);
@@ -105,31 +105,14 @@ public class DaapTransactionTest extends TestCase {
         
         Song song2 = new Song("Song2");
         playlist.setNotifyMasterPlaylistOnAdd(false);
-        DaapTransaction transaction4 = DaapTransaction.open(library);
-        playlist.add(song2);
-        transaction4.commit();
+        Transaction txn4 = library.open(false);
+        playlist.add(txn4, song2);
+        txn4.commit();
         
         assertTrue(library.getRevision()==4);
         assertTrue(library.size()==1);
         assertTrue(database.size()==2);
         assertTrue(playlist.size()==2 && playlist.contains(song2));
         assertTrue(masterPlaylist.size()==1 && !masterPlaylist.contains(song2));
-    }
-    
-    /**
-     * Nested operations are not supported.
-     *
-     */
-    public void testNestedOperation() {
-        DaapTransaction transaction = DaapTransaction.open(library);
-        
-        try {
-            DaapTransaction nested = DaapTransaction.open(library);
-            assertFalse(nested != null);
-        } catch (DaapTransactionException err) {
-            assertTrue(true);
-        } finally {
-            transaction.rollback();
-        }
     }
 }

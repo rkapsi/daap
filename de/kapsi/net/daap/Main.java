@@ -88,40 +88,40 @@ public class Main extends TimerTask implements DaapAuthenticator, DaapStreamSour
         playlist2 = new Playlist("Punk Music");
         playlist3 = new Playlist("All");
         
-        DaapTransaction transaction = DaapTransaction.open(library);
+        Transaction txn = library.open(false);
         
-        playlist1.setSmartPlaylist(true);
-        playlist3.setSmartPlaylist(true);
+        playlist1.setSmartPlaylist(txn, true);
+        playlist3.setSmartPlaylist(txn, true);
         
-        library.add(database);
+        library.add(txn, database);
             
-        database.add(playlist0);
-        database.add(playlist1);
-        database.add(playlist2);
-        database.add(playlist3);
-        transaction.commit();
+        database.add(txn, playlist0);
+        database.add(txn, playlist1);
+        database.add(txn, playlist2);
+        database.add(txn, playlist3);
+        txn.commit();
         
         Playlist masterPlaylist = database.getMasterPlaylist();
-        transaction = DaapTransaction.open(library);
+        txn = library.open(false);
         
         for (int i = 0; i < 100; i++) {
 
             Song song = createSong(i);
             
             if (i % 2 == 0) {
-                playlist0.add(song);
+                playlist0.add(txn, song);
             } else if (i % 3 == 0) {
-                playlist1.add(song);
+                playlist1.add(txn, song);
             } else {
-                playlist2.add(song);
+                playlist2.add(txn, song);
             }
 
-            playlist3.add(song);
+            playlist3.add(txn, song);
 
             updateSong = song;
         }
         
-        transaction.commit();
+        txn.commit();
 
         SimpleConfig config = new SimpleConfig(PORT);
         config.setMaxConnections(10);
@@ -176,23 +176,23 @@ public class Main extends TimerTask implements DaapAuthenticator, DaapStreamSour
         updateSong.setAlbum("0 " + ALBUMS[index_albums]);
         updateSong.setUserRating((updateSong.getUserRating() + 20) % 120);
         
-        DaapTransaction trx = DaapTransaction.open(library);
+        Transaction txn = library.open(false);
         
-        database.update(updateSong);
+        database.update(txn, updateSong);
         
         boolean smart = playlist0.isSmartPlaylist();
-        playlist0.setSmartPlaylist(!playlist1.isSmartPlaylist());
-        playlist1.setSmartPlaylist(!playlist2.isSmartPlaylist());
-        playlist2.setSmartPlaylist(!playlist3.isSmartPlaylist());
-        playlist3.setSmartPlaylist(!smart);
+        playlist0.setSmartPlaylist(txn, !playlist1.isSmartPlaylist());
+        playlist1.setSmartPlaylist(txn, !playlist2.isSmartPlaylist());
+        playlist2.setSmartPlaylist(txn, !playlist3.isSmartPlaylist());
+        playlist3.setSmartPlaylist(txn, !smart);
 
         String p0 = playlist0.getName();
-        playlist0.setName(playlist1.getName());
-        playlist1.setName(playlist2.getName());
-        playlist2.setName(playlist3.getName());
-        playlist3.setName(p0);
+        playlist0.setName(txn, playlist1.getName());
+        playlist1.setName(txn, playlist2.getName());
+        playlist2.setName(txn, playlist3.getName());
+        playlist3.setName(txn, p0);
         
-        trx.commit();
+        txn.commit();
         
         server.update();
         

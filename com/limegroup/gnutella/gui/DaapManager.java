@@ -38,7 +38,8 @@ import de.kapsi.net.daap.DaapServer;
 import de.kapsi.net.daap.DaapServerFactory;
 import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapThreadFactory;
-import de.kapsi.net.daap.DaapTransaction;
+import de.kapsi.net.daap.Transaction;
+import de.kapsi.net.daap.TransactionListener;
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Database;
 import de.kapsi.net.daap.Library;
@@ -49,7 +50,7 @@ import de.kapsi.net.daap.Song;
  * This class handles the mDNS registration and acts as an
  * interface between LimeWire and DAAP.
  */
-public final class DaapManager implements FinalizeListener {
+public final class DaapManager implements FinalizeListener, TransactionListener {
     
     private static final Log LOG = LogFactory.getLog(DaapManager.class);
     private static final DaapManager INSTANCE = new DaapManager();
@@ -109,10 +110,10 @@ public final class DaapManager implements FinalizeListener {
                 database = new Database(name);
                 whatsNew = new Playlist(GUIMediator.getStringResource("SEARCH_TYPE_WHATSNEW"));
                 
-                DaapTransaction txn = DaapTransaction.open(library);
-                library.add(database);
-                database.add(whatsNew);
-                whatsNew.setSmartPlaylist(true);
+                Transaction txn = library.open(false);
+                library.add(txn, database);
+                database.add(txn, whatsNew);
+                whatsNew.setSmartPlaylist(txn, true);
                 txn.commit();
                 
                 LimeConfig config = new LimeConfig();
@@ -215,10 +216,10 @@ public final class DaapManager implements FinalizeListener {
         if (isServerRunning()) {
             rendezvous.updateService();
 
-            DaapTransaction txn = DaapTransaction.open(library);
+            Transaction txn = library.open(false);
             String name = DaapSettings.DAAP_LIBRARY_NAME.getValue();
-            library.setName(name);
-            database.setName(name);
+            library.setName(txn, name);
+            database.setName(txn, name);
             txn.commit();
             server.update();
         }
@@ -278,10 +279,9 @@ public final class DaapManager implements FinalizeListener {
                 
                 // Any changes in the meta data?
                 if ( updateSongMeta(song, newDesc) ) {
-                    DaapTransaction txn = DaapTransaction.open(library);
-                    database.update(song);
-                    txn.commit();
-                    server.update();
+                    Transaction txn = library.open(true);
+                    txn.addTransactionListener(this);
+                    database.update(txn, song);
                 }
             }
             
@@ -301,10 +301,9 @@ public final class DaapManager implements FinalizeListener {
                     Song song = createSong(file);
                     map.put(song, file.getSHA1Urn());
                     
-                    DaapTransaction txn = DaapTransaction.open(library);
-                    database.add(song);
-                    txn.commit();
-                    server.update();
+                    Transaction txn = library.open(true);
+                    txn.addTransactionListener(this);
+                    database.add(txn, song);
                 }
             }
             
@@ -324,10 +323,9 @@ public final class DaapManager implements FinalizeListener {
             Song song = map.remove(file.getSHA1Urn());
             
             if (song != null) {
-                DaapTransaction txn = DaapTransaction.open(library);
-                database.remove(song);
-                txn.commit();
-                server.update();
+                Transaction txn = library.open(true);
+                txn.addTransactionListener(this);
+                database.remove(txn, song);
             }
         }
     }
@@ -344,7 +342,7 @@ public final class DaapManager implements FinalizeListener {
          
         int size = database.getMasterPlaylist().size();
         
-        DaapTransaction txn = DaapTransaction.open(library);
+        Transaction txn = library.open(false);
         
         SongURNMap tmpMap = new SongURNMap();
         
@@ -378,7 +376,7 @@ public final class DaapManager implements FinalizeListener {
 
                             // Any changes in the meta data?
                             if ( updateSongMeta(song, file) ) {
-                                database.update(song);
+                                database.update(txn, song);
                             }
 
                         } else if (size < maxPlaylistSize){
@@ -388,7 +386,7 @@ public final class DaapManager implements FinalizeListener {
                             
                             song = createSong(file);
                             tmpMap.put(song, urn);
-                            database.getMasterPlaylist().add(song);
+                            database.getMasterPlaylist().add(txn, song);
                             size++;
                         }
                     }
@@ -403,14 +401,14 @@ public final class DaapManager implements FinalizeListener {
         Iterator it = map.getSongIterator();
         while(it.hasNext()) {
             Song song = (Song)it.next();
-            database.remove(song);
+            database.remove(txn, song);
         }
         
         map.clear();
         map = tmpMap; // tempMap is the new 'map'
         
+        txn.addTransactionListener(this);
         txn.commit();
-        server.update();
     }
     
     /**
@@ -589,6 +587,15 @@ public final class DaapManager implements FinalizeListener {
         }
         
         return update;
+    }
+    
+    public synchronized void commit(Transaction txn) {
+        if (isServerRunning()) {
+            server.update();
+        }
+    }
+    
+    public void rollback(Transaction txn) {
     }
     
     /**

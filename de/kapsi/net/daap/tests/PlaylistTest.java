@@ -43,10 +43,10 @@ public class PlaylistTest extends TestCase {
         
         assertTrue(library.size()==0 && library.getRevision()==0);
         
-        DaapTransaction trx = DaapTransaction.open(library);
-        database.add(playlist);
-        library.add(database);
-        trx.commit();
+        Transaction txn = library.open(false);
+        database.add(txn, playlist);
+        library.add(txn, database);
+        txn.commit();
         
         assertTrue(library.size()==1 && library.getRevision()==1);
         assertTrue(database.contains(playlist));
@@ -58,17 +58,9 @@ public class PlaylistTest extends TestCase {
         int revision = library.getRevision();
         boolean isSmart = playlist.isSmartPlaylist();
         
-        try {
-            playlist.setSmartPlaylist(!isSmart);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertTrue(playlist.isSmartPlaylist() == isSmart);
-        }
-        
-        DaapTransaction trx = DaapTransaction.open(library);
-        playlist.setSmartPlaylist(!isSmart);
-        trx.commit();
+        Transaction txn = library.open(false);
+        playlist.setSmartPlaylist(txn, !isSmart);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(playlist.isSmartPlaylist() != isSmart);
@@ -80,17 +72,9 @@ public class PlaylistTest extends TestCase {
         
         Song song = new Song("Song");
         
-        try {
-            playlist.add(song);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertFalse(playlist.contains(song));
-        }
-        
-        DaapTransaction trx = DaapTransaction.open(library);
-        playlist.add(song);
-        trx.commit();
+        Transaction txn = library.open(false);
+        playlist.add(txn, song);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(playlist.contains(song));
@@ -100,23 +84,15 @@ public class PlaylistTest extends TestCase {
         
         Song song = new Song("Song");
         
-        DaapTransaction trx = DaapTransaction.open(library);
-        playlist.add(song);
-        trx.commit();
+        Transaction txn = library.open(false);
+        playlist.add(txn, song);
+        txn.commit();
         
         int revision = library.getRevision();
         
-        try {
-            playlist.remove(song);
-            assertTrue(false);
-        } catch (DaapTransactionException err) {
-            assertTrue(library.getRevision() == revision);
-            assertTrue(playlist.contains(song));
-        }
-        
-        trx = DaapTransaction.open(library);
-        playlist.remove(song);
-        trx.commit();
+        txn = library.open(false);
+        playlist.remove(txn, song);
+        txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertFalse(playlist.contains(song));
@@ -131,35 +107,35 @@ public class PlaylistTest extends TestCase {
         int revision = library.getRevision();
         
         // Test add (notify master playlist, default)
-        DaapTransaction trx = DaapTransaction.open(library);
-        playlist.add(song1);
-        trx.commit();
+        Transaction txn = library.open(false);
+        playlist.add(txn, song1);
+        txn.commit();
         
         assertTrue(playlist.contains(song1));
         assertTrue(masterPlaylist.contains(song1));
         
         // Test add (do not notify master playlist)
         playlist.setNotifyMasterPlaylistOnAdd(false);
-        trx = DaapTransaction.open(library);
-        playlist.add(song2);
-        trx.commit();
+        txn = library.open(false);
+        playlist.add(txn, song2);
+        txn.commit();
         
         assertTrue(playlist.contains(song2));
         assertFalse(masterPlaylist.contains(song2));
         
         // Test remove (do not notify master playlist, default)
-        trx = DaapTransaction.open(library);
-        playlist.remove(song1);
-        trx.commit();
+        txn = library.open(false);
+        playlist.remove(txn, song1);
+        txn.commit();
         
         assertFalse(playlist.contains(song1));
         assertTrue(masterPlaylist.contains(song1));
         
         // Test remove (notify master playlist)
         playlist.setNotifyMasterPlaylistOnRemove(true);
-        trx = DaapTransaction.open(library);
-        playlist.remove(song2);
-        trx.commit();
+        txn = library.open(false);
+        playlist.remove(txn, song2);
+        txn.commit();
         
         assertFalse(playlist.contains(song2));
         assertFalse(masterPlaylist.contains(song2));
