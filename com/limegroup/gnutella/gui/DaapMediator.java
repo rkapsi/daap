@@ -28,6 +28,7 @@ import com.limegroup.gnutella.util.FileUtils;
 import com.limegroup.gnutella.settings.iTunesSettings;
 import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.limegroup.gnutella.xml.MetaFileManagerEvent;
+import com.limegroup.gnutella.filters.IPFilter;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
@@ -44,30 +45,30 @@ import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapAuthenticator;
 
 /**
- * 
+ *
  */
 public final class DaapMediator {
     
     private static final Log LOG = LogFactory.getLog(DaapMediator.class);
-
+    
     private static final DaapMediator INSTANCE = new DaapMediator();
-
+    
     public static DaapMediator instance() {
-            return INSTANCE;
+        return INSTANCE;
     }
-
+    
     private SongURNMap map;
-
+    
     private Library library;
     private DaapServer server;
     private RendezvousService rendezvous;
     private UpdateWorker updateWorker;
-
+    
     private boolean annotateEnabled = false;
     
     private DaapMediator() {
     }
-	
+    
     /**
      * Initializes the Library
      */
@@ -82,27 +83,27 @@ public final class DaapMediator {
     /**
      * Starts the DAAP Server
      */
-    public synchronized void start() 
-        throws IOException {
-
+    public synchronized void start()
+    throws IOException {
+        
         if (CommonUtils.isJava14OrLater() && !isServerRunning()) {
-
+            
             try {
-
+                
                 map = new SongURNMap();
                 library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
                 library.init();
                 
                 updateWorker = new UpdateWorker();
-
+                
                 LimeConfig config = new LimeConfig();
                 server = new DaapServer(library, config);
                 server.setAuthenticator(new LimeAuthenticator());
                 server.setStreamSource(new LimeStreamSource());
                 server.setFilter(new LimeFilter());
-
+                
                 final int attempts = 10;
-
+                
                 for(int i = 0; i < attempts; i++) {
                     try {
                         server.start();
@@ -114,41 +115,41 @@ public final class DaapMediator {
                             config.nextPort();
                     }
                 }
-
+                
                 Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
                 updateWorkerThread.setDaemon(true);
                 updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
                 updateWorkerThread.start();
-
+                
                 rendezvous = new RendezvousService();
                 rendezvous.registerService();
-
+                
             } catch (IOException err) {
                 stop();
                 throw err;
             }
         }
     }
-	
+    
     /**
      * Stops the DAAP Server and releases all resources
      */
     public synchronized void stop() {
-
+        
         if (CommonUtils.isJava14OrLater()) {
-
+            
             if (rendezvous != null)
                 rendezvous.close();
-
+            
             if (updateWorker != null)
                 updateWorker.stop();
-
+            
             if (server != null)
                 server.stop();
-
+            
             if (map != null)
                 map.clear();
-
+            
             rendezvous = null;
             server = null;
             updateWorker = null;
@@ -156,13 +157,13 @@ public final class DaapMediator {
             library = null;
         }
     }
-	
+    
     /**
      * Updates the multicast-DNS servive info
      */
-    public synchronized void updateService() 
-            throws IOException {
-            
+    public synchronized void updateService()
+    throws IOException {
+        
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
             rendezvous.updateService();
             updateWorker.setName(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
@@ -182,16 +183,16 @@ public final class DaapMediator {
      */
     public synchronized boolean isServerRunning() {
         if (server != null) {
-                return server.isRunning();
+            return server.isRunning();
         }
         return false;
     }
-	
-	/**
+    
+    /**
      * Returns true if the extension of name is a supported file type.
      */
     private static boolean isSupportedFileType(String name) {
-        String[] types = iTunesSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();        
+        String[] types = iTunesSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();
         for(int i = 0; i < types.length; i++)
             if (name.endsWith(types[i]))
                 return true;
@@ -204,9 +205,9 @@ public final class DaapMediator {
     public synchronized void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
-        
-            if (evt.isChangeEvent()) {
             
+            if (evt.isChangeEvent()) {
+                
                 FileDesc oldDesc = evt.getFileDesc()[0];
                 
                 Song song = map.remove(oldDesc.getSHA1Urn());
@@ -216,7 +217,7 @@ public final class DaapMediator {
                     FileDesc newDesc = evt.getFileDesc()[1];
                     map.put(song, newDesc.getSHA1Urn());
                     String format = song.getFormat();
-                            
+                    
                     // Any changes in the meta data?
                     if ( updateSongMeta(song, newDesc) ) {
                         updateWorker.update(song);
@@ -240,7 +241,7 @@ public final class DaapMediator {
                 }
                 
             } else if (evt.isRenameEvent()) {
-            
+                
                 FileDesc oldDesc = evt.getFileDesc()[0];
                 Song song = map.remove(oldDesc.getSHA1Urn());
                 
@@ -268,9 +269,9 @@ public final class DaapMediator {
         
         this.annotateEnabled = enabled;
         
-        if (CommonUtils.isJava14OrLater() && 
-                isServerRunning() && enabled) {
-        
+        if (CommonUtils.isJava14OrLater() &&
+        isServerRunning() && enabled) {
+            
             // disable updateWorker
             updateWorker.setEnabled(false);
             
@@ -291,7 +292,7 @@ public final class DaapMediator {
                         Song song = map.remove(file.getSHA1Urn());
                         
                         // This URN was already mapped with a Song.
-                        // Save the Song (again) and update the meta 
+                        // Save the Song (again) and update the meta
                         // data if necessary
                         if (song != null) {
                             
@@ -303,10 +304,10 @@ public final class DaapMediator {
                                 updateWorker.update(song);
                             }
                             
-                        // URN was unknown and we must create a
-                        // new Song for this URN...
+                            // URN was unknown and we must create a
+                            // new Song for this URN...
                         } else {
-                        
+                            
                             song = createSong(file);
                             tmpMap.put(song, file.getSHA1Urn());
                             updateWorker.add(song);
@@ -347,10 +348,10 @@ public final class DaapMediator {
         String ext = FileUtils.getFileExtension(file);
         
         if (ext != null) {
-        
+            
             // Note: This is required for formats other than MP3
             // For example AAC (.m4a) files won't play if no
-            // format is set. As far as I can tell from the iTunes 
+            // format is set. As far as I can tell from the iTunes
             // 'Get Info' dialog are Songs assumed as MP3 until
             // a format is set explicit.
             
@@ -361,12 +362,12 @@ public final class DaapMediator {
         
         return song;
     }
-
+    
     /**
      * Sets the meta data
      */
     private boolean updateSongMeta(Song song, FileDesc desc) {
-		
+        
         String format = song.getFormat();
         
         // Meta Data is only available for MP3s
@@ -392,29 +393,29 @@ public final class DaapMediator {
             
             if (title == null)
                 title = doc.getValue("audios__audio__title__");
-                
-            if (track == null) 
+            
+            if (track == null)
                 track = doc.getValue("audios__audio__track__");
-                
+            
             if (artist == null)
                 artist = doc.getValue("audios__audio__artist__");
             
             if (album == null)
                 album = doc.getValue("audios__audio__album__");
-                
+            
             if (genre == null)
                 genre = doc.getValue("audios__audio__genre__");
-                
+            
             if (bitrate == null)
                 bitrate = doc.getValue("audios__audio__bitrate__");
-                
+            
             if (comments == null)
                 comments = doc.getValue("audios__audio__comments__");
-                
+            
             if (time == null)
                 time = doc.getValue("audios__audio__seconds__");
-                
-            if (year == null) 
+            
+            if (year == null)
                 year = doc.getValue("audios__audio__year__");
         }
         
@@ -517,7 +518,7 @@ public final class DaapMediator {
      * Handles the audio stream
      */
     private final class LimeStreamSource implements DaapStreamSource {
-    
+        
         public LimeStreamSource() {
         }
         
@@ -530,9 +531,9 @@ public final class DaapMediator {
                 if (fileDesc != null) {
                     File file = fileDesc.getFile();
                     
-                    BufferedInputStream in 
-                        = new BufferedInputStream(new FileInputStream(file));
-                        
+                    BufferedInputStream in
+                    = new BufferedInputStream(new FileInputStream(file));
+                    
                     return in;
                 }
             }
@@ -548,14 +549,14 @@ public final class DaapMediator {
         
         public LimeAuthenticator() {
         }
-
+        
         public boolean requiresAuthentication() {
             return iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
         }
         
         /**
          * Returns true if username and password are correct.<p>
-         * Note: iTunes does not support usernames (i.e. it's 
+         * Note: iTunes does not support usernames (i.e. it's
          * don't care)!
          */
         public boolean authenticate(String username, String password) {
@@ -565,9 +566,9 @@ public final class DaapMediator {
     
     /**
      * The DAAP Library should be only accessable from the LAN
-     * as we can not guarantee for the required bandwidth and it 
-     * could be used to bypass Gnutella etc. Note: iTunes can't 
-     * connect to DAAP Libraries outside of the LAN but certain 
+     * as we can not guarantee for the required bandwidth and it
+     * could be used to bypass Gnutella etc. Note: iTunes can't
+     * connect to DAAP Libraries outside of the LAN but certain
      * iTunes download tools can.
      */
     private final class LimeFilter implements DaapFilter {
@@ -579,7 +580,13 @@ public final class DaapMediator {
          * Returns true if <tt>address</tt> is a private address
          */
         public boolean accept(InetAddress address) {
-            return NetworkUtils.isPrivateAddress(address);
+            
+            // Is address a private address?
+            if ( ! NetworkUtils.isPrivateAddress(address))
+                return false;
+            
+            // Is it a annoying fellow? >:-)
+            return IPFilter.instance().allow(address.getAddress());
         }
     }
     
@@ -604,9 +611,9 @@ public final class DaapMediator {
         
         public void nextPort() {
             iTunesSettings.DAAP_PORT.setValue(
-                iTunesSettings.DAAP_PORT.getValue()+1);
+            iTunesSettings.DAAP_PORT.getValue()+1);
         }
-
+        
         public int getBacklog() {
             return 0;
         }
@@ -614,7 +621,7 @@ public final class DaapMediator {
         public InetAddress getBindAddress() {
             return null;
         }
-
+        
         public int getMaxConnections() {
             return iTunesSettings.DAAP_MAX_CONNECTIONS.getValue();
         }
@@ -643,19 +650,19 @@ public final class DaapMediator {
         private ServiceInfo createServiceInfo() {
             
             String type = iTunesSettings.DAAP_TYPE_NAME.getValue();
-			String name = iTunesSettings.DAAP_SERVICE_NAME.getValue();
-			
-			int port = iTunesSettings.DAAP_PORT.getValue();
-			int weight = iTunesSettings.DAAP_WEIGHT.getValue();
-			int priority = iTunesSettings.DAAP_PRIORITY.getValue();
-			
+            String name = iTunesSettings.DAAP_SERVICE_NAME.getValue();
+            
+            int port = iTunesSettings.DAAP_PORT.getValue();
+            int weight = iTunesSettings.DAAP_WEIGHT.getValue();
+            int priority = iTunesSettings.DAAP_PRIORITY.getValue();
+            
             boolean password = iTunesSettings.DAAP_REQUIRES_PASSWORD.getValue();
             
-			java.util.Hashtable props = new java.util.Hashtable();
+            java.util.Hashtable props = new java.util.Hashtable();
             props.put(MACHINE_NAME, name);
-            props.put(PASSWORD, Boolean.toString(password)); // shows the small lock 
-                                                            // if Service is protected 
-                                                            // by a password!
+            props.put(PASSWORD, Boolean.toString(password)); // shows the small lock
+            // if Service is protected
+            // by a password!
             
             String qualifiedName = null;
             
@@ -667,8 +674,8 @@ public final class DaapMediator {
                 qualifiedName = name + "." + type;
             }
             
-			ServiceInfo service = 
-                new ServiceInfo(type, qualifiedName, port, weight, priority, props);
+            ServiceInfo service =
+            new ServiceInfo(type, qualifiedName, port, weight, priority, props);
             
             return service;
         }
@@ -679,7 +686,7 @@ public final class DaapMediator {
                 throw new IOException();
             
             ServiceInfo service = createServiceInfo();
-			zeroConf.registerService(service);
+            zeroConf.registerService(service);
             this.service = service;
         }
         
@@ -694,15 +701,13 @@ public final class DaapMediator {
         public void updateService() throws IOException {
             if (!isRegistered())
                 throw new IOException();
-                
-            int currentPort = service.getPort();
-            int port = iTunesSettings.DAAP_PORT.getValue();
             
-            if (currentPort != port)
+            
+            if (service.getPort() != iTunesSettings.DAAP_PORT.getValue())
                 unregisterService();
-                
-			ServiceInfo service = createServiceInfo();
-			zeroConf.registerService(service);
+            
+            ServiceInfo service = createServiceInfo();
+            zeroConf.registerService(service);
             
             this.service = service;
         }
@@ -717,7 +722,7 @@ public final class DaapMediator {
      * The job of UpdateWorker is to collect Library operations
      * and to perform them as one single operation on the Library.
      * This reduces the overall network/cpu load to notify the
-     * clients about the changes and reduces the risk to run out 
+     * clients about the changes and reduces the risk to run out
      * of revisions in principle to zero.
      */
     private final class UpdateWorker implements Runnable {
@@ -761,9 +766,9 @@ public final class DaapMediator {
         
         public void update(Song song) {
             synchronized(LOCK) {
-                if (!add.contains(song) && 
-                        !remove.contains(song)) {
-                        
+                if (!add.contains(song) &&
+                !remove.contains(song)) {
+                    
                     update.add(song);
                 }
             }
@@ -774,9 +779,9 @@ public final class DaapMediator {
             running = true;
             
             try {
-
-                do {
                 
+                do {
+                    
                     Thread.sleep(SLEEP);
                     
                     if (running && enabled) {
@@ -784,11 +789,11 @@ public final class DaapMediator {
                         boolean extraSleep = false;
                         
                         synchronized(LOCK) {
-                            if (add.size() != 0 || 
-                                    remove.size() != 0 || 
-                                    update.size() != 0 || 
-                                    name != null) {
-                                    
+                            if (add.size() != 0 ||
+                            remove.size() != 0 ||
+                            update.size() != 0 ||
+                            name != null) {
+                                
                                 synchronized(library) {
                                     library.open();
                                     
@@ -800,7 +805,7 @@ public final class DaapMediator {
                                     // It makes no sense to remove or update
                                     // songs if Library is empty...
                                     if (library.size() != 0) {
-                                    
+                                        
                                         Iterator it = remove.iterator();
                                         while(it.hasNext() && running) {
                                             library.remove((Song)it.next());
@@ -841,7 +846,7 @@ public final class DaapMediator {
                 } while(running);
                 
             } catch (InterruptedException err) {
-            
+                
             } finally {
                 stop();
             }
@@ -860,9 +865,10 @@ public final class DaapMediator {
                 add.clear();
                 remove.clear();
                 update.clear();
+                name = null;
             }
         }
-
+        
         public void stop() {
             running = false;
             clear();
