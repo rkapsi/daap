@@ -1,10 +1,10 @@
 Index: messagebundles/MessagesBundle.properties
 ===================================================================
 RCS file: /cvs/lib/messagebundles/MessagesBundle.properties,v
-retrieving revision 1.100
-diff -u -r1.100 MessagesBundle.properties
---- messagebundles/MessagesBundle.properties	25 Jun 2004 20:54:08 -0000	1.100
-+++ messagebundles/MessagesBundle.properties	25 Jun 2004 21:55:50 -0000
+retrieving revision 1.101
+diff -u -r1.101 MessagesBundle.properties
+--- messagebundles/MessagesBundle.properties	29 Jun 2004 21:18:05 -0000	1.101
++++ messagebundles/MessagesBundle.properties	30 Jun 2004 17:35:42 -0000
 @@ -836,6 +836,7 @@
  SPLASH_STATUS_MESSAGE_SERVICE=Loading messages...
  SPLASH_STATUS_ICONS=Loading icons...
