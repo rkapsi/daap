@@ -3,9 +3,6 @@ package com.limegroup.gnutella.settings;
 
 import java.util.Properties;
 
-/**
- * Class for a password setting.
- */
 public final class PasswordSetting extends Setting {
     
     String value;
