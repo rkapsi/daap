@@ -101,7 +101,7 @@ public class DaapLineReaderNIO {
         
         while(in.remaining() > 0 && lineBuf.length() < in.capacity()) {
             char current = (char)in.get();
-            if (current == CR) {
+            if (current == CR && in.remaining() > 0) {
                 char next = (char)in.get();
                 if (next == LF) {
                     
