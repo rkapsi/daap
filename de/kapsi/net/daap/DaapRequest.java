@@ -61,10 +61,13 @@ public class DaapRequest {
     private boolean isServerSideRequest;
     private boolean isUpdateType;
    
+    private DaapConnection connection;
+    
     /**
      * Create a new DaapRequest
      */
-    private DaapRequest() {
+    private DaapRequest(DaapConnection connection) {
+        this.connection = connection;
         headers = new ArrayList();
     }
     
@@ -75,8 +78,8 @@ public class DaapRequest {
      * @param revisionNumber
      * @param delta
      */
-    public DaapRequest(int sessionId, int revisionNumber, int delta) {
-        this();
+    public DaapRequest(DaapConnection connection, int sessionId, int revisionNumber, int delta) {
+        this(connection);
         
         this.sessionId = sessionId;
         this.revisionNumber = revisionNumber;
@@ -93,8 +96,8 @@ public class DaapRequest {
      * @param requestLine
      * @throw URIException
      */
-    public DaapRequest(String requestLine) throws URIException {
-        this();
+    public DaapRequest(DaapConnection connection, String requestLine) throws URIException {
+        this(connection);
         
         String method = null;
         URI uri = null;
@@ -135,8 +138,8 @@ public class DaapRequest {
      * @param protocol
      * @throw URIException
      */
-    public DaapRequest(String method, URI uri, String protocol) throws URIException {
-        this();
+    public DaapRequest(DaapConnection connection, String method, URI uri, String protocol) throws URIException {
+        this(connection);
         
         this.isServerSideRequest = false;
         this.isUpdateType = false;
@@ -350,6 +353,9 @@ public class DaapRequest {
      */
     public Header getHeader(String key) {
         
+        if (headers == null)
+            return null;
+        
         Iterator it = headers.iterator();
         while(it.hasNext()) {
             Header header = (Header)it.next();
@@ -359,6 +365,61 @@ public class DaapRequest {
         }
         
         return null;
+    }
+    
+    /**
+     *
+     */
+    public DaapConnection getConnection() {
+        return connection;
+    }
+    
+    /**
+     * Returns <tt>true</tt> if this request is from iTunes 4.0 
+     * (DAAP version 1.0)
+     */
+    public boolean isITunes40() {
+        Header agent = getHeader("User-Agent");
+        if (agent != null) {
+            return agent.getValue().startsWith("iTunes/4.0");
+        }
+        return false;
+    }
+    
+    /**
+     * Returns <tt>true</tt> if this request is from iTunes 4.1 or 4.2 
+     * (DAAP version 2.0)
+     */
+    public boolean isITunes41Or42() {
+        
+        Header agent = getHeader("User-Agent");
+        
+        if (agent != null) {
+            String value = agent.getValue();
+            
+            if (value.startsWith("iTunes/4.1") || 
+                    value.startsWith("iTunes/4.2")) {
+                        
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Returns <tt>true</tt> if this request is from iTunes 4.5 
+     * (DAAP version 3.0)
+     */
+    public boolean isITunes45() {
+        
+        Header agent = getHeader("User-Agent");
+        
+        if (agent != null) {
+            return agent.getValue().startsWith("iTunes/4.5");
+        }
+        
+        return false;
     }
     
     /**

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.FileInputStream;
 
 import de.kapsi.net.daap.Song;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapResponseFactory;
@@ -21,22 +22,19 @@ import de.kapsi.net.daap.DaapResponseFactory;
  */
 class DaapResponseFactoryNIO implements DaapResponseFactory {
     
-    private DaapConnection connection;
-    
     /** Creates a new instance of DaapResponseFactoryNIO */
-    DaapResponseFactoryNIO(DaapConnection connection) {
-        this.connection = connection;
+    DaapResponseFactoryNIO() {
     }
     
-    public DaapResponse createAudioResponse(Song song, FileInputStream in, int pos, int end) throws IOException {
-        return new DaapAudioResponseNIO(connection, song, in, pos, end);
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+        return new DaapAudioResponseNIO(request, song, in, pos, end);
     }
     
-    public DaapResponse createAuthResponse() {
-        return new DaapAuthResponseNIO(connection);
+    public DaapResponse createAuthResponse(DaapRequest request) {
+        return new DaapAuthResponseNIO(request);
     }
     
-    public DaapResponse createChunkResponse(byte[] data) {
-        return new DaapChunkResponseNIO(connection, data);
+    public DaapResponse createChunkResponse(DaapRequest request, byte[] data) {
+        return new DaapChunkResponseNIO(request, data);
     }
 }

@@ -12,16 +12,16 @@ package de.kapsi.net.daap;
  */
 public abstract class DaapChunkResponse implements DaapResponse {
     
-    protected final DaapConnection connection;
+    protected final DaapRequest request;
     protected final byte[] data;
     protected final byte[] header;
     
     /** Creates a new instance of DaapChunkResponse */
-    public DaapChunkResponse(DaapConnection connection, byte[] data) {
-        this.connection = connection;
+    public DaapChunkResponse(DaapRequest request, byte[] data) {
+        this.request = request;
         this.data = data;
         
-        header = DaapHeaderConstructor.createChunkHeader(connection, data.length);
+        header = DaapHeaderConstructor.createChunkHeader(request, data.length);
     }
     
     public String toString() {

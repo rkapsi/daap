@@ -13,7 +13,7 @@ import java.nio.channels.SocketChannel;
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapChunkResponse;
 
 /**
@@ -28,10 +28,11 @@ public class DaapChunkResponseNIO extends DaapChunkResponse {
     private ByteBuffer dataBuffer;
     
     /** Creates a new instance of DaapChunkResponse */
-    public DaapChunkResponseNIO(DaapConnection connection, byte[] data) {
-        super(connection, data);
+    public DaapChunkResponseNIO(DaapRequest request, byte[] data) {
+        super(request, data);
         
-        channel = ((DaapConnectionNIO)connection).getChannel();
+        DaapConnectionNIO connection = (DaapConnectionNIO)request.getConnection();
+        channel = connection.getChannel();
         
         headerBuffer = ByteBuffer.wrap(header);
         dataBuffer = ByteBuffer.wrap(data);

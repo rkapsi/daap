@@ -12,13 +12,13 @@ package de.kapsi.net.daap;
  */
 public abstract class DaapAuthResponse implements DaapResponse {
     
-    protected final DaapConnection connection;
+    protected final DaapRequest request;
     protected final byte[] header;
     
     /** Creates a new instance of DaapAuthResponse */
-    public DaapAuthResponse(DaapConnection connection) {
-        this.connection = connection;
-        header = DaapHeaderConstructor.createAuthHeader(connection);
+    public DaapAuthResponse(DaapRequest request) {
+        this.request = request;
+        header = DaapHeaderConstructor.createAuthHeader(request);
     }
     
     public String toString() {

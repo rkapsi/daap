@@ -12,7 +12,7 @@ import java.io.OutputStream;
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapChunkResponse;
 
 /**
@@ -27,10 +27,11 @@ public class DaapChunkResponseBIO extends DaapChunkResponse {
     private OutputStream out;
     
     /** Creates a new instance of DaapChunkResponse */
-    public DaapChunkResponseBIO(DaapConnection connection, byte[] data) {
-        super(connection, data);
+    public DaapChunkResponseBIO(DaapRequest request, byte[] data) {
+        super(request, data);
         
-        out = ((DaapConnectionBIO)connection).getOutputStream();
+        DaapConnectionBIO connection = (DaapConnectionBIO)request.getConnection();
+        out = connection.getOutputStream();
     }
     
     public boolean hasRemainig() {

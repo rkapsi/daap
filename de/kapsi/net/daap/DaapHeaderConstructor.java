@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayOutputStream;
 
+import java.util.ArrayList;
+
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,18 +30,19 @@ public class DaapHeaderConstructor {
     
     private static final String HTTP_OK = "HTTP/1.1 200 OK";
     private static final String HTTP_AUTH = "HTTP/1.1 401 Authorization Required";
-    
+    private static final String HTTP_PARTIAL_CONTENT = "HTTP/1.1 206 Partial Content";
     /**
      * Creates a new Chunk Header
      *
-     * @param connection
+     * @param request
      * @param contentLength
      * @return
      */    
-    public static byte[] createChunkHeader(DaapConnection connection, int contentLength) {
+    public static byte[] createChunkHeader(DaapRequest request, int contentLength) {
         
         try {
             
+            DaapConnection connection = request.getConnection();
             String serverName = connection.getServer().getConfig().getServerName();
             
             Header[] headers = {
@@ -65,26 +68,45 @@ public class DaapHeaderConstructor {
     /**
      * Creates an Audio Header
      *
-     * @param connection
+     * @param request
      * @param contentLength
      * @return
      */    
-    public static byte[] createAudioHeader(DaapConnection connection, int contentLength) {
+    public static byte[] createAudioHeader(DaapRequest request, int pos, int end, int contentLength) {
 
         try {
             
+            DaapConnection connection = request.getConnection();
             String serverName = connection.getServer().getConfig().getServerName();
             
-            Header[] headers = {
-                new Header("Date", DaapUtil.now()),
-                new Header("DAAP-Server", serverName),
-                new Header("Content-Type", "application/x-dmap-tagged"),
-                new Header("Content-Length", Integer.toString(contentLength)),
-                new Header("Accept-Ranges", "bytes")
-            };
+            String statusLine = null;
             
-            return toByteArray(HTTP_OK, headers);
-         
+            ArrayList headers = new ArrayList();
+            
+            headers.add(new Header("Date", DaapUtil.now()));
+            headers.add(new Header("DAAP-Server", serverName));
+            headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
+            
+            // 
+            if ( ! request.isITunes45() || pos == 0) {
+                
+                statusLine = HTTP_OK;
+                headers.add(new Header("Content-Length", Integer.toString(contentLength)));
+            
+            } else {
+                
+                statusLine = HTTP_PARTIAL_CONTENT;
+                
+                String cotentLengthStr = Integer.toString(contentLength - pos);
+                String contentRange = "bytes " + pos + "-" + (contentLength-1) + "/" + contentLength;
+                headers.add(new Header("Content-Length", cotentLengthStr));
+                headers.add(new Header("Content-Range", contentRange));
+            }
+            
+            headers.add(new Header("Accept-Ranges", "bytes"));
+            
+            return toByteArray(statusLine, (Header[])headers.toArray(new Header[0]));
+            
         } catch (UnsupportedEncodingException err) {
             // Should never happen
             throw new RuntimeException(err);
@@ -98,13 +120,14 @@ public class DaapHeaderConstructor {
     /**
      * Creates a new Authentication Header
      *
-     * @param connection
+     * @param request
      * @return
      */    
-    public static byte[] createAuthHeader(DaapConnection connection) {
+    public static byte[] createAuthHeader(DaapRequest request) {
         
         try {
             
+            DaapConnection connection = request.getConnection();
             String serverName = connection.getServer().getConfig().getServerName();
             
             Header[] headers = {

@@ -28,10 +28,12 @@ import de.kapsi.net.daap.DaapResponseWriter;
  */
 public class DaapConnectionNIO implements DaapConnection {
     
+    private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
+    private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
+        
     private DaapServerNIO server;
     private SocketChannel channel;
     
-    private DaapRequestProcessor processor;
     private DaapRequestReaderNIO reader;
     private DaapResponseWriter writer;
     private DaapSession session;
@@ -43,11 +45,7 @@ public class DaapConnectionNIO implements DaapConnection {
         this.server = server;
         this.channel = channel;
         
-        DaapResponseFactory factory = new DaapResponseFactoryNIO(this);
-        
-        processor = new DaapRequestProcessor(this, factory);
-        
-        reader = new DaapRequestReaderNIO(channel);
+        reader = new DaapRequestReaderNIO(this);
         writer = new DaapResponseWriter();
     }
     
@@ -172,7 +170,7 @@ public class DaapConnectionNIO implements DaapConnection {
                     }
                 }
                 
-                DaapResponse response = processor.process(request);
+                DaapResponse response = PROCESSOR.process(request);
                
                 if (response != null) {
                     writer.add(response);
@@ -221,10 +219,10 @@ public class DaapConnectionNIO implements DaapConnection {
                 if (delta != null && revisionNumber != null) {
 
                     DaapRequest request =
-                        new DaapRequest(sessionId.intValue(),
+                        new DaapRequest(this, sessionId.intValue(),
                             revisionNumber.intValue(), delta.intValue());
 
-                    DaapResponse response = processor.process(request);
+                    DaapResponse response = PROCESSOR.process(request);
 
                     if (response != null) {
                         writer.add(response);
@@ -241,7 +239,6 @@ public class DaapConnectionNIO implements DaapConnection {
         }
         
         session = null;
-        processor = null;
         reader = null;
         writer = null;
     }

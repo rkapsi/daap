@@ -15,7 +15,7 @@ import java.io.FileInputStream;
  */
 public abstract class DaapAudioResponse implements DaapResponse {
     
-    protected final DaapConnection connection;
+    protected final DaapRequest request;
     protected final Song song;
     protected final FileInputStream in;
     protected final int end;
@@ -24,14 +24,14 @@ public abstract class DaapAudioResponse implements DaapResponse {
     protected int pos;
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponse(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
-        this.connection = connection;
+    public DaapAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+        this.request = request;
         this.song = song;
         this.in = in;
         this.pos = pos;
         this.end = end;
         
-        header = DaapHeaderConstructor.createAudioHeader(connection, song.getSize());
+        header = DaapHeaderConstructor.createAudioHeader(request, pos, end, song.getSize());
     }
     
     public String toString() {

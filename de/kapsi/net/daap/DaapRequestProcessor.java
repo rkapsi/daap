@@ -49,12 +49,10 @@ public class DaapRequestProcessor {
     
     private static final Log LOG = LogFactory.getLog(DaapRequestProcessor.class);
     
-    private DaapConnection connection;
     private DaapResponseFactory factory;
     
     /** Creates a new instance of DaapRequestProcessor */
-    public DaapRequestProcessor(DaapConnection connection, DaapResponseFactory factory) {
-        this.connection = connection;
+    public DaapRequestProcessor(DaapResponseFactory factory) {
         this.factory = factory;
     }
     
@@ -84,7 +82,7 @@ public class DaapRequestProcessor {
 
             if ( ! isAuthenticated(request)) {
 
-                return factory.createAuthResponse();
+                return factory.createAuthResponse(request);
             }
 
             if (request.isContentCodesRequest()) {
@@ -132,6 +130,7 @@ public class DaapRequestProcessor {
         
         if ( ! authenticated ) {
             
+            DaapConnection connection = request.getConnection();
             DaapServer server = connection.getServer();
             DaapAuthenticator authenticator = server.getAuthenticator();
             
@@ -182,6 +181,7 @@ public class DaapRequestProcessor {
      */
     private boolean validateSessionId(DaapRequest request) {
         
+        DaapConnection connection = request.getConnection();
         DaapSession session = connection.getSession(false);
         
         if (session != null) {
@@ -201,9 +201,10 @@ public class DaapRequestProcessor {
     protected DaapResponse processServerInfoRequest(DaapRequest request) 
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] data = (byte[])server.getLibrary().select(request);
-        return factory.createChunkResponse(data);
+        return factory.createChunkResponse(request, data);
     }
     
     /**
@@ -214,10 +215,11 @@ public class DaapRequestProcessor {
      */    
     protected DaapResponse processContentCodesRequest(DaapRequest request)
             throws IOException {
-                
+        
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] data = (byte[])server.getLibrary().select(request);
-        return factory.createChunkResponse(data);
+        return factory.createChunkResponse(request, data);
     }
     
     /**
@@ -229,11 +231,12 @@ public class DaapRequestProcessor {
     protected DaapResponse processLoginRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         Integer sessionId = connection.getSession(true).getSessionId();
         LoginResponseImpl login = new LoginResponseImpl(sessionId.intValue());
         
         byte[] data = DaapUtil.serialize(login, true);
-        return factory.createChunkResponse(data);
+        return factory.createChunkResponse(request, data);
     }
     
     /**
@@ -257,6 +260,7 @@ public class DaapRequestProcessor {
     protected DaapResponse processUpdateRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         Integer revision = (Integer)server.getLibrary().select(request);
         
@@ -281,7 +285,7 @@ public class DaapRequestProcessor {
         UpdateResponseImpl update = new UpdateResponseImpl(revision.intValue());
         byte[] data = DaapUtil.serialize(update, true);
         
-        return factory.createChunkResponse(data);
+        return factory.createChunkResponse(request, data);
     }
     
     /**
@@ -293,6 +297,7 @@ public class DaapRequestProcessor {
     protected DaapResponse processDatabasesRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] serverDatabases
             = (byte[])server.getLibrary().select(request);
@@ -304,7 +309,7 @@ public class DaapRequestProcessor {
             throw new IOException("library.select(DatabasesRequest) returned null");
         }
         
-        return factory.createChunkResponse(serverDatabases);
+        return factory.createChunkResponse(request, serverDatabases);
     }
     
     /**
@@ -316,6 +321,7 @@ public class DaapRequestProcessor {
     protected DaapResponse processDatabaseSongsRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] databaseSongs
             = (byte[])server.getLibrary().select(request);
@@ -325,7 +331,7 @@ public class DaapRequestProcessor {
             throw new IOException("library.select(DatabaseSongsRequest) returned null");
         }
         
-        return factory.createChunkResponse(databaseSongs);
+        return factory.createChunkResponse(request, databaseSongs);
     }
     
     /**
@@ -337,6 +343,7 @@ public class DaapRequestProcessor {
     protected DaapResponse processDatabasePlaylistsRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] databasePlaylists
             = (byte[])server.getLibrary().select(request);
@@ -346,7 +353,7 @@ public class DaapRequestProcessor {
             throw new IOException("library.select(DatabasePlaylists) returned null");
         }
         
-        return factory.createChunkResponse(databasePlaylists);
+        return factory.createChunkResponse(request, databasePlaylists);
     }
     
     /**
@@ -358,6 +365,7 @@ public class DaapRequestProcessor {
     protected DaapResponse processPlaylistSongsRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();
         byte[] playlistSongs
                 = (byte[])server.getLibrary().select(request);
@@ -367,7 +375,7 @@ public class DaapRequestProcessor {
             throw new IOException("library.select(PlaylistSongs) returned null");
         }
         
-        return factory.createChunkResponse(playlistSongs);
+        return factory.createChunkResponse(request, playlistSongs);
     }
     
     /**
@@ -392,6 +400,7 @@ public class DaapRequestProcessor {
     protected DaapResponse processSongRequest(DaapRequest request)
             throws IOException {
         
+        DaapConnection connection = request.getConnection();
         DaapServer server = connection.getServer();      
         DaapStreamSource streamSource = server.getStreamSource();
          
@@ -422,7 +431,7 @@ public class DaapRequestProcessor {
                 throw new IOException("Unknown source for Song: " + song);
             }
          
-            return factory.createAudioResponse(song, in, pos, end);
+            return factory.createAudioResponse(request, song, in, pos, end);
         }
         
         return null;

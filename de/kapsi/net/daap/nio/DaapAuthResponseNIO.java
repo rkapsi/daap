@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapAuthResponse;
 
 /**
@@ -24,10 +24,12 @@ public class DaapAuthResponseNIO extends DaapAuthResponse {
     private SocketChannel channel;
     
     /** Creates a new instance of DaapAuthResponse */
-    public DaapAuthResponseNIO(DaapConnection connection) {
-        super(connection);
+    public DaapAuthResponseNIO(DaapRequest request) {
+        super(request);
         
-        channel = ((DaapConnectionNIO)connection).getChannel();
+        DaapConnectionNIO connection = (DaapConnectionNIO)request.getConnection();
+        channel = connection.getChannel();
+        
         headerBuffer = ByteBuffer.wrap(header);
     }
     

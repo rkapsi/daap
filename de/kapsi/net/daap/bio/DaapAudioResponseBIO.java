@@ -14,7 +14,7 @@ import java.net.SocketException;
 import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapAudioResponse;
-import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapStreamException;
 
 /**
@@ -29,10 +29,11 @@ public class DaapAudioResponseBIO extends DaapAudioResponse {
     private OutputStream out;
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponseBIO(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
-        super(connection, song, in, pos, end);
+    public DaapAudioResponseBIO(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+        super(request, song, in, pos, end);
         
-        out = ((DaapConnectionBIO)connection).getOutputStream();
+        DaapConnectionBIO connection = (DaapConnectionBIO)request.getConnection();
+        out = connection.getOutputStream();
     }
     
     public boolean hasRemainig() {

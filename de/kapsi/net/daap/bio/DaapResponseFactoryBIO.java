@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 
 import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapConnection;
+import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapResponseFactory;
 
 /**
@@ -20,22 +20,19 @@ import de.kapsi.net.daap.DaapResponseFactory;
  */
 class DaapResponseFactoryBIO implements DaapResponseFactory {
     
-    private DaapConnection connection;
-    
     /** Creates a new instance of DaapResponseFactoryBIO */
-    DaapResponseFactoryBIO(DaapConnection connection) {
-        this.connection = connection;
+    DaapResponseFactoryBIO() {
     }
     
-    public DaapResponse createAudioResponse(Song song, FileInputStream in, int pos, int end) throws IOException {
-        return new DaapAudioResponseBIO(connection, song, in, pos, end);
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+        return new DaapAudioResponseBIO(request, song, in, pos, end);
     }
     
-    public DaapResponse createAuthResponse() {
-        return new DaapAuthResponseBIO(connection);
+    public DaapResponse createAuthResponse(DaapRequest request) {
+        return new DaapAuthResponseBIO(request);
     }
     
-    public DaapResponse createChunkResponse(byte[] data) {
-        return new DaapChunkResponseBIO(connection, data);
+    public DaapResponse createChunkResponse(DaapRequest request, byte[] data) {
+        return new DaapChunkResponseBIO(request, data);
     }
 }

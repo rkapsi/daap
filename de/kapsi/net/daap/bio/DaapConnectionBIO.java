@@ -30,6 +30,9 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
     
     private static final Log LOG = LogFactory.getLog(DaapConnectionBIO.class);
     
+    private static final DaapResponseFactory FACTORY = new DaapResponseFactoryBIO();
+    private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
+    
     private DaapServerBIO server;
     
     private Socket socket;
@@ -38,8 +41,6 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
     private OutputStream out;
     
     private DaapSession session;
-    private DaapRequestProcessor processor;
-    
     private DaapResponseWriter writer;
     
     private int type = DaapConnection.UNDEF;
@@ -48,9 +49,6 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
         
         this.server = server;
         this.socket = socket;
-        
-        DaapResponseFactory factory = new DaapResponseFactoryBIO(this);
-        processor = new DaapRequestProcessor(this, factory);
         
         writer = new DaapResponseWriter();
        
@@ -111,7 +109,7 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
                 }
             }
 
-            DaapResponse response = processor.process(request);
+            DaapResponse response = PROCESSOR.process(request);
             if (response != null) {
                 writer.add(response);
             }
@@ -184,10 +182,10 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
                 if (delta != null && revisionNumber != null) {
 
                     DaapRequest request =
-                        new DaapRequest(sessionId.intValue(),
+                        new DaapRequest(this, sessionId.intValue(),
                             revisionNumber.intValue(), delta.intValue());
 
-                    DaapResponse response = processor.process(request);
+                    DaapResponse response = PROCESSOR.process(request);
                     response.write();
                 }
             }
@@ -257,7 +255,7 @@ public class DaapConnectionBIO implements DaapConnection, Runnable {
             throw new IOException("Request is null: " + this);
         }
         
-        DaapRequest request = new DaapRequest(line);
+        DaapRequest request = new DaapRequest(this, line);
         Header[] headers = HttpParser.parseHeaders(in);
         request.addHeaders(headers);
         

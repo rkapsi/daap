@@ -81,7 +81,10 @@ public class Library {
     private byte[] serverDatabasesUpdate;
     
     private byte[] contentCodes;
-    private byte[] serverInfo;
+    
+    //private byte[] serverInfoV1; // nobody uses iTunes 4.0
+    private byte[] serverInfoV2;
+    private byte[] serverInfoV3;
     
     private boolean open = false;
     
@@ -106,7 +109,15 @@ public class Library {
         this.keepNumRevisions = keepNumRevisions;
         
         contentCodes = new ContentCodesResponseImpl().getBytes();
-        serverInfo = new ServerInfoResponseImpl(name).getBytes();
+        
+        // 1.0.0 (iTunes 4.0)
+        //serverInfoV1 = new ServerInfoResponseImpl(name, 0x00010000).getBytes();
+        
+        // 2.0.0 (iTunes 4.1 and 4.2)
+        serverInfoV2 = new ServerInfoResponseImpl(name, 0x00020000).getBytes();
+        
+        // 3.0.0 (iTunes 4.5)
+        serverInfoV3 = new ServerInfoResponseImpl(name, 0x00030000).getBytes();
     }
     
     /**
@@ -226,7 +237,9 @@ public class Library {
             revisions.add(current);
      
             if (current.getName().equals(temp.getName()) == false) {
-                serverInfo = new ServerInfoResponseImpl(temp.getName()).getBytes();
+                //serverInfoV1 = new ServerInfoResponseImpl(temp.getName(), 0x00010000).getBytes();
+                serverInfoV2 = new ServerInfoResponseImpl(temp.getName(), 0x00020000).getBytes();
+                serverInfoV3 = new ServerInfoResponseImpl(temp.getName(), 0x00030000).getBytes();
             }
         }
         
@@ -258,7 +271,17 @@ public class Library {
     public synchronized Object select(DaapRequest request) {
 
         if (request.isServerInfoRequest()) {
-            return serverInfo;
+            
+            if (request.isITunes45()) {
+                return serverInfoV3;
+                
+            } else if (request.isITunes41Or42()) {
+                return serverInfoV2;
+                
+            } else { // iTunes 4.0
+                //return serverInfoV1;
+                return null;
+            }
             
         } else if (request.isContentCodesRequest()) {
             return contentCodes;
@@ -554,13 +577,13 @@ public class Library {
      */
     private static final class ServerInfoResponseImpl extends ServerInfoResponse {
 
-        public ServerInfoResponseImpl(String name) {
+        public ServerInfoResponseImpl(String name, int version) {
             super();
 
             add(new Status(200));
             add(new TimeoutInterval(1800));
-            add(new DmapProtocolVersion(0x00020000)); // 2.0.0
-            add(new DaapProtocolVersion(0x00020000)); // 2.0.0
+            add(new DmapProtocolVersion(version));
+            add(new DaapProtocolVersion(version));
             add(new ItemName(name));
             add(new LoginRequired(false));
             add(new SupportsAutoLogout(false));

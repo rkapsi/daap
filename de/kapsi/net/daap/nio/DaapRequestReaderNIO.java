@@ -25,6 +25,7 @@ public class DaapRequestReaderNIO {
     
     private long bytesRead = 0;
     
+    private DaapConnectionNIO connection;
     private ByteBuffer in;
     
     private String requestLine;
@@ -35,13 +36,15 @@ public class DaapRequestReaderNIO {
     private LinkedList pending;
     
     /** Creates a new instance of DaapRequestReader */
-    public DaapRequestReaderNIO(SocketChannel channel) {
+    public DaapRequestReaderNIO(DaapConnectionNIO connection) {
+        
+        this.connection = connection;
         
         in = ByteBuffer.allocate(1024);
         in.clear();
         in.flip();
         
-        lineReader = new DaapLineReaderNIO(channel);
+        lineReader = new DaapLineReaderNIO(connection.getChannel());
         headers = new ArrayList();
         pending = new LinkedList();
     }
@@ -87,7 +90,7 @@ public class DaapRequestReaderNIO {
             DaapRequest request = null;
             
             try {
-                request = new DaapRequest(requestLine);
+                request = new DaapRequest(connection, requestLine);
                 request.addHeaders(headers);
             } finally {
                 requestLine = null;

@@ -22,7 +22,7 @@ public interface DaapResponseFactory {
      * @param connection
      * @return
      */    
-    public DaapResponse createAuthResponse();
+    public DaapResponse createAuthResponse(DaapRequest request);
     
     /**
      *
@@ -30,7 +30,7 @@ public interface DaapResponseFactory {
      * @param data
      * @return
      */    
-    public DaapResponse createChunkResponse(byte[] data);
+    public DaapResponse createChunkResponse(DaapRequest request, byte[] data);
     
     /**
      *
@@ -41,5 +41,5 @@ public interface DaapResponseFactory {
      * @param pos
      * @throws IOException
      */    
-    public DaapResponse createAudioResponse(Song song, FileInputStream in, int pos, int end) throws IOException;
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException;
 }
