@@ -474,89 +474,116 @@ public final class DaapMediator implements FinalizeListener {
                 year = doc.getValue("audios__audio__year__");
         }
         
+        String currentTitle = song.getName();
         if (title != null) {
-            String currentTitle = song.getName();
             if (currentTitle == null || !title.equals(currentTitle)) {
                 update = true;
                 song.setName(title);
             }
+        } else if (currentTitle != null) {
+            update = true;
+            song.setName(null);
         }
         
+        int currentTrack = song.getTrackNumber();
         if (track != null) {
             try {
                 int num = Integer.parseInt(track);
-                if (num > 0 && num != song.getTrackNumber()) {
+                if (num > 0 && num != currentTrack) {
                     update = true;
                     song.setTrackNumber(num);
                 }
-            } catch (NumberFormatException err) {
-            }
+            } catch (NumberFormatException err) {}
+        } else if (currentTrack != 0) {
+            update = true;
+            song.setTrackNumber(0);
         }
         
+        String currentArtist = song.getArtist();
         if (artist != null) {
-            String currentArtist = song.getArtist();
             if (currentArtist == null || !artist.equals(currentArtist)) {
                 update = true;
                 song.setArtist(artist);
             }
+        } else if (currentArtist != null) {
+            update = true;
+            song.setArtist(null);
         }
         
+        String currentAlbum = song.getAlbum();
         if (album != null) {
-            String currentAlbum = song.getAlbum();
             if (currentAlbum == null || !album.equals(currentAlbum)) {
                 update = true;
                 song.setAlbum(album);
             }
+        } else if (currentAlbum != null) {
+            update = true;
+            song.setAlbum(null);
         }
         
+        String currentGenre = song.getGenre();
         if (genre != null) {
-            String currentGenre = song.getGenre();
             if (currentGenre == null || !genre.equals(currentGenre)) {
                 update = true;
                 song.setGenre(genre);
             }
+        } else if (currentGenre != null) {
+            update = true;
+            song.setGenre(null);
         }
         
+        String currentComments = song.getComment();
         if (comments != null) {
-            String currentComments = song.getComment();
             if (currentComments == null || !comments.equals(currentComments)) {
                 update = true;
                 song.setComment(comments);
             }
+        } else if (currentComments != null) {
+            update = true;
+            song.setComment(null);
         }
         
+        int currentBitrate = song.getBitrate();
         if (bitrate != null) {
             try {
                 int num = Integer.parseInt(bitrate);
-                if (num > 0 && num != song.getBitrate()) {
+                if (num > 0 && num != currentBitrate) {
                     update = true;
                     song.setBitrate(num);
                 }
-            } catch (NumberFormatException err) {
-            }
+            } catch (NumberFormatException err) {}
+        } else if (currentBitrate != 0) {
+            update = true;
+            song.setBitrate(0);
         }
         
+        int currentTime = song.getTime();
         if (time != null) {
             try {
                 // iTunes expects the song length in milli seconds
                 int num = (int)Integer.parseInt(time)*1000;
-                if (num > 0 && num != song.getTime()) {
+                if (num > 0 && num != currentTime) {
                     update = true;
                     song.setTime(num);
                 }
-            } catch (NumberFormatException err) {
-            }
+            } catch (NumberFormatException err) {}
+        } else if (currentTime != 0) {
+            update = true;
+            song.setTime(0);
         }
         
+        int currentYear = song.getYear();
         if (year != null) {
             try {
                 int num = Integer.parseInt(year);
-                if (num > 0 && num != song.getYear()) {
+                if (num > 0 && num != currentYear) {
                     update = true;
                     song.setYear(num);
                 }
-            } catch (NumberFormatException err) {
-            }
+            } catch (NumberFormatException err) {}
+        } else if (currentYear != 0) {
+            update = true;
+            song.setYear(0);
         }
         
         // iTunes expects the date/time in seconds
