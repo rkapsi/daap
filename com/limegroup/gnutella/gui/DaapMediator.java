@@ -300,30 +300,38 @@ public final class DaapMediator implements FinalizeListener {
                     String name = file.getName().toLowerCase(Locale.US);
                     if (isSupportedFileType(name)) {
                         
+                        URN urn = file.getSHA1Urn();
+                        
                         // 1)
                         // _Remove_ URN from the current 'map'...
-                        Song song = map.remove(file.getSHA1Urn());
-                        
-                        // This URN was already mapped with a Song.
-                        // Save the Song (again) and update the meta
-                        // data if necessary
-                        if (song != null) {
+                        Song song = map.remove(urn);
                             
-                            tmpMap.put(song, file.getSHA1Urn());
-                            String format = song.getFormat();
+                        // Check if URN is already in the tmpMap.
+                        // If so do nothing as we don't want add 
+                        // the same file multible times...
+                        if (tmpMap.contains(urn) == false) {
                             
-                            // Any changes in the meta data?
-                            if ( updateSongMeta(song, file) ) {
-                                updateWorker.update(song);
+                            // This URN was already mapped with a Song.
+                            // Save the Song (again) and update the meta
+                            // data if necessary
+                            if (song != null) {
+                                
+                                tmpMap.put(song, urn);
+
+                                // Any changes in the meta data?
+                                if ( updateSongMeta(song, file) ) {
+                                    updateWorker.update(song);
+                                }
+
+                            } else {
+                                
+                                // URN was unknown and we must create a
+                                // new Song for this URN...
+                                
+                                song = createSong(file);
+                                tmpMap.put(song, urn);
+                                updateWorker.add(song);
                             }
-                            
-                            // URN was unknown and we must create a
-                            // new Song for this URN...
-                        } else {
-                            
-                            song = createSong(file);
-                            tmpMap.put(song, file.getSHA1Urn());
-                            updateWorker.add(song);
                         }
                     }
                 }
@@ -371,6 +379,11 @@ public final class DaapMediator implements FinalizeListener {
             song.setFormat(ext);
             
             updateSongMeta(song, desc);
+            
+            if (ext.equals("mp3"))
+                song.setCompilation(true);
+            else
+                song.setCompilation(false);
         }
         
         return song;
@@ -928,6 +941,14 @@ public final class DaapMediator implements FinalizeListener {
             if (urn != null)
                 urnToSong.remove(urn);
             return urn;
+        }
+        
+        public boolean contains(URN urn) {
+            return urnToSong.containsKey(urn);
+        }
+        
+        public boolean contains(Song song) {
+            return songToUrn.containsKey(song);
         }
         
         public Iterator getSongIterator() {
