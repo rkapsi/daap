@@ -424,6 +424,7 @@ public final class VisualConnectionCallback implements ActivityCallback {
             try {
                 DOWNLOAD_MEDIATOR.remove(mgr);
                 LIBRARY_MEDIATOR.refreshIfIncomplete();
+                SearchMediator.updateResults();
             } catch(Throwable e) {
                 GUIMediator.showInternalError(e, "RemoveDownload");
 			}
@@ -615,7 +616,16 @@ public final class VisualConnectionCallback implements ActivityCallback {
             }
         });
 		    
-	}   
+	}
+	
+	/**
+	 * Notification of a component loading.
+	 */
+	public void componentLoading(String component) {
+        GUIMediator.setSplashScreenString(
+            GUIMediator.getStringResource("SPLASH_STATUS_COMPONENT_LOADING_" +
+                                          component));
+    }       
 
 	/**
 	 *  Show active downloads
