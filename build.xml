@@ -11,7 +11,8 @@
     <property name="lib" value="${basedir}/../lib"/>
     <property name="jars" value="${lib}/jars"/>
   
-	<property name="DEBUG" value="true"/>
+	<property name="DEBUG" value="yes"/>
+	<property name="OPTIMIZE" value="yes"/>
 	
     <path id="default.classpath">
         <pathelement location="${basedir}"/>
@@ -54,8 +55,13 @@
 	<target name="build" depends="init">
 	    <javac srcdir="${basedir}" 
 	    			destdir="${basedir}" 
-	    			excludes="**/tests/*" 
-	    			deprecation="no">
+	    			excludes="**/tests/*"
+        			target="1.3"
+        			source="1.3"
+        			compiler="javac1.4"
+        			debug="${DEBUG}"
+                    optimize="${OPTIMIZE}" 
+                    deprecation="no">
 			<classpath refid="default.classpath"/>
 	    </javac>
 	</target>
@@ -107,12 +113,13 @@
     <target name="jar">
         <javac srcdir="${basedir}" 
         			destdir="${basedir}" 
-        			excludes="**/tests/*" 
-        			deprecation="no"
+        			excludes="**/tests/*"
         			target="1.3"
         			source="1.3"
+        			compiler="javac1.4"
         			debug="${DEBUG}"
-        			debuglevel="lines">
+                    optimize="${OPTIMIZE}" 
+                    deprecation="no">
             <classpath refid="default.classpath"/>
         </javac>
         
