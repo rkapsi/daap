@@ -120,7 +120,7 @@ public final class DaapUtil {
     public static final byte[] serialize(Chunk chunk, boolean compress)
     throws IOException {
         
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(chunk.getSize());
         
         if (compress) {
             GZIPOutputStream gzip = new GZIPOutputStream(buffer);
