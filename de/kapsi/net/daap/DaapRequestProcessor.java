@@ -134,6 +134,9 @@ public class DaapRequestProcessor {
                     return processResolveRequest(request);
 
                 }
+                
+            } else {
+                throw new IOException("Invalid session-id: " + request);
             }
         }
         
