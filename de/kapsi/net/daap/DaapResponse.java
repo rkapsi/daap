@@ -16,7 +16,7 @@ public interface DaapResponse {
     
     /**
      * Returns <tt>true</tt> if some bytes were leftover
-     * or the write operation is complete.
+     * or <tt>false</tt> all bytes were written.
      */
     public boolean hasRemainig();
     
