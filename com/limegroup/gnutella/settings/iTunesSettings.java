@@ -24,7 +24,7 @@ public class iTunesSettings extends LimeProps {
                         ".aac", ".mid", ".m4a", ".m4p", ".ogg"});
 						
 	
-    // DAAP
+     // --- DAAP ---
 	
     /**
      * The file types supported by DAAP. I haven't checked if
@@ -92,13 +92,6 @@ public class iTunesSettings extends LimeProps {
         = FACTORY.createIntSetting("DAAP_PRIORITY", 0);
 	
     /**
-     * A description about the Service (not used)
-     */
-    /*public static StringSetting DAAP_SERVICE_DESCRIPTION =
-	FACTORY.createStringSetting("DAAP_SERVICE_DESCRIPTION", 
-            "LimeWire DAAP Service");*/
-	
-    /**
      * Whether or not password protection is enabled
      */
     public static BooleanSetting DAAP_REQUIRES_PASSWORD =
@@ -111,7 +104,7 @@ public class iTunesSettings extends LimeProps {
 	FACTORY.createPasswordSetting("DAAP_PASSWORD", "");
     
     /**
-     *
+     * Use either classic I/O (default) or NIO for DAAP
      */
     public static BooleanSetting DAAP_USE_NIO = 
         FACTORY.createBooleanSetting("DAAP_USE_NIO", false);
