@@ -39,17 +39,11 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
     
     private InputStream in;
     private OutputStream out;
-    //private ResponseWriter writer;
-    
-    //private int keepAlive = 0;
     
     private DaapSession session;
-    //private boolean audioStream;
-    
-    //private DaapRequest request;
+    private DaapRequestProcessor processor;
     
     private DaapResponseWriter writer;
-    private DaapRequestProcessor processor;
     
     private int type = UNDEF;
     
@@ -62,8 +56,8 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
         processor = new DaapRequestProcessor(this, factory);
         
         writer = new DaapResponseWriter();
-        
-        in = socket.getInputStream();
+       
+        in = new BufferedInputStream(socket.getInputStream());
         out = socket.getOutputStream();
     }
     
@@ -89,55 +83,58 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
     
     private boolean read() throws IOException {
         
-        if (isAudioStream()) {
-            throw new IOException("Illegal operation");
-        }
-        
         DaapRequest request = readRequest();
-        
-        if (isUndef()) {
-            type = (request.isSongRequest()) ? AUDIO : NORMAL;
             
-            if (!request.isSongRequest() &&
-                !request.isServerInfoRequest()) {
+        if (!isAudioStream()) {
 
-                // disconnect as the first request must be
-                // either a song or server-info request!
-                throw new IOException("Illegal request: " + request);
-            }
-            
-            // AudioStreams have a session-id and we must check the id
-            if (isAudioStream()) {
-                Integer sid = new Integer(request.getSessionId());
-                if (server.isSessionIdValid(sid) == false) {
-                    throw new IOException("Unknown Session-ID: " + sid);
+            if (isUndef()) {
+                type = (request.isSongRequest()) ? AUDIO : NORMAL;
+
+                if (!request.isSongRequest() &&
+                    !request.isServerInfoRequest()) {
+
+                    // disconnect as the first request must be
+                    // either a song or server-info request!
+                    throw new IOException("Illegal request: " + request);
+                }
+
+                // AudioStreams have a session-id and we must check the id
+                if (isAudioStream()) {
+                    Integer sid = new Integer(request.getSessionId());
+                    if (server.isSessionIdValid(sid) == false) {
+                        throw new IOException("Unknown Session-ID: " + sid);
+                    }
+                }
+
+                // add connection to the connection pool
+                if ( ! server.addConnection(this) ) {
+                    throw new IOException("Server refused this connection");
                 }
             }
-            
-            // add connection to the connection pool
-            if ( ! server.addConnection(this) ) {
-                throw new IOException("Server refused this connection");
+
+            DaapResponse response = processor.process(request);
+            if (response != null) {
+                writer.add(response);
             }
+            
+            return true;
         }
         
-        DaapResponse response = processor.process(request);
-        if (response != null) {
-            writer.add(response);
-        }
-        
-        return true;
+        throw new IOException("Cannot read requests from audio stream");
     }
     
     private boolean write() throws IOException {
-        
-        if (writer.write()) {
-            
-            if (isAudioStream()) {
-                return false;
+
+        boolean ret = true;
+
+            if (writer.write()) {
+
+                if (isAudioStream()) {
+                    ret = false;
+                }
             }
-        }
-        
-        return true;
+
+        return ret;
     }
     
     public void run() {
@@ -185,7 +182,7 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
                             revisionNumber.intValue(), delta.intValue());
 
                     DaapResponse response = processor.process(request);
-                    writer.add(response);
+                    response.write();
                 }
             }
         }
@@ -195,6 +192,9 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
         
         if (session != null)
             session.invalidate();
+        
+        if (writer != null)
+            writer.clear();
         
         try {
             if (in != null)
@@ -210,19 +210,13 @@ public class DaapConnectionImpl implements DaapConnection, Runnable {
             LOG.error("Error while closing connection", err);
         }
         
-        /*try {
-            if (writer != null)
-                writer.close();
-        } catch (IOException err) {
-            LOG.error("Error while closing connection", err);
-        }*/
-        
         try {
             if (socket != null)
                 socket.close();
         } catch (IOException err) {
             LOG.error("Error while closing connection", err);
         }
+        
         
         server.removeConnection(this);
     }

@@ -32,6 +32,10 @@ public class DaapResponseWriter {
         return queue.size();
     }
     
+    public void clear() {
+        queue.clear();
+    }
+    
     public boolean isEmpty() {
         return queue.isEmpty();
     }
