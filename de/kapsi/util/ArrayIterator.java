@@ -1,5 +1,5 @@
 
-package de.kapsi.net.daap;
+package de.kapsi.util;
 
 import java.util.Iterator;
 
