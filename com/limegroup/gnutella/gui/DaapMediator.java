@@ -631,14 +631,13 @@ public final class DaapMediator {
         
         private JmDNS zeroConf;
         private ServiceInfo service;
-        private boolean registered = false;
         
         public RendezvousService() throws IOException {
             zeroConf = new JmDNS();
         }
         
         public boolean isRegistered() {
-            return registered;
+            return (service != null);
         }
         
         private ServiceInfo createServiceInfo() {
@@ -668,7 +667,8 @@ public final class DaapMediator {
                 qualifiedName = name + "." + type;
             }
             
-			ServiceInfo service = new ServiceInfo(type, qualifiedName, port, weight, priority, props);
+			ServiceInfo service = 
+                new ServiceInfo(type, qualifiedName, port, weight, priority, props);
             
             return service;
         }
@@ -678,10 +678,9 @@ public final class DaapMediator {
             if (isRegistered())
                 throw new IOException();
             
-            service = createServiceInfo();
+            ServiceInfo service = createServiceInfo();
 			zeroConf.registerService(service);
-            
-            registered = true;
+            this.service = service;
         }
         
         public void unregisterService() {
@@ -689,8 +688,7 @@ public final class DaapMediator {
                 return;
             
             zeroConf.unregisterService(service);
-            
-            registered = false;
+            service = null;
         }
         
         public void updateService() throws IOException {
@@ -703,10 +701,10 @@ public final class DaapMediator {
             if (currentPort != port)
                 unregisterService();
                 
-			service = createServiceInfo();
+			ServiceInfo service = createServiceInfo();
 			zeroConf.registerService(service);
             
-            registered = true;
+            this.service = service;
         }
         
         public void close() {
