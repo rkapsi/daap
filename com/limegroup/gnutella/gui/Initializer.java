@@ -4,18 +4,19 @@ import com.limegroup.gnutella.*;
 import com.limegroup.gnutella.bugs.BugManager;
 import com.limegroup.gnutella.browser.ExternalControl;
 import com.limegroup.gnutella.settings.StartupSettings;
+import com.limegroup.gnutella.settings.DaapSettings;
+import com.limegroup.gnutella.gui.DaapMediator;
 import com.limegroup.gnutella.util.SystemUtils;
 import com.limegroup.gnutella.util.CommonUtils;
 import com.limegroup.gnutella.util.I18NConvert;
 import com.limegroup.gnutella.gui.init.*;
 import com.limegroup.gnutella.gui.notify.NotifyUserProxy;
 
-import java.io.IOException;
-import com.limegroup.gnutella.gui.DaapMediator;
-import com.limegroup.gnutella.settings.DaapSettings;
-
 import java.lang.reflect.*;
 import javax.swing.UIManager;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class instantiates all of the "top-level" application classes.  These
@@ -28,6 +29,8 @@ import javax.swing.UIManager;
  */
 //2345678|012345678|012345678|012345678|012345678|012345678|012345678|012345678|
 public final class Initializer {
+
+    private static final Log LOG = LogFactory.getLog(Initializer.class);
     
     /**
      * Used to determine whether or not LimeWire is running
@@ -64,6 +67,13 @@ public final class Initializer {
      * properly and must be shut down.
      */
     static void initialize(String args[]) throws Throwable {
+        long startMemory = 0;
+        if(LOG.isTraceEnabled()) {
+            startMemory = Runtime.getRuntime().totalMemory()
+                        - Runtime.getRuntime().freeMemory();
+            LOG.trace("START Initializer, using: " + startMemory + " memory");
+        }
+    
         // Set the error handler so we can receive core errors.
         ErrorService.setErrorCallback(new ErrorHandler());
         
@@ -77,6 +87,7 @@ public final class Initializer {
         
         // Register MacOS X specific stuff.
         if (CommonUtils.isMacOSX()) {
+            LOG.trace("START registering OSX events");
             // Register GURL to receive AppleEvents, such as magnet links.
             GURLHandler.getInstance().register();
             // Register Cocoa handlers for the menus.
@@ -84,6 +95,7 @@ public final class Initializer {
                 CocoaApplicationEventHandler.instance().register();
             // Raise the number of allowed concurrent open files to 1024.
             SystemUtils.setOpenFileLimit(1024);
+            LOG.trace("STOP registering OSX events");
         }
         
         // If this is a request to launch a pmf then just do it and exit.
@@ -96,7 +108,9 @@ public final class Initializer {
         // startup status, but only if we're going to possibly
         // be starting...
         if(StartupSettings.RUN_ON_STARTUP.getValue()) {
+            LOG.trace("START yield");
             Thread.yield();
+            LOG.trace("STOP yield");
         }
         
         if (args.length >= 1 && "-startup".equals(args[0]))
@@ -112,6 +126,7 @@ public final class Initializer {
         // Test for preexisting LimeWire and pass it a magnet URL if one
         // has been passed in.
         String arg = null;
+        LOG.trace("START magnet check");
         if (args.length > 0 && !args[0].equals("-startup")) {
             arg = ExternalControl.preprocessArgs(args);
             ExternalControl.checkForActiveLimeWire(arg);
@@ -121,10 +136,16 @@ public final class Initializer {
             // limewire is already active.
             ExternalControl.checkForActiveLimeWire();
         }
+        LOG.trace("STOP magnet check");
         
+        LOG.trace("START system properties");
+        Initializer.setSystemProperties();
         Initializer.setOSXSystemProperties();
+        LOG.trace("STOP system properties");
         
+        LOG.trace("START ResourceManager");
         ResourceManager.instance();
+        LOG.trace("STOP ResourceManager");
         
         // Show the splash screen if we're not starting automatically on 
         // system startup
@@ -147,21 +168,28 @@ public final class Initializer {
             UIManager.put("ProgressBar.repaintInterval", new Integer(500));        
         
         //Initialize the bug manager
-        //(make sure the BugSettings class can be loaded first)
+        LOG.trace("START BugManager");
         BugManager.instance();
+        LOG.trace("STOP BugManager");
         
         // Run through the initialization sequence -- this must always be
         // called before GUIMediator constructs the LibraryTree!
+        LOG.trace("START SetupManager");
         new SetupManager().createIfNeeded();
+        LOG.trace("STOP SetupManager");
         
         // Make sure the save directory is valid.
+        LOG.trace("START SaveDirectoryHandler");
         SaveDirectoryHandler.handleSaveDirectory();
+        LOG.trace("STOP SaveDirectoryHandler");
         
         SplashWindow.setStatusText(
             GUIMediator.getStringResource("SPLASH_STATUS_INTERFACE"));
         
         // Construct the frontend
+        LOG.trace("START GUIMediator.instance()");
         GUIMediator mediator = GUIMediator.instance();
+        LOG.trace("STOP GUIMediator.instance()");
         
         SplashWindow.setStatusText(
             GUIMediator.getStringResource("SPLASH_STATUS_CORE_COMPONENTS"));
@@ -172,30 +200,23 @@ public final class Initializer {
         // Construct the RouterService object, which functions as the
         // backend initializer as well as the interface from the GUI to the
         // front end.
+        LOG.trace("START new RouterService");
         RouterService routerService = new RouterService(ac);
+        LOG.trace("STOP new RouterService");
         
         // Notify GUIMediator of the RouterService interface class to the
         // backend.
         mediator.setRouterService(routerService);
         
-        // Touch the I18N stuff to ensure it loads properly.
-        I18NConvert.instance();
-        
-        // Start the backend threads.  Note that the GUI is not yet visible,
-        // but it needs to be constructed at this point  
-        routerService.start();
-        
-        // Instruct the gui to perform tasks that can only be performed
-        // after the backend has been constructed.
-        mediator.startTimer();
-        
         // Create the user desktop notifier object.
         // This must be done before the GUI is made visible,
         // otherwise the user can close it and not see the
         // tray icon.
+        LOG.trace("START NotifyUserProxy");
         NotifyUserProxy notifyProxy = NotifyUserProxy.instance();
         // Hide the notifier after it has been initialized.
         notifyProxy.hideNotify();
+        LOG.trace("STOP NotifyUserProxy");
         
         // Hide the splash screen and recycle its memory.
         if(splash != null) {
@@ -206,23 +227,63 @@ public final class Initializer {
         
         // Make the GUI visible.
         if(!isStartup) {
+            LOG.trace("START setAppVisible");
             GUIMediator.setAppVisible(true);
+            LOG.trace("STOP setAppVisible");
         } else {
+            LOG.trace("START startupHidden");
             GUIMediator.startupHidden();
+            LOG.trace("STOP startupHidden");
         }
+        
+        // Initialize IconManager.
+        LOG.trace("START IconManager.instance()");
+        GUIMediator.setSplashScreenString(
+            GUIMediator.getStringResource("SPLASH_STATUS_ICONS"));
+        IconManager.instance();
+        LOG.trace("STOP IconManager.instance()");        
+        
+        // Touch the I18N stuff to ensure it loads properly.
+        LOG.trace("START I18NConvert.instance()");
+        GUIMediator.setSplashScreenString(
+            GUIMediator.getStringResource("SPLASH_STATUS_I18N"));
+        I18NConvert.instance();
+        LOG.trace("STOP I18NConvert.instance()");
+        
+        // Start the backend threads.  Note that the GUI is not yet visible,
+        // but it needs to be constructed at this point  
+        LOG.trace("START RouterService");
+        routerService.start();
+        LOG.trace("STOP RouterService");
+        
+        // Instruct the gui to perform tasks that can only be performed
+        // after the backend has been constructed.
+        mediator.startTimer();        
         
         // Activate a download for magnet URL locally if one exists
         ExternalControl.runQueuedMagnetRequest();
-		
+        
+        // Tell the GUI that loading is all done.
+        GUIMediator.instance().loadFinished();
+        
         if (CommonUtils.isJava14OrLater() && 
                 DaapSettings.DAAP_ENABLED.getValue()) {
             
+        		LOG.trace("START DaapMediator");
             try {
                 DaapMediator.instance().start();
                 DaapMediator.instance().init();
-            } catch (IOException err) {
+            } catch (java.io.IOException err) {
                 ErrorService.error(err);
             }
+            LOG.trace("STOP DaapMediator");
+        }
+        
+        if(LOG.isTraceEnabled()) {
+            long stopMemory = Runtime.getRuntime().totalMemory()
+                            - Runtime.getRuntime().freeMemory();
+            LOG.trace("STOP Initializer, using: " + stopMemory +
+                      " memory, consumed: " + (stopMemory - startMemory));
         }
     }
     
@@ -231,6 +292,27 @@ public final class Initializer {
      */
     static void setStartup() {
         isStartup = true;
+    }
+    
+    /**
+     * Users reflection to set system properties.  This is not done
+     * for java 1.1.8.
+     */
+    static void setSystemProperties() {
+        if(CommonUtils.isJava118())
+            return;
+            
+        try {
+            Method setPropertyMethod = System.class.getDeclaredMethod(
+                "setProperty",
+                new Class[] { String.class, String.class });
+            setPropertyMethod.invoke(null, new String[] {
+                    "http.agent", CommonUtils.getHttpServer()});
+        }
+        catch (IllegalAccessException e1) {}
+        catch (InvocationTargetException e1) {}
+        catch (SecurityException e) {}
+        catch (NoSuchMethodException e) {}
     }
     
     /**
