@@ -184,6 +184,20 @@ public final class DaapMediator implements FinalizeListener {
     }
     
     /**
+     *
+     */
+    public synchronized void restart() throws IOException {
+        if (CommonUtils.isJava14OrLater()) {
+            
+            if (isServerRunning())
+                stop();
+        
+            start();
+            init();
+        }
+    }
+    
+    /**
      * Shutdown the DAAP service properly. In this case
      * is the main focus on mDNS (Rendezvous) as in
      * some rare cases iTunes doesn't recognize that

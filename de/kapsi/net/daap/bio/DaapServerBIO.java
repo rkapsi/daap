@@ -160,7 +160,9 @@ public class DaapServerBIO implements DaapServer {
         try {
             if (ssocket != null)
                 ssocket.close();
-        } catch (IOException err) {}
+        } catch (IOException err) {
+            LOG.error(err);
+        }
         
         disconnectAll();
     }
@@ -169,9 +171,6 @@ public class DaapServerBIO implements DaapServer {
      * Disconnects all DAAP and Stream connections
      */
     public synchronized void disconnectAll() {
-        
-        if (!running)
-            return;
         
         synchronized(connections) {
             Iterator it = connections.iterator();
@@ -402,7 +401,11 @@ public class DaapServerBIO implements DaapServer {
         } catch (InterruptedException err) {
             LOG.error(err);
         } catch (SocketException err) {
-            LOG.error(err);
+            
+            if (running) {
+                LOG.error(err);
+            }
+            
         } catch (IOException err) {
             LOG.error(err);
         } finally {

@@ -115,17 +115,9 @@ public final class DaapSupportPaneItem extends AbstractPaneItem {
             
             if (DAAP_ENABLED.isSelected()) {
                 
-                if (!prevEnabled) {
-                    DaapMediator.instance().start();
-                    DaapMediator.instance().init();
-                
-                } else if (USE_NIO.isSelected() != prevUseNIO) {
-                    if (DaapMediator.instance().isServerRunning())
-                        DaapMediator.instance().stop();
-                    
-                    DaapMediator.instance().start();
-                    DaapMediator.instance().init();
-                
+                if (!prevEnabled || USE_NIO.isSelected() != prevUseNIO) {
+                    DaapMediator.instance().restart();
+                   
                 } else if (!serviceName.equals(prevServiceName)) {
                     DaapMediator.instance().updateService();
                 }
