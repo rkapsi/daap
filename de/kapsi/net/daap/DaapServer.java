@@ -11,30 +11,78 @@ import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
  */
 public interface DaapServer extends Runnable {
     
+    /**
+     *
+     * @return
+     */    
     public Library getLibrary();
 
+    /**
+     *
+     * @param config
+     */    
     public void setConfig(DaapConfig config);
     
+    /**
+     *
+     * @param authenticator
+     */    
     public void setAuthenticator(DaapAuthenticator authenticator);
+    /**
+     *
+     * @return
+     */    
     public DaapAuthenticator getAuthenticator();
     
+    /**
+     *
+     * @param streamSource
+     */    
     public void setStreamSource(DaapStreamSource streamSource);
+    /**
+     *
+     * @return
+     */    
     public DaapStreamSource getStreamSource();
     
+    /**
+     *
+     * @param filter
+     */    
     public void setFilter(DaapFilter filter);
+    /**
+     *
+     * @return
+     */    
     public DaapFilter getFilter();
     
+    /**
+     *
+     * @return
+     */    
     public DaapConfig getConfig();
     
+    /**
+     *
+     * @throws IOException
+     */    
     public void bind() throws IOException;
     
+    /**
+     *
+     * @return
+     */    
     public ServerInfoResponse getServerInfoResponse();
     
+    /**
+     *
+     * @return
+     */    
     public ContentCodesResponse getContentCodesResponse();
     
     /**
-     * Returns <tt>true</tt> if DAAP Server
-     * accepts incoming connections.
+     *
+     * @return <tt>true</tt> if DAAP Server is running
      */
     public boolean isRunning();
     
@@ -69,7 +117,7 @@ public interface DaapServer extends Runnable {
     public boolean isSessionIdValid(Integer sessionId);
     
     /**
-     * Returns an unique session-id
+     * Creates and returns an unique session-id
      */
     public Integer createSessionId();
 }

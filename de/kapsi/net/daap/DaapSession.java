@@ -19,6 +19,10 @@ public class DaapSession {
     private long lastAccesedTime;
     private int maxInactiveTime;
     
+    /**
+     * Creates a new DaapSession
+     * @param sessionId
+     */    
     public DaapSession(Integer sessionId) {
         this.sessionId = sessionId;
         this.valid = true;
@@ -26,26 +30,50 @@ public class DaapSession {
         this.maxInactiveTime = 1800;
     }
     
+    /**
+     *
+     * @return the sessionId of this DaapSession
+     */    
     public Integer getSessionId() {
         return sessionId;
     }
     
+    /**
+     *
+     * @return
+     */    
     public long getLastAccessedTime() {
         return lastAccesedTime;
     }
     
+    /**
+     *
+     * @return
+     */    
     public long getCreationTime() {
         return creationTime;
     }
     
+    /**
+     *
+     * @return
+     */    
     public int getMaxInactiveTime() {
         return maxInactiveTime;
     }
     
+    /**
+     *
+     * @param maxInactiveTime
+     */    
     public void setMaxInactiveTime(int maxInactiveTime) {
         this.maxInactiveTime = maxInactiveTime;
     }
     
+    /**
+     *
+     * @return
+     */    
     public boolean isValid() {
         return valid;
     }
@@ -55,22 +83,47 @@ public class DaapSession {
         attributes.clear();
     }
     
+    /**
+     *
+     * @param key
+     * @return
+     */    
     public Object getAttribute(String key) {
         return attributes.get(key);
     }
     
+    /**
+     *
+     * @param key
+     * @param value
+     * @return
+     */    
     public Object addAttribute(String key, Object value) {
         return attributes.put(key, value);
     }
     
+    /**
+     *
+     * @param key
+     * @return
+     */    
     public Object removeAttribute(String key) {
         return attributes.remove(key);
     }
     
+    /**
+     *
+     * @return
+     */    
     public Iterator getAttributeNames() {
         return attributes.keySet().iterator();
     }
     
+    /**
+     *
+     * @param key
+     * @return
+     */    
     public boolean hasAttribute(String key) {
         return attributes.containsKey(key);
     }
@@ -79,6 +132,10 @@ public class DaapSession {
         lastAccesedTime = System.currentTimeMillis();
     }
     
+    /**
+     *
+     * @return
+     */    
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         

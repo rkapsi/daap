@@ -57,12 +57,7 @@ public class DaapProcessor {
         
         if (request == null || request.isUnknownRequest()) {
             
-            if (LOG.isWarnEnabled()) {
-                LOG.warn("Unknown request: " + request);
-            }
-            
-            // disconnect...
-            return null;
+            throw new IOException("Unknown request: " + request);
         }
         
         if (request.isSongRequest()) {
@@ -111,7 +106,8 @@ public class DaapProcessor {
             }
         }
         
-        return null;
+        // Should be never reached...
+        throw new IOException("Unknown request: " + request);
     }
     
     /**

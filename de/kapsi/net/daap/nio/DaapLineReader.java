@@ -31,10 +31,20 @@ public class DaapLineReader {
         lineBuf = new StringBuffer();
     }
     
+    /**
+     *
+     * @return
+     */    
     public boolean isComplete() {
         return complete;
     }
     
+    /**
+     *
+     * @param in
+     * @throws IOException
+     * @return
+     */    
     public String read(ByteBuffer in) throws IOException {
         
         complete = false;
@@ -95,6 +105,11 @@ public class DaapLineReader {
             } else {
                 lineBuf.append(current);
             }
+        }
+        
+        if (lineBuf.length() >= in.capacity()) {
+            lineBuf = new StringBuffer();
+            throw new IOException("Header too large");
         }
         
         return null;

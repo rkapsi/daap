@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The famous DaapServer.
+ * A NIO based DAAP server
  */
 public class DaapServerNIO implements DaapServer {
     
@@ -53,14 +53,28 @@ public class DaapServerNIO implements DaapServer {
     private boolean running = false;
     private boolean update = false;
     
+    /**
+     *
+     * @param library
+     */    
     public DaapServerNIO(Library library) {
         this(library, new SimpleConfig());
     }
     
+    /**
+     *
+     * @param library
+     * @param port
+     */    
     public DaapServerNIO(Library library, int port) {
         this(library, new SimpleConfig(port));
     }
     
+    /**
+     *
+     * @param library
+     * @param config
+     */    
     public DaapServerNIO(Library library, DaapConfig config) {
         
         this.library = library;
@@ -70,6 +84,98 @@ public class DaapServerNIO implements DaapServer {
         contentCodes = new ContentCodesResponseImpl();
     }
     
+    /**
+     *
+     * @return
+     */    
+    public Library getLibrary() {
+        return library;
+    }
+    
+    /**
+     *
+     * @return
+     */    
+    public ServerInfoResponse getServerInfoResponse() {
+        return serverInfo;
+    }
+    
+    /**
+     *
+     * @return
+     */    
+    public ContentCodesResponse getContentCodesResponse() {
+        return contentCodes;
+    }
+    
+    /**
+     *
+     * @param config
+     */    
+    public void setConfig(DaapConfig config) {
+        this.config = config;
+    }
+    
+    /**
+     *
+     * @param authenticator
+     */    
+    public void setAuthenticator(DaapAuthenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+    
+    /**
+     *
+     * @return
+     */    
+    public DaapAuthenticator getAuthenticator() {
+        return authenticator;
+    }
+    
+    /**
+     *
+     * @param streamSource
+     */    
+    public void setStreamSource(DaapStreamSource streamSource) {
+        this.streamSource = streamSource;
+    }
+    
+    /**
+     *
+     * @return
+     */    
+    public DaapStreamSource getStreamSource() {
+        return streamSource;
+    }
+    
+    /**
+     *
+     * @param filter
+     */    
+    public void setFilter(DaapFilter filter) {
+        this.filter = filter;
+    }
+    
+    /**
+     *
+     * @return
+     */    
+    public DaapFilter getFilter() {
+        return filter;
+    }
+    
+    /**
+     *
+     * @return
+     */    
+    public DaapConfig getConfig() {
+        return config;
+    }
+    
+    /**
+     *
+     * @throws IOException
+     */    
     public void bind() throws IOException {
         
         int port = config.getPort();
@@ -100,50 +206,6 @@ public class DaapServerNIO implements DaapServer {
             close();
             throw err;
         }
-    }
-    
-    public Library getLibrary() {
-        return library;
-    }
-    
-    public ServerInfoResponse getServerInfoResponse() {
-        return serverInfo;
-    }
-    
-    public ContentCodesResponse getContentCodesResponse() {
-        return contentCodes;
-    }
-    
-    public void setConfig(DaapConfig config) {
-        this.config = config;
-    }
-    
-    public void setAuthenticator(DaapAuthenticator authenticator) {
-        this.authenticator = authenticator;
-    }
-    
-    public DaapAuthenticator getAuthenticator() {
-        return authenticator;
-    }
-    
-    public void setStreamSource(DaapStreamSource streamSource) {
-        this.streamSource = streamSource;
-    }
-    
-    public DaapStreamSource getStreamSource() {
-        return streamSource;
-    }
-    
-    public void setFilter(DaapFilter filter) {
-        this.filter = filter;
-    }
-    
-    public DaapFilter getFilter() {
-        return filter;
-    }
-    
-    public DaapConfig getConfig() {
-        return config;
     }
     
     /**
@@ -187,24 +249,6 @@ public class DaapServerNIO implements DaapServer {
     }
     
     /**
-     * 
-     */
-    private boolean accept(InetAddress addr) {
-        
-        
-        if (filter != null && filter.accept(addr) == false) {
-            
-            if (LOG.isInfoEnabled()) {
-                LOG.info("DaapFilter refused connection from " + addr);
-            }
-            
-            return false;
-        }
-        
-        return true;
-    }
-    
-    /**
      * Call this to notify the server that Library has changed
      */
     public void update() {
@@ -222,10 +266,19 @@ public class DaapServerNIO implements DaapServer {
         return isSessionIdValid(new Integer(sessionId));
     }
     
+    /**
+     *
+     * @param sessionId
+     * @return
+     */    
     public boolean isSessionIdValid(Integer sessionId) {
         return sessionIds.contains(sessionId);
     }
     
+    /**
+     *
+     * @return
+     */    
     public Integer createSessionId() {
         Integer sid = DaapUtil.createSessionId(sessionIds);
         sessionIds.add(sid);
@@ -313,6 +366,26 @@ public class DaapServerNIO implements DaapServer {
         sk.cancel();
     }
     
+    /**
+     * 
+     */
+    private boolean accept(InetAddress addr) {
+        
+        /*if (connections.size() >= (config.getMaxConnections()*2))
+            return false;*/
+        
+        if (filter != null && filter.accept(addr) == false) {
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("DaapFilter refused connection from " + addr);
+            }
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
     private void processAccept(SelectionKey sk) throws IOException {
         
         if (!sk.isValid())
@@ -321,9 +394,7 @@ public class DaapServerNIO implements DaapServer {
         ServerSocketChannel ssc = (ServerSocketChannel)sk.channel();
         SocketChannel channel = ssc.accept();
 
-        if (channel.isOpen() 
-                && connections.size() < (config.getMaxConnections()*2) 
-                && accept(channel.socket().getInetAddress())) {
+        if (channel.isOpen() && accept(channel.socket().getInetAddress())) {
 
             channel.configureBlocking(false);
 
@@ -397,7 +468,7 @@ public class DaapServerNIO implements DaapServer {
                     if (connection.isNormal()) {
                         try {
                             connection.update();
-                            channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, connection);
+                            sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                         } catch (ClosedChannelException err) {
                             LOG.error("Error while updating", err);
                             cancel(sk);

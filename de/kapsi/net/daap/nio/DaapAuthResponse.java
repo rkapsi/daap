@@ -21,10 +21,19 @@ public class DaapAuthResponse implements DaapResponse {
         header = DaapHeader.createAuthHeader(connection);
     }
     
+    /**
+     *
+     * @throws IOException
+     * @return
+     */    
     public boolean write() throws IOException {
         return header.write();
     }
     
+    /**
+     *
+     * @return
+     */    
     public String toString() {
         return header.toString();
     }

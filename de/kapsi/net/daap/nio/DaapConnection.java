@@ -46,6 +46,11 @@ public class DaapConnection {
         writer = new DaapResponseWriter();
     }
     
+    /**
+     *
+     * @param create
+     * @return
+     */    
     public DaapSession getSession(boolean create) {
         
         if (session == null && create) {
@@ -55,54 +60,100 @@ public class DaapConnection {
         return session;
     }
     
+    /**
+     *
+     * @return
+     */    
     public boolean isAudioStream() {
         return (type==AUDIO);
     }
     
+    /**
+     *
+     * @return
+     */    
     public boolean isNormal() {
         return (type==NORMAL);
     }
     
+    public boolean isUndef() {
+        return (type == UNDEF);
+    }
+    
+    /**
+     *
+     * @return
+     */    
     public int interrestOps() {
         
-        if (!isAudioStream()) {
+        if (isUndef()) {
+            return SelectionKey.OP_READ;
+        
+        } else if (isNormal()) {
+            
             int op = SelectionKey.OP_READ;
             
             if (!writer.isEmpty())
                 op |= SelectionKey.OP_WRITE;
             
             return op;
+        
+        } else {
+            return SelectionKey.OP_WRITE;
         }
-        return SelectionKey.OP_WRITE;
     }
     
+    /**
+     *
+     * @return
+     */    
     public DaapServerNIO getServer() {
         return server;
     }
     
+    /**
+     *
+     * @return
+     */    
     public SocketChannel getChannel() {
         return channel;
     }
     
+    /**
+     *
+     * @throws IOException
+     * @return
+     */    
     public boolean read() throws IOException {
         
         if (!isAudioStream()) {
+            
             DaapRequest request = reader.read();
+            
             if (request != null) {
                 
-                if (type == UNDEF)
+                if (type == UNDEF) {
                     type = (request.isSongRequest()) ? AUDIO : NORMAL;
+                }
                 
                 DaapResponse response = processor.process(request);
                 if (response != null) {
                     writer.add(response);
                 }
+                
                 return true;
             }
+            
         }
+        
         return false;
     }
     
+    /**
+     *
+     * @throws IOException
+     * @return
+     */    
     public boolean write() throws IOException {
         
         if (writer.write()) {
@@ -115,6 +166,10 @@ public class DaapConnection {
         return true;
     }
     
+    /**
+     *
+     * @throws IOException
+     */    
     public void update() throws IOException {
         
         if (isNormal()) {
@@ -142,6 +197,10 @@ public class DaapConnection {
         }
     }
     
+    /**
+     *
+     * @return
+     */    
     public String toString() {
         return channel.toString();
     }

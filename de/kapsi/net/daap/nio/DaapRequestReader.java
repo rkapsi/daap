@@ -23,6 +23,8 @@ import org.apache.commons.httpclient.Header;
  */
 public class DaapRequestReader {
     
+    private long bytesRead = 0;
+    
     private ByteBuffer in;
     
     private String requestLine;
@@ -43,6 +45,10 @@ public class DaapRequestReader {
         pending = new LinkedList();
     }
 
+    public long getBytesRead() {
+        return bytesRead; 
+    }
+    
     public DaapRequest read() throws IOException {
         
         DaapRequest ret = null;
@@ -53,6 +59,8 @@ public class DaapRequestReader {
         String line = null;
         
         while((line = lineReader.read(in)) != null) {
+            
+            bytesRead += in.position();
             
             if (requestLine == null) {
                 requestLine = line;

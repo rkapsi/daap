@@ -27,7 +27,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The famous DaapServer.
+ * This DAAP server is written with the standard 1 Thread per
+ * connection pattern.
  */
 public class DaapServerImpl implements DaapServer {
     

@@ -36,6 +36,11 @@ public class DaapChunkResponse implements DaapResponse {
         header = DaapHeader.createChunkHeader(connection, tmp.length);
     }
     
+    /**
+     *
+     * @throws IOException
+     * @return
+     */    
     public boolean write() throws IOException {
         
         if (header != null && header.hasRemaining()) {
@@ -58,6 +63,10 @@ public class DaapChunkResponse implements DaapResponse {
         return true;
     }
     
+    /**
+     *
+     * @return
+     */    
     public String toString() {
         return header.toString();
     }

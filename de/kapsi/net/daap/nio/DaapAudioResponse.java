@@ -74,6 +74,7 @@ public class DaapAudioResponse implements DaapResponse {
                 throw err;
             }
         }
+        
         return true;
     }
     
