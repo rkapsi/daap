@@ -101,21 +101,17 @@ public class DaapLineReaderNIO {
         
         while(in.remaining() > 0 && lineBuf.length() < in.capacity()) {
             char current = (char)in.get();
-            if (current == CR && in.remaining() > 0) {
-                char next = (char)in.get();
-                if (next == LF) {
-                    
+            if (current == LF) {
+                int length = lineBuf.length();
+                if (length > 0 && lineBuf.charAt(length-1) == CR) {
                     String line = lineBuf.toString().trim();
                     
                     complete = (line.length() == 0);
                     
                     lineBuf = new StringBuffer();
                     return line;
-                    
                 } else {
-                    
                     lineBuf.append(current);
-                    lineBuf.append(next);
                 }
             } else {
                 lineBuf.append(current);
