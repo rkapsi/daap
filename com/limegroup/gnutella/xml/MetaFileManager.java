@@ -126,85 +126,28 @@ public class MetaFileManager extends FileManager {
         }
         
         // Notify the GUI about the changes...
-        MetaFileManagerEvent evt = new MetaFileManagerEvent(this, 
-                                            MetaFileManagerEvent.CHANGE, 
-                                            new FileDesc[]{removed,fd});
+        FileManagerEvent evt = null;
+        
+        if (fd != null) {
+            evt = new FileManagerEvent(this, 
+                                       FileManagerEvent.CHANGE, 
+                                       new FileDesc[]{removed,fd});
+        } else {
+            evt = new FileManagerEvent(this, 
+                                       FileManagerEvent.REMOVE, 
+                                       new FileDesc[]{removed});
+        }
                                             
-        RouterService.getCallback().handleMetaFileManagerEvent(evt);
+        RouterService.getCallback().handleFileManagerEvent(evt);
         
         return fd;
     }        
-
-    public FileDesc removeFileIfShared(File f) {
-        FileDesc fd = super.removeFileIfShared(f);
-    
-        // Notify the GUI...
-        if (fd != null) {
-            MetaFileManagerEvent evt = new MetaFileManagerEvent(this, 
-                                            MetaFileManagerEvent.REMOVE, 
-                                            new FileDesc[]{fd});
-                                            
-            RouterService.getCallback().handleMetaFileManagerEvent(evt);
-        }
-        
-        return fd;
-    }
-    
-    public FileDesc addFileIfShared(File f) {
-        FileDesc fd = super.addFileIfShared(f);
-        
-        // Notify the GUI...
-        if (fd != null) {
-            MetaFileManagerEvent evt = new MetaFileManagerEvent(this, 
-                                            MetaFileManagerEvent.ADD, 
-                                            new FileDesc[]{fd});
-                                            
-            RouterService.getCallback().handleMetaFileManagerEvent(evt);
-        }
-        
-        return fd;
-    }
-    
-    public FileDesc addFileIfShared(File f, List metadata) {
-        FileDesc fd = super.addFileIfShared(f, metadata);
-        
-        // Notify the GUI...
-        if (fd != null) {
-            MetaFileManagerEvent evt = new MetaFileManagerEvent(this, 
-                                            MetaFileManagerEvent.ADD, 
-                                            new FileDesc[]{fd});
-                                            
-            RouterService.getCallback().handleMetaFileManagerEvent(evt);
-        }
-        
-        return fd;
-    }
-    
-    public FileDesc renameFileIfShared(File oldName, File newName) {
-        FileDesc oldFile = getFileDescForFile(oldName);
-        if (oldFile == null)
-            return null;
-            
-        FileDesc newFile = super.renameFileIfShared(oldName, newName);
-        
-        // Notify the GUI...
-        if (newFile != null) {
-            MetaFileManagerEvent evt = new MetaFileManagerEvent(this, 
-                                            MetaFileManagerEvent.RENAME, 
-                                            new FileDesc[]{oldFile,newFile});
-                                            
-            RouterService.getCallback().handleMetaFileManagerEvent(evt);
-        }
-        
-        return newFile;
-    }
     
     /**
      * Removes the LimeXMLDocuments associated with the removed
      * FileDesc from the various LimeXMLReplyCollections.
      */
     protected FileDesc removeFile(File f) {
-        
         FileDesc fd = super.removeFile(f);
         // nothing removed, ignore.
         if( fd == null )
@@ -240,7 +183,7 @@ public class MetaFileManager extends FileManager {
      *
      * @return The FileDesc that was added, or null if nothing added.
      */
-	protected FileDesc addFile(File file, List metadata) {
+     protected FileDesc addFile(File file, List metadata) {
         FileDesc fd = super.addFile(file);
         
         // if not added, exit.

@@ -13,7 +13,7 @@ import com.limegroup.gnutella.chat.*;
 import com.limegroup.gnutella.security.User;
 import com.limegroup.gnutella.update.gui.*;
 import com.limegroup.gnutella.search.*;
-import com.limegroup.gnutella.xml.MetaFileManagerEvent;
+import com.limegroup.gnutella.FileManagerEvent;
 
 /**
  * This class is the interface from the backend to the frontend.  It
@@ -204,8 +204,8 @@ public final class VisualConnectionCallback implements ActivityCallback {
          LIBRARY_MEDIATOR.updateSharedFile(file);
     }
         
-    public void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
-        DAAP_MEDIATOR.handleMetaFileManagerEvent(evt);
+    public void handleFileManagerEvent(FileManagerEvent evt) {
+        DAAP_MEDIATOR.handleFileManagerEvent(evt);
     }
     
 	public void clearSharedFiles() 

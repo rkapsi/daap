@@ -5,7 +5,6 @@ import java.io.File;
 import com.limegroup.gnutella.chat.Chatter;
 import com.limegroup.gnutella.search.HostData;
 import com.limegroup.gnutella.security.User;
-import com.limegroup.gnutella.xml.MetaFileManagerEvent;
 
 import com.sun.java.util.collections.Set;
 
@@ -119,12 +118,10 @@ public interface ActivityCallback
     
     /**
      * Notifies the GUI when a FileDesc was either added, removed, 
-     * changed or renamed. This event is triggered by MetaFileManager.
-     * Unlike addSharedFile() and Co. where it's basically impossible
-     * to track what actually happened is this action 'self-contained'
-     * and fully trackable.
+     * changed or renamed. This event is triggered by FileManager
+     * or MetaFileManager.
      */
-    public void handleMetaFileManagerEvent(MetaFileManagerEvent evt);
+    public void handleFileManagerEvent(FileManagerEvent evt);
     
     /**
      * Notifies the GUI that the given shared file has new information.

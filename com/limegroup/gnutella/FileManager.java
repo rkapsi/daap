@@ -777,13 +777,24 @@ public abstract class FileManager {
      *  added, otherwise <tt>null</tt>
      */
     public FileDesc addFileIfShared(File file) {
-        return addFile(file);
+        FileDesc fd = addFile(file);
+        
+        // Notify the GUI...
+        if (fd != null) {
+            FileManagerEvent evt = new FileManagerEvent(this, 
+                                            FileManagerEvent.ADD, 
+                                            new FileDesc[]{fd});
+                                            
+            RouterService.getCallback().handleFileManagerEvent(evt);
+        }
+        
+        return fd;
     }
     
     /**
      * The actual implementation of addFileIfShared(File).
      */
-	protected FileDesc addFile(File file) {
+    protected FileDesc addFile(File file) {
         //Make sure capitals are resolved properly, etc.
         File f = null;
         try {
@@ -814,7 +825,7 @@ public abstract class FileManager {
         }
 
         return fd;
-	}
+    }
 
     /**
      * @modifies this
@@ -827,7 +838,18 @@ public abstract class FileManager {
      *  added, otherwise <tt>null</tt>
      */
     public FileDesc addFileIfShared(File file, List metadata) {
-        return addFile(file, metadata);
+        FileDesc fd = addFile(file, metadata);
+        
+        // Notify the GUI...
+        if (fd != null) {
+            FileManagerEvent evt = new FileManagerEvent(this, 
+                                            FileManagerEvent.ADD, 
+                                            new FileDesc[]{fd});
+                                            
+            RouterService.getCallback().handleFileManagerEvent(evt);
+        }
+        
+        return fd;
     }
     
     /**
@@ -1073,6 +1095,22 @@ public abstract class FileManager {
                 ctCache.commitTime(fd.getSHA1Urn());
             }
         }
+        
+        // Notify the GUI about the changes...
+        FileManagerEvent evt = null;
+        
+        if (fd != null) {
+            evt = new FileManagerEvent(this, 
+                                       FileManagerEvent.CHANGE, 
+                                       new FileDesc[]{removed,fd}); 
+        } else {
+            evt = new FileManagerEvent(this, 
+                                       FileManagerEvent.REMOVE, 
+                                       new FileDesc[]{removed});
+        }
+        
+        RouterService.getCallback().handleFileManagerEvent(evt);
+        
         return fd;
     }
     
@@ -1085,7 +1123,19 @@ public abstract class FileManager {
      *  disk.
      */
     public synchronized FileDesc removeFileIfShared(File f) {
-        return removeFile(f);
+        
+        FileDesc fd = removeFile(f);
+    
+        // Notify the GUI...
+        if (fd != null) {
+            FileManagerEvent evt = new FileManagerEvent(this, 
+                                            FileManagerEvent.REMOVE, 
+                                            new FileDesc[]{fd});
+                                            
+            RouterService.getCallback().handleFileManagerEvent(evt);
+        }
+        
+        return fd;
     }
     
     /**
@@ -1202,16 +1252,26 @@ public abstract class FileManager {
      */
     public synchronized FileDesc renameFileIfShared(File oldName,
                                                    File newName) {
-        FileDesc fd = getFileDescForFile(oldName);
-        if( fd == null )
+        FileDesc oldFD = getFileDescForFile(oldName);
+        if( oldFD == null )
             return null;
         List xmlDocs = new LinkedList();
-        xmlDocs.addAll(fd.getLimeXMLDocuments());            
-        fd = removeFile(oldName);
-        Assert.that( fd != null, "invariant broken.");
+        xmlDocs.addAll(oldFD.getLimeXMLDocuments());            
+        oldFD = removeFile(oldName);
+        Assert.that( oldFD != null, "invariant broken.");
         // hash didn't change so no need to re-input creation time
-        fd = addFile(newName, xmlDocs);
-        return fd;
+        FileDesc newFD = addFile(newName, xmlDocs);
+        
+        // Notify the GUI...
+        if (newFD != null) {
+            FileManagerEvent evt = new FileManagerEvent(this, 
+                                            FileManagerEvent.RENAME, 
+                                            new FileDesc[]{oldFD,newFD});
+                                            
+            RouterService.getCallback().handleFileManagerEvent(evt);
+        }
+        
+        return newFD;
     }
 
 

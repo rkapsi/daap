@@ -27,7 +27,7 @@ import com.limegroup.gnutella.util.NetworkUtils;
 import com.limegroup.gnutella.util.FileUtils;
 import com.limegroup.gnutella.settings.iTunesSettings;
 import com.limegroup.gnutella.xml.LimeXMLDocument;
-import com.limegroup.gnutella.xml.MetaFileManagerEvent;
+import com.limegroup.gnutella.FileManagerEvent;
 import com.limegroup.gnutella.filters.IPFilter;
 import com.limegroup.gnutella.gui.GUIMediator;
 import com.limegroup.gnutella.gui.FinalizeListener;
@@ -215,7 +215,7 @@ public final class DaapMediator implements FinalizeListener {
     /**
      * Called by VisualConnectionCallback/MetaFileManager.
      */
-    public synchronized void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
+    public synchronized void handleFileManagerEvent(FileManagerEvent evt) {
         
         if (CommonUtils.isJava14OrLater() && isServerRunning()) {
             
