@@ -65,10 +65,14 @@ public class DaapConnection implements Runnable {
             } while(--keepAlive > 0 && !audioStream);
 			
 		} catch (SocketException err) {
-			LOG.info(err);
+			//LOG.info(err);
 			
+            // This exception can be ignored as it's thrown
+            // whenever the user disconnects...
+            
 		} catch (IOException err) {
 			LOG.error(err);
+            
 		} finally {
 			close();
 		}

@@ -3,6 +3,7 @@ package com.limegroup.gnutella.gui;
 import java.io.File;
 import java.io.InputStream;
 import java.io.FileInputStream;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.HashMap;
@@ -292,10 +293,12 @@ public final class DaapMediator {
                             tmpMap.put(song, file.getSHA1Urn());
                             
                             // Any changes in the meta data?
-                            if ( updateSongMeta(song, file) ) {
-                                updateWorker.update(song);
+                            if (song.getFormat().equals("mp3")) {
+                                if ( updateSongMeta(song, file) ) {
+                                    updateWorker.update(song);
+                                }
                             }
-                        
+                            
                         // URN was unknown and we must create a
                         // new Song for this URN...
                         } else {
@@ -336,7 +339,8 @@ public final class DaapMediator {
         song.setSize((int)desc.getSize());
         song.setDateAdded((int)(System.currentTimeMillis()/1000));
         
-        String ext = FileUtils.getFileExtension(desc.getFile());
+        File file = desc.getFile();
+        String ext = FileUtils.getFileExtension(file);
         
         if (ext != null) {
         
@@ -348,22 +352,14 @@ public final class DaapMediator {
             
             song.setFormat(ext);
             
-            // 
-            /*if (ext.equals("mp3") || ext.equals("m4a") || ext.equals("wav")) {
-                song.setFormat(ext);
-                
-            } else if (ext.equals("aif") || ext.equals("aiff")) {
-            
-                song.setFormat("aiff");
-            }*/
+            if (ext.equals("mp3")) {
+                updateSongMeta(song, desc);
+            }
         }
-        
-        // get the meta data...
-        updateSongMeta(song, desc);
         
         return song;
     }
-    
+
     /**
      * Sets the meta data
      */
@@ -525,7 +521,11 @@ public final class DaapMediator {
                 
                 if (fileDesc != null) {
                     File file = fileDesc.getFile();
-                    return new FileInputStream(file);
+                    
+                    BufferedInputStream in 
+                        = new BufferedInputStream(new FileInputStream(file));
+                        
+                    return in;
                 }
             }
             

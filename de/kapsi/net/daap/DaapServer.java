@@ -43,7 +43,6 @@ public class DaapServer {
     private DaapConfig config;
     
 	private DaapRequestHandler requestHandler;
-	//private DaapAudioRequestHandler audioRequestHandler;
 	
     public DaapServer(Library library) {
         this(library, new SimpleConfig());
@@ -62,7 +61,6 @@ public class DaapServer {
 		contentCodes = new ContentCodesResponseImpl();
 		
 		requestHandler = new DaapRequestHandler(serverInfo, contentCodes, library);
-		//audioRequestHandler = new DaapAudioRequestHandler(library);
         
         sessionIds = new HashSet();
         connections = new HashSet();
@@ -82,12 +80,10 @@ public class DaapServer {
 	}
 	
 	public void setStreamSource(DaapStreamSource streamSource) {
-		//audioRequestHandler.setStreamSource(streamSource);
         requestHandler.setStreamSource(streamSource);
 	}
 	
 	public DaapStreamSource getStreamSource() {
-		//return audioRequestHandler.getStreamSource();
         return requestHandler.getStreamSource();
 	}
     

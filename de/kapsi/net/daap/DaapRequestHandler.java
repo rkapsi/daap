@@ -378,26 +378,20 @@ public class DaapRequestHandler {
 			DaapResponse response = DaapResponse.createAudioResponse(request, length);
 			response.processAudioRequest(conn);
 			
+            OutputStream out = conn.getOutputStream();
+            InputStream in = streamSource.getSource(song);
+            
+            if (in == null) {
+                if (LOG.isInfoEnabled())
+                    LOG.info("Unknown source for Song: " + song);
+                return false;
+            }
+            
             try {
-                OutputStream out = conn.getOutputStream();
-                InputStream in = streamSource.getSource(song);
-                
-                if (in == null) {
-                    if (LOG.isInfoEnabled())
-                        LOG.info("Unknown source for Song: " + song);
-                    return false;
-                }
-                
-                try {
-                    stream(in, out, begin, length);
-                } finally {
-                    in.close();
-                }
-                
-            } catch (SocketException err) {
-                // we can ignore this exception as is thrown when
-                // a song ends (or the user hits pause or whatever)
-                // and the client closes the connection
+                stream(in, out, begin, length);
+            } finally {
+                // make sure we close the InputStream
+                in.close();
             }
 		}
 		
@@ -451,44 +445,40 @@ public class DaapRequestHandler {
 		return (new int[]{0,-1});
 	}
     
-    private long totalBytes = 0;
-    
     /**
      * Reads from <tt>in</tt> and writes to <tt>out</tt>
      */
     private void stream(InputStream in, OutputStream out, int begin, int length) 
             throws IOException {
-                
-        BufferedInputStream bufin = null;
-        
+            
         try {
             
-            bufin = new BufferedInputStream(in);
-            byte[] buffer = new byte[4069*16];
+            // DO NOT THIS TO SET THIS TOO HIGH AS IT 
+            // CAUSES RE-BUFFERING AT THE BEGINNING 
+            // OF HIGH BIT RATE SONGS (WAV AND AIFF) !!! 
+            byte[] buffer = new byte[512];
             
             int total = 0;
             int len = -1;
             
             if (begin != 0) {
-                bufin.skip(begin);
+                in.skip(begin);
             }
             
-            while((len = bufin.read(buffer, 0, buffer.length)) != -1 && total < length) {
+            while((len = in.read(buffer, 0, buffer.length)) != -1 && total < length) {
                 out.write(buffer, 0, len);
-                out.flush();
-                total += len;
                 
-                totalBytes += len;
+                // DO NOT FLUSH AS IT CAUSES RE-BUFFERING AT THE 
+                // BEGINNING OF HIGH BIT RATE SONGS (WAV AND AIFF) !!!
+                
+                total += len;
             }
             
             out.flush();
-            bufin.close();
-            bufin = null;
+            in.close();
             
         } finally {
-            if (bufin != null) {
-                bufin.close();
-            }
+            in.close();
         }
     }
 }
