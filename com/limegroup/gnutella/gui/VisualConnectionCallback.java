@@ -14,6 +14,7 @@ import com.limegroup.gnutella.security.User;
 import com.limegroup.gnutella.update.gui.*;
 import com.limegroup.gnutella.search.*;
 import com.limegroup.gnutella.FileManagerEvent;
+import com.limegroup.gnutella.util.CommonUtils;
 
 /**
  * This class is the interface from the backend to the frontend.  It
@@ -68,8 +69,6 @@ public final class VisualConnectionCallback implements ActivityCallback {
 	private final LibraryMediator LIBRARY_MEDIATOR;
 
     private final iTunesMediator ITUNES_MEDIATOR = iTunesMediator.instance();
-    
-    private final DaapMediator DAAP_MEDIATOR = DaapMediator.instance();
     
 	/**
 	 * Sets the references to all of the main gui classes that will handle
@@ -205,7 +204,9 @@ public final class VisualConnectionCallback implements ActivityCallback {
     }
         
     public void handleFileManagerEvent(FileManagerEvent evt) {
-        DAAP_MEDIATOR.handleFileManagerEvent(evt);
+        if (CommonUtils.isJava14OrLater()) {
+			DaapMediator.instance().handleFileManagerEvent(evt);
+		}
     }
     
 	public void clearSharedFiles() 
@@ -232,7 +233,9 @@ public final class VisualConnectionCallback implements ActivityCallback {
 			}
 		});
         
-        DAAP_MEDIATOR.setAnnotateEnabled(enabled);
+		if (CommonUtils.isJava14OrLater()) {
+			DaapMediator.instance().setAnnotateEnabled(enabled);
+		}
 	}
 
 

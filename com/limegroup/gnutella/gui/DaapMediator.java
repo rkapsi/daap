@@ -72,9 +72,8 @@ public final class DaapMediator implements FinalizeListener {
     private boolean annotateEnabled = false;
     
     private DaapMediator() {
-        if (isSupportedPlatform()) {
-            GUIMediator.addFinalizeListener(this);
-        }
+    		if (CommonUtils.isJava14OrLater() == false)
+    			throw new RuntimeException("Cannot instance DaapMediator");
     }
     
     /**
@@ -82,7 +81,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void init() {
         
-        if (isSupportedPlatform() && isServerRunning()) {
+        if (isServerRunning()) {
             setAnnotateEnabled(annotateEnabled);
         }
     }
@@ -92,7 +91,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void start() throws IOException {
         
-        if (isSupportedPlatform() && !isServerRunning()) {
+        if (!isServerRunning()) {
             
             try {
                 
@@ -159,27 +158,24 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void stop() {
         
-        if (isSupportedPlatform()) {
-            
-            if (updateWorker != null)
-                updateWorker.stop();
-            
-            if (rendezvous != null)
-                rendezvous.close();
-            
-            if (server != null)
-                server.stop();
-            
-            if (map != null)
-                map.clear();
-            
-            rendezvous = null;
-            server = null;
-            updateWorker = null;
-            map = null;
-            library = null;
-            whatsNew = null;
-        }
+        if (updateWorker != null)
+            updateWorker.stop();
+        
+        if (rendezvous != null)
+            rendezvous.close();
+        
+        if (server != null)
+            server.stop();
+        
+        if (map != null)
+            map.clear();
+        
+        rendezvous = null;
+        server = null;
+        updateWorker = null;
+        map = null;
+        library = null;
+        whatsNew = null;
     }
     
     /**
@@ -193,14 +189,11 @@ public final class DaapMediator implements FinalizeListener {
      * </code>
      */
     public synchronized void restart() throws IOException {
-        if (isSupportedPlatform()) {
-            
-            if (isServerRunning())
-                stop();
-        
-            start();
-            init();
-        }
+        if (isServerRunning())
+            stop();
+    
+        start();
+        init();
     }
     
     /**
@@ -218,7 +211,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public synchronized void updateService() throws IOException {
         
-        if (isSupportedPlatform() && isServerRunning()) {
+        if (isServerRunning()) {
             rendezvous.updateService();
             updateWorker.setName(DaapSettings.DAAP_LIBRARY_NAME.getValue());
         }
@@ -228,7 +221,7 @@ public final class DaapMediator implements FinalizeListener {
      * Disconnects all clients
      */
     public synchronized void disconnectAll() {
-        if (isSupportedPlatform() && isServerRunning()) {
+        if (isServerRunning()) {
             server.disconnectAll();
         }
     }
@@ -241,13 +234,6 @@ public final class DaapMediator implements FinalizeListener {
             return server.isRunning();
         }
         return false;
-    }
-    
-    /**
-     * A helper method.
-     */
-    private static boolean isSupportedPlatform() {
-        return CommonUtils.isJava14OrLater();
     }
     
     /**
@@ -268,7 +254,7 @@ public final class DaapMediator implements FinalizeListener {
      */
     public void handleFileManagerEvent(FileManagerEvent evt) {
         
-        if (isSupportedPlatform() && isServerRunning()) {
+        if (isServerRunning()) {
               
             if (evt.isChangeEvent()) {
                 
@@ -333,7 +319,7 @@ public final class DaapMediator implements FinalizeListener {
         
         this.annotateEnabled = enabled;
         
-        if (isSupportedPlatform() && isServerRunning() && enabled) {
+        if (isServerRunning() && enabled) {
             
             // disable updateWorker
             updateWorker.setEnabled(false);
