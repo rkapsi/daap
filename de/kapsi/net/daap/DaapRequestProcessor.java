@@ -270,7 +270,6 @@ public class DaapRequestProcessor {
             throw new IOException("library.select(DatabaseSongsRequest) returned null");
         }
         
-        //return new DaapChunkResponse(connection, databaseSongs);
         return factory.createChunkResponse(databaseSongs);
     }
     
@@ -286,7 +285,6 @@ public class DaapRequestProcessor {
             throw new IOException("library.select(DatabasePlaylists) returned null");
         }
         
-        //return new DaapChunkResponse(connection, databasePlaylists);
         return factory.createChunkResponse(databasePlaylists);
     }
     
@@ -301,8 +299,6 @@ public class DaapRequestProcessor {
             // see processDatabasesRequest()
             throw new IOException("library.select(PlaylistSongs) returned null");
         }
-        
-        //return new DaapChunkResponse(connection, playlistSongs);
         
         return factory.createChunkResponse(playlistSongs);
     }
@@ -351,7 +347,7 @@ public class DaapRequestProcessor {
                 throw new IOException("Unknown source for Song: " + song);
             }
          
-            return factory.createAudioResponse(in, pos, end);
+            return factory.createAudioResponse(song, in, pos, end);
         }
         
         return null;

@@ -6,12 +6,15 @@
 
 package de.kapsi.net.daap;
 
+import java.io.IOException;
+
 /**
  *
  * @author  roger
  */
 public interface DaapConnection {
     
+    public void update() throws IOException;
     public DaapSession getSession(boolean create);
     public DaapServer getServer();
 }

@@ -39,5 +39,5 @@ public interface DaapResponseFactory {
      * @param pos
      * @throws IOException
      */    
-    public DaapResponse createAudioResponse(FileInputStream in, int pos, int end) throws IOException;
+    public DaapResponse createAudioResponse(Song song, FileInputStream in, int pos, int end) throws IOException;
 }

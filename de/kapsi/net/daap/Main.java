@@ -100,7 +100,7 @@ public class Main implements DaapAuthenticator, DaapStreamSource {
         
         library.close();
         
-        server = DaapServerFactory.createNIOServer(library, PORT);
+        server = DaapServerFactory.createClassicServer(library, PORT);
         server.setAuthenticator(this);
         server.setStreamSource(this);
         server.bind();

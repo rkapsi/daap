@@ -4,7 +4,7 @@
  * Created on March 31, 2004, 11:51 PM
  */
 
-package de.kapsi.net.daap.nio;
+package de.kapsi.net.daap;
 
 import java.io.IOException;
 import java.util.LinkedList;

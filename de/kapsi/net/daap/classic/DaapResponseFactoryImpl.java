@@ -1,10 +1,10 @@
 /*
  * DaapResponseFactoryImpl.java
  *
- * Created on April 5, 2004, 7:02 PM
+ * Created on April 5, 2004, 8:14 PM
  */
 
-package de.kapsi.net.daap.nio;
+package de.kapsi.net.daap.classic;
 
 import java.io.IOException;
 import java.io.FileInputStream;
@@ -13,7 +13,6 @@ import de.kapsi.net.daap.Song;
 import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapResponseFactory;
-
 
 /**
  *

@@ -7,50 +7,57 @@
 package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.DaapResponse;
+import de.kapsi.net.daap.Song;
+import de.kapsi.net.daap.DaapAudioResponse;
 import de.kapsi.net.daap.DaapConnection;
 
 /**
  *
  * @author  roger
  */
-public class DaapAudioResponse implements DaapResponse {
+public class DaapAudioResponseImpl extends DaapAudioResponse {
     
-    private long position;
-    private long end;
-   
-    private DaapHeader header;
-    private FileChannel in;
+    private ByteBuffer headerBuffer;
+    private FileChannel chIn;
     private SocketChannel channel;
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponse(DaapConnection connection, FileChannel in, long position, long end) 
-            throws IOException {
-                
-        this.in = in;
-        this.position = position;
-        this.end = end;
+    public DaapAudioResponseImpl(DaapConnection connection, Song song, FileInputStream in, int pos, int end) throws IOException {
+        super(connection, song, in, pos, end);
         
+        headerBuffer = ByteBuffer.wrap(header);
+        
+        chIn = in.getChannel();
         channel = ((DaapConnectionImpl)connection).getChannel();
-        header = DaapHeader.createAudioHeader(connection, (int)in.size());
     }
     
     public boolean hasRemainig() {
-        if (header.hasRemaining())
+        if (headerBuffer.hasRemaining())
             return true;
-        else return (position < end);
+        else return (pos < end);
     }
     
     public boolean write() throws IOException {
              
-        if (header.hasRemaining()) {
-            if (header.write() == false) {
-                return false;
+        if (headerBuffer.hasRemaining()) {
+            
+            try {
+                
+                channel.write(headerBuffer);
+            
+                if (headerBuffer.hasRemaining() == true) {
+                    return false;
+                }
+                
+            } catch (IOException err) {
+                close();
+                throw err;
             }
         }
         
@@ -59,7 +66,7 @@ public class DaapAudioResponse implements DaapResponse {
     
     private boolean stream() throws IOException {
         
-        if (position < end) {
+        if (pos < end) {
             
             if (!channel.isOpen()) {
                 close();
@@ -68,9 +75,9 @@ public class DaapAudioResponse implements DaapResponse {
             
             try {
                 
-                position += in.transferTo(position, 512, channel);
+                pos += chIn.transferTo(pos, 512, channel);
 
-                if (position >= end) {
+                if (pos >= end) {
                     close();
                     return true;
                 }
@@ -87,11 +94,8 @@ public class DaapAudioResponse implements DaapResponse {
     }
     
     private void close() throws IOException {
-        position = end;
+        pos = end;
         in.close();
-    }
-    
-    public String toString() {
-        return header.toString();
+        chIn.close();
     }
 }

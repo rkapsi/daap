@@ -20,6 +20,7 @@ import de.kapsi.net.daap.DaapServer;
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapResponseFactory;
 import de.kapsi.net.daap.DaapRequestProcessor;
+import de.kapsi.net.daap.DaapResponseWriter;
 
 /**
  *
@@ -140,7 +141,7 @@ public class DaapConnectionImpl implements DaapConnection {
             
             if (request != null) {
                 
-                if (type == UNDEF) {
+                if (isUndef()) {
                     type = (request.isSongRequest()) ? AUDIO : NORMAL;
                 }
                 

@@ -16,6 +16,7 @@ import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.SimpleConfig;
 import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapSession;
+import de.kapsi.net.daap.DaapConnection;
 
 import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
 import de.kapsi.net.daap.chunks.ServerInfoResponseImpl;
@@ -47,8 +48,10 @@ public class DaapServerImpl implements DaapServer {
     private HashSet streams;
     
     private DaapConfig config;
+    private DaapAuthenticator authenticator;
+    private DaapStreamSource streamSource;
     
-    private DaapRequestHandler requestHandler;
+    //private DaapRequestHandler requestHandler;
     
     private DaapServer server;
     private ServerSocket ssocket;
@@ -71,7 +74,7 @@ public class DaapServerImpl implements DaapServer {
         serverInfo = new ServerInfoResponseImpl(library.getName());
         contentCodes = new ContentCodesResponseImpl();
         
-        requestHandler = new DaapRequestHandler(this);
+        //requestHandler = new DaapRequestHandler(this);
         
         sessionIds = new HashSet();
         connections = new HashSet();
@@ -95,19 +98,23 @@ public class DaapServerImpl implements DaapServer {
     }
     
     public void setAuthenticator(DaapAuthenticator authenticator) {
-        requestHandler.setAuthenticator(authenticator);
+        //requestHandler.setAuthenticator(authenticator);
+        this.authenticator = authenticator;
     }
     
     public DaapAuthenticator getAuthenticator() {
-        return requestHandler.getAuthenticator();
+        //return requestHandler.getAuthenticator();
+        return authenticator;
     }
     
     public void setStreamSource(DaapStreamSource streamSource) {
-        requestHandler.setStreamSource(streamSource);
+        //requestHandler.setStreamSource(streamSource);
+        this.streamSource = streamSource;
     }
     
     public DaapStreamSource getStreamSource() {
-        return requestHandler.getStreamSource();
+        //return requestHandler.getStreamSource();
+        return streamSource;
     }
     
     public void setFilter(DaapFilter filter) {
@@ -177,7 +184,7 @@ public class DaapServerImpl implements DaapServer {
         synchronized(connections) {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
-                ((DaapConnection)it.next()).close();
+                ((DaapConnectionImpl)it.next()).close();
             }
             connections.clear();
         }
@@ -185,7 +192,7 @@ public class DaapServerImpl implements DaapServer {
         synchronized(streams) {
             Iterator it = streams.iterator();
             while(it.hasNext()) {
-                ((DaapConnection)it.next()).close();
+                ((DaapConnectionImpl)it.next()).close();
             }
             streams.clear();
         }
@@ -200,7 +207,7 @@ public class DaapServerImpl implements DaapServer {
      * on success. False is retuned in the following cases: Max connections
      * reached or server is down.
      */
-    public synchronized boolean addConnection(DaapConnection connection) {
+    public synchronized boolean addConnection(DaapConnectionImpl connection) {
         
         if (!isRunning()) {
             
@@ -233,7 +240,7 @@ public class DaapServerImpl implements DaapServer {
             synchronized(connections) {
                 
                 if (connections.size() < config.getMaxConnections()) {
-                    connection.connectionKeepAlive();
+                    //connection.connectionKeepAlive();
                     connections.add(connection);
                     
                 } else {
@@ -267,7 +274,7 @@ public class DaapServerImpl implements DaapServer {
             return false;
         }
         
-        DaapConnection connection = new DaapConnection(this, socket);
+        DaapConnectionImpl connection = new DaapConnectionImpl(this, socket);
         
         Thread connThread = new Thread(connection, "DaapConnectionThread-" + (++threadNo));
         connThread.setDaemon(true);
@@ -284,7 +291,7 @@ public class DaapServerImpl implements DaapServer {
             Iterator it = connections.iterator();
             while(it.hasNext()) {
                 
-                DaapConnection conn = (DaapConnection)it.next();
+                DaapConnectionImpl conn = (DaapConnectionImpl)it.next();
                 
                 try {
                     conn.update();
@@ -298,22 +305,22 @@ public class DaapServerImpl implements DaapServer {
     /**
      *
      */
-    public void processRequest(DaapConnection connection, DaapRequest request)
+    /*public void processRequest(DaapConnectionImpl connection, DaapRequest request)
             throws IOException {
         
         boolean complete = false;
         
-        complete = requestHandler.processRequest(connection, request);
+        //complete = requestHandler.processRequest(connection, request);
         
-        if (!complete) {
-            connection.connectionClose();
-        }
-    }
+        //if (!complete) {
+        //    connection.connectionClose();
+        //}
+    }*/
     
     /**
      * Removes connection from the internal connection pool
      */
-    public void removeConnection(DaapConnection connection) {
+    public void removeConnection(DaapConnectionImpl connection) {
         
         if (connection.isAudioStream()) {
             
