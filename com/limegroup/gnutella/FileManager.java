@@ -484,7 +484,8 @@ public abstract class FileManager {
             debug("FileManager.getFilesRecursive(): currDir = " +
                   currDir);
             String[] listedFiles = currDir.list();
-            for (int i = 0; i < listedFiles.length; i++) {
+            for (int i = 0; (listedFiles != null) && (i < listedFiles.length);
+                 i++) {
 
                 File currFile = new File(currDir,listedFiles[i]);
                 if (currFile.isDirectory()) // to be dealt with later

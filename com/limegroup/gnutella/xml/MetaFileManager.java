@@ -111,7 +111,11 @@ public class MetaFileManager extends FileManager {
         }
 
         FileDesc removed = removeFile(f);        
-        Assert.that(fd == removed, "did not remove valid fd.");
+        if(fd != removed) {
+            Assert.that(false, 
+                "wanted to remove: " + fd +
+                "\ndid remove: " + removed);
+        }
         _needRebuild = true;
         fd = addFile(f, xmlDocs);
         // file may not be shared anymore or may be installer file

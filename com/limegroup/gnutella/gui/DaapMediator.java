@@ -29,11 +29,14 @@ import com.limegroup.gnutella.util.NetworkUtils;
 import com.limegroup.gnutella.util.FileUtils;
 import com.limegroup.gnutella.util.ManagedThread;
 import com.limegroup.gnutella.settings.DaapSettings;
-import com.limegroup.gnutella.xml.LimeXMLDocument;
 import com.limegroup.gnutella.FileManagerEvent;
 import com.limegroup.gnutella.filters.IPFilter;
 import com.limegroup.gnutella.gui.GUIMediator;
 import com.limegroup.gnutella.gui.FinalizeListener;
+
+import com.limegroup.gnutella.xml.LimeXMLDocument;
+import com.limegroup.gnutella.xml.LimeXMLReplyCollection;
+import com.limegroup.gnutella.xml.SchemaReplyCollectionMapper;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
@@ -61,6 +64,8 @@ public final class DaapMediator implements FinalizeListener {
     
     private static final Log LOG = LogFactory.getLog(DaapMediator.class);
     private static final DaapMediator INSTANCE = new DaapMediator();
+    
+    private static final String AUDIO_SCHEMA = "http://www.limewire.com/schemas/audio.xsd";
     
     public static DaapMediator instance() {
         return INSTANCE;
@@ -438,60 +443,45 @@ public final class DaapMediator implements FinalizeListener {
     }
     
     /**
+     * Returns true if Song has maybe meta data.
+     */
+    private boolean hasMetaData(Song song) {
+        
+        String format = song.getFormat();
+        
+        if (format == null) {
+            return false;
+        } else {
+            return format.equals("mp3");
+        }
+    }
+    
+    /**
      * Sets the meta data
      */
     private boolean updateSongMeta(Song song, FileDesc desc) {
         
-        String format = song.getFormat();
-        
-        // Meta Data is only available for MP3s
-        if (format == null || format.equals("mp3") == false)
+        if (! hasMetaData(song))
             return false;
         
-        com.sun.java.util.collections.List docs = desc.getLimeXMLDocuments();
+        SchemaReplyCollectionMapper map = SchemaReplyCollectionMapper.instance();
+        LimeXMLReplyCollection collection = map.getReplyCollection(AUDIO_SCHEMA);
+        LimeXMLDocument doc = collection.getDocForHash(desc.getSHA1Urn());
+        
+        if (doc == null)
+            return false;
         
         boolean update = false;
         
-        String title = null;
-        String track = null;
-        String artist = null;
-        String album = null;
-        String genre = null;
-        String bitrate = null;
-        String comments = null;
-        String time = null;
-        String year = null;
-        
-        for(int i = 0; i < docs.size(); i++) {
-            LimeXMLDocument doc = (LimeXMLDocument)docs.get(i);
-            
-            if (title == null)
-                title = doc.getValue("audios__audio__title__");
-            
-            if (track == null)
-                track = doc.getValue("audios__audio__track__");
-            
-            if (artist == null)
-                artist = doc.getValue("audios__audio__artist__");
-            
-            if (album == null)
-                album = doc.getValue("audios__audio__album__");
-            
-            if (genre == null)
-                genre = doc.getValue("audios__audio__genre__");
-            
-            if (bitrate == null)
-                bitrate = doc.getValue("audios__audio__bitrate__");
-            
-            if (comments == null)
-                comments = doc.getValue("audios__audio__comments__");
-            
-            if (time == null)
-                time = doc.getValue("audios__audio__seconds__");
-            
-            if (year == null)
-                year = doc.getValue("audios__audio__year__");
-        }
+        String title = doc.getValue("audios__audio__title__");
+        String track = doc.getValue("audios__audio__track__");
+        String artist = doc.getValue("audios__audio__artist__");
+        String album = doc.getValue("audios__audio__album__");
+        String genre = doc.getValue("audios__audio__genre__");
+        String bitrate = doc.getValue("audios__audio__bitrate__");
+        String comments = doc.getValue("audios__audio__comments__");
+        String time = doc.getValue("audios__audio__seconds__");
+        String year = doc.getValue("audios__audio__year__");
         
         if (title != null) {
             String currentTitle = song.getName();
