@@ -1,3 +1,21 @@
+/* 
+ * Digital Audio Access Protocol (DAAP)
+ * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 package de.kapsi.net.daap;
 
@@ -17,6 +35,8 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Misc methods and constants
+ *
+ * @author  Roger Kapsi
  */
 public final class DaapUtil {
     
@@ -298,26 +318,7 @@ public final class DaapUtil {
         return DaapUtil.UNDEF_VALUE;
     }
     
-    /*public static final void dump(String file, byte[] bytes) throws IOException {
-        FileOutputStream out = new FileOutputStream(new File(file));
-        out.write(bytes, 0, bytes.length);
-        out.close();
-    }
-    
-    public static final void dumpungz(String file, byte[] bytes) throws IOException {
-        GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(bytes));
-        byte[] dst = new byte[4096];
-        int len = -1;
-        FileOutputStream out = new FileOutputStream(new File(file));
-        
-        while((len = in.read(dst, 0, dst.length)) != -1) {
-            out.write(dst, 0, len);
-        }
-        
-        in.close();
-        out.close();
-    }*/
-    
+    // Creates the ChunkClasses.java file...
    /*public static void main(String[] args) throws IOException {
     
         final String name = "ChunkClasses";

@@ -1,7 +1,20 @@
-/*
- * DaapRequestProcessor.java
- *
- * Created on April 5, 2004, 6:31 PM
+/* 
+ * Digital Audio Access Protocol (DAAP)
+ * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 package de.kapsi.net.daap;
@@ -43,7 +56,7 @@ import de.kapsi.net.daap.chunks.impl.DatabasePlaylists;
  * DaapRequestProcessor processes a DaapRequest and generates
  * the appropriate DaapResponse.
  *
- * @author  roger
+ * @author  Roger Kapsi
  */
 public class DaapRequestProcessor {
     
@@ -59,6 +72,11 @@ public class DaapRequestProcessor {
     }
     
     /**
+     * Processes the request and returns the appropiate
+     * DaapResponse (note: can be null which is valid and
+     * means basically <tt>do nothing</tt>). Invalid requests
+     * and all other errors throw an IOException which should
+     * result in an immediate disconnect!
      *
      * @param request
      * @throws IOException
@@ -123,7 +141,8 @@ public class DaapRequestProcessor {
     }
     
     /**
-     * Returns <tt>true</tt> if request is authenticated
+     * Returns <tt>true</tt> if request is authenticated 
+     * or if no authentication is required (if disabled). 
      */
     private boolean isAuthenticated(DaapRequest request)
             throws UnsupportedEncodingException {
