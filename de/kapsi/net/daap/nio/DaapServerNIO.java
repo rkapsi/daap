@@ -234,18 +234,14 @@ public class DaapServerNIO implements DaapServer {
      * Stops the DAAP Server
      */
     public void stop() {
-        
-        if (isRunning()){
-            disconnectAll();
-            close();
-        }
+        running = false;
     }
     
     /**
      * Disconnects all DAAP and Stream connections
      */
     public void disconnectAll() {
-        if (isRunning()) {
+        if (selector != null) {
             
             Set keys = selector.keys();
             
@@ -266,7 +262,6 @@ public class DaapServerNIO implements DaapServer {
      * Call this to notify the server that Library has changed
      */
     public void update() {
-        
         if (isRunning()) {
             update = true;
             selector.wakeup();
@@ -315,6 +310,8 @@ public class DaapServerNIO implements DaapServer {
     
     private void close() {
         
+        disconnectAll();
+        
         running = false;
         update = false;
         
@@ -325,6 +322,8 @@ public class DaapServerNIO implements DaapServer {
             LOG.error(err);
         }
         
+        ssc = null;
+        
         try {
             if (selector != null)
                 selector.close(); 
@@ -333,7 +332,7 @@ public class DaapServerNIO implements DaapServer {
         }
         
         selector = null;
-        ssc = null;
+        
        
         if (sessionIds != null)
             sessionIds.clear();
@@ -555,7 +554,7 @@ public class DaapServerNIO implements DaapServer {
                         processAccept(sk);
 
                     } else {
-
+                       
                         try {
 
                             if (sk.isReadable()) {
