@@ -69,7 +69,6 @@ public class DaapConnection implements Runnable {
 			
 		} catch (IOException err) {
 			LOG.error(err);
-			err.printStackTrace();
 		} finally {
 			close();
 		}
@@ -173,10 +172,10 @@ public class DaapConnection implements Runnable {
 			line = HttpParser.readLine(in);
 		} while(line != null && line.length() == 0);
 		
-		if(line == null) {
+        if(line == null) {
             connectionClose();
             throw new IOException("Request is null");
-		}
+        }
 
 		DaapRequest request = DaapRequest.parseRequest(line);
 		Header[] headers = HttpParser.parseHeaders(in);
