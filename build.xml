@@ -16,7 +16,7 @@
         <fileset dir="lib/jars" includes="*.jar"/>
         <pathelement location="${core}"/>
         <pathelement location="${gui}"/>
-		<fileset dir="${jars}" includes="*.jar"/>
+        <fileset dir="${jars}" includes="*.jar"/>
     </path>
     
     <target name="init">
@@ -51,7 +51,7 @@
     </target>
     
 	<target name="build" depends="init,copy">
-		<javac srcdir="${basedir}" destdir="${basedir}" deprecation="yes">
+		<javac srcdir="${basedir}" destdir="${basedir}" deprecation="no">
             <classpath refid="default.classpath"/>
         </javac>
 	</target>

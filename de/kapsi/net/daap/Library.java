@@ -47,7 +47,7 @@ public class Library {
 	
 	public void setName(String name) {
 		if (!open) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Library is not open");
 		}
 		
 		temp.setName(name);
@@ -109,7 +109,7 @@ public class Library {
 	public void close() {
 		if (!open) {
 			if (LOG.isErrorEnabled()) {
-				LOG.error("Library wasn't opened for edit");
+				LOG.error("Library is already closed");
 			}
 			return;
 		}
@@ -226,7 +226,7 @@ public class Library {
 	public void add(Song song) {
     
 		if (!open) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Library is not open");
 		}
 		
 		temp.getMasterPlaylist().add(song);
@@ -235,7 +235,7 @@ public class Library {
 	public boolean remove(Song song) {
 	
 		if (!open) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Library is not open");
 		}
 		
 		return temp.getMasterPlaylist().remove(song);
@@ -244,7 +244,7 @@ public class Library {
 	public void add(Playlist playlist) {
 		
 		if (!open) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Library is not open");
 		}
 		
 		temp.add(playlist);
@@ -253,7 +253,7 @@ public class Library {
 	public boolean remove(Playlist playlist) {
 	
 		if (!open) {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Library is not open");
 		}
 		
 		return temp.remove(playlist);

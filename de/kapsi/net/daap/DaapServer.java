@@ -46,7 +46,7 @@ public class DaapServer {
 	private DaapAudioRequestHandler audioRequestHandler;
 	
     public DaapServer(Library library) {
-        this(library, null);
+        this(library, new SimpleConfig());
     }
     
     public DaapServer(Library library, int port) {

@@ -69,7 +69,7 @@ public class DaapConnection implements Runnable {
 			
 		} catch (IOException err) {
 			LOG.error(err);
-			
+			err.printStackTrace();
 		} finally {
 			close();
 		}
@@ -175,7 +175,7 @@ public class DaapConnection implements Runnable {
 		
 		if(line == null) {
             connectionClose();
-            throw new IOException();
+            throw new IOException("Request is null");
 		}
 
 		DaapRequest request = DaapRequest.parseRequest(line);

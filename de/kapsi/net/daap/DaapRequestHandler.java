@@ -12,6 +12,9 @@ import org.apache.commons.httpclient.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Handles all request except streaming
+ */
 public class DaapRequestHandler {
 	
 	private static final Log LOG = LogFactory.getLog(DaapRequestHandler.class);
@@ -59,58 +62,12 @@ public class DaapRequestHandler {
 		
 		} else {
 			
-			//if (request.isServerSideRequest()==false) {
-				/*if (authenticator != null && authenticator.requiresAuthentication()) {
-					
-					boolean authenticated = false;
-					
-					Header[] headers = request.getHeaders();
-					
-					for(int i = 0; i < headers.length; i++) {
-						Header header = headers[i];
-						if (header.getName().equals("Authorization")) {
-						
-							StringTokenizer tok = 
-								new StringTokenizer(header.getValue(), " ");
-							
-							if (tok.nextToken().equals("Basic") == false) {
-								return false;
-							}
-							
-							byte[] logpass = Base64.decode(tok.nextToken().getBytes("UTF-8"));
-					
-							int q = 0;
-							for(;q<logpass.length && logpass[q] != ':';q++);
-							
-							String username = new String(logpass,0,q);
-							
-							q++;
-							String password = "";
-							
-							if (logpass.length-q != 0) {
-								password = new String(logpass,q,logpass.length-q);
-							}
-							
-							authenticated = authenticator.authenticate(username, password);
-							break;
-						}
-					}
-					
-					if (!authenticated) {
-						DaapResponse response = 
-							DaapResponse.createAuthResponse(request);
-				
-						return response.processRequest(conn);
-					}
-				}*/
-                
-                if ( ! isAuthenticated(request)) {
-                    DaapResponse response = 
-                        DaapResponse.createAuthResponse(request);
-				
-                    return response.processRequest(conn);
-                }
-			//}
+            if ( ! isAuthenticated(request)) {
+                DaapResponse response = 
+                    DaapResponse.createAuthResponse(request);
+            
+                return response.processRequest(conn);
+            }
 			
 			if (request.isContentCodesRequest()) {
 				return processServerInfoRequest(conn, request);
@@ -187,6 +144,11 @@ public class DaapRequestHandler {
                         }
                         
                         authenticated = authenticator.authenticate(username, password);
+                        
+                        if (!authenticated && LOG.isInfoEnabled()) {
+                            LOG.info("Wrong username or password");
+                        }
+
                         break;
                     }
                 }

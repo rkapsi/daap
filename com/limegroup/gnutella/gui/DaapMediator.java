@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.net.InetAddress;
+import java.net.BindException;
 import javax.swing.SwingUtilities;
 
 import com.sun.java.util.collections.List;
@@ -91,13 +92,26 @@ public final class DaapMediator {
                 map = new SongURNMap();
                 library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
                 updateWorker = new UpdateWorker();
-
-                server = new DaapServer(library, new LimeConfig());
+                
+                LimeConfig config = new LimeConfig();
+                server = new DaapServer(library, config);
                 server.setAuthenticator(new LimeAuthenticator());
                 server.setAudioStream(new LimeAudioStream());
                 server.setFilter(new LimeFilter());
-                        
-                server.start();
+                
+                final int attempts = 10;
+                
+                for(int i = 0; i < attempts; i++) {
+                    try {
+                        server.start();
+                        break;
+                    } catch (BindException bindErr) {
+                        if (i == attempts-1)
+                            throw bindErr;
+                        else
+                            config.nextPort();
+                    }
+                }
                 
                 Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
                 updateWorkerThread.setDaemon(true);
@@ -465,6 +479,7 @@ public final class DaapMediator {
         
         if (time != null) {
             try {
+                // iTunes expects the song length in milli seconds
                 int num = (int)Integer.parseInt(time)*1000;
                 if (num > 0 && num != song.getTime()) {
                     update = true;
@@ -485,6 +500,7 @@ public final class DaapMediator {
             }
         }
         
+        // iTunes expects the date/time in seconds
         int mod = (int)(desc.lastModified()/1000);
         if (song.getDateModified() != mod) {
             update = true;
@@ -596,6 +612,9 @@ public final class DaapMediator {
     private final class LimeConfig implements DaapConfig {
         
         public LimeConfig() {
+            // Reset PORT to default value to prevent increasing
+            // it to infinity
+            iTunesSettings.DAAP_PORT.revertToDefault();
         }
         
         public String getServerName() {
@@ -606,6 +625,11 @@ public final class DaapMediator {
             return iTunesSettings.DAAP_PORT.getValue();
         }
         
+        public void nextPort() {
+            iTunesSettings.DAAP_PORT.setValue(
+                iTunesSettings.DAAP_PORT.getValue()+1);
+        }
+
         public int getBacklog() {
             return 0;
         }

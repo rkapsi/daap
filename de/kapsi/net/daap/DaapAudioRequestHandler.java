@@ -13,6 +13,9 @@ import org.apache.commons.httpclient.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * A specialized Audio Stream handler
+ */
 public class DaapAudioRequestHandler {
 	
 	private static final Log LOG = LogFactory.getLog(DaapAudioRequestHandler.class);
