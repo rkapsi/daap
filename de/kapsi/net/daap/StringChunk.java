@@ -3,26 +3,47 @@ package de.kapsi.net.daap;
 
 import java.io.OutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class StringChunk extends AbstractChunk {
 	
-	private String value;
-	
+    private static final Log LOG = LogFactory.getLog(StringChunk.class);
+    
+	private byte[] bytes;
+    
 	public StringChunk(String type, String name, String value) {
 		super(type, name);
-		this.value = value;
+        setValue(value);
 	}
 	
 	public String getValue() {
-		return value;
+        if (bytes != null) {
+            try {
+                return new String(bytes, "UTF-8");
+            } catch (UnsupportedEncodingException err) {
+                LOG.error(err); // shouldn't happen but who knows!?
+            }
+        }
+        return null;
 	}
 	
 	public void setValue(String value) {
-		this.value = value;
+        if (value != null) {
+            try {
+                bytes = value.getBytes("UTF-8");
+            } catch (UnsupportedEncodingException err) {
+                LOG.error(err); // shouldn't happen but who knows!?
+            }
+        } else {
+            bytes = null;
+        }
 	}
 	
 	public int getLength() {
-		return (value != null) ? value.length() : 0;
+        return (bytes != null) ? bytes.length : 0;
 	}
 	
 	public int getType() {
@@ -32,14 +53,13 @@ public class StringChunk extends AbstractChunk {
 	public void serialize(OutputStream out) throws IOException {
 		
 		super.serialize(out);
-		
-		if (value != null) {
-			byte[] bytes = value.getBytes("UTF-8");
-			out.write(bytes, 0, bytes.length);
-		}
+        
+        if (bytes != null) {
+            out.write(bytes, 0, bytes.length);
+        }
 	}
 	
 	public String toString() {
-		return super.toString() + "=" + value;
+		return super.toString() + "=" + getValue();
 	}
 }   

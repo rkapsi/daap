@@ -52,7 +52,7 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
     private Playlist playlist3;
     
 	private Song updateSong;
-	private Song removeSong;
+	private Song remove;
     
 	private DaapServer server;
 	
@@ -70,27 +70,27 @@ public class Main implements DaapAuthenticator, DaapAudioStream {
         
 		library.open();
 		
-        library.addPlaylist(playlist0);
-        library.addPlaylist(playlist1);
-        library.addPlaylist(playlist2);
-        library.addPlaylist(playlist3);
+        library.add(playlist0);
+        library.add(playlist1);
+        library.add(playlist2);
+        library.add(playlist3);
         
         for(int i = 0; i < 100; i++) {
             
             Song song = createSong(i);
                 
             if (i % 2 == 0) {
-                playlist0.addSong(song);
+                playlist0.add(song);
             } else if (i % 3 == 0) {
-                playlist1.addSong(song);
+                playlist1.add(song);
             } else {
-                playlist2.addSong(song);
+                playlist2.add(song);
             }
             
-            playlist3.addSong(song);
+            playlist3.add(song);
             
-            if (removeSong == null)
-                removeSong = song;
+            if (remove == null)
+                remove = song;
                 
             updateSong = song;
         }

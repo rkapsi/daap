@@ -1,6 +1,8 @@
 
 package de.kapsi.net.daap;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Miscellaneous Java primitive to byte array and vice versa
  * methods.
@@ -43,10 +45,14 @@ public final class ByteUtil {
 	 * Used to copy the bytes of a content code (a four character string)
      * to dst...
 	 */
-	public static final int toBytes(String value, byte[] dst, int offset) 
-			throws java.io.UnsupportedEncodingException {
+	public static final int toContentCodeBytes(String value, byte[] dst, int offset) 
+			throws UnsupportedEncodingException {
 			
 		byte[] bytes = value.getBytes("UTF-8");
+        
+        if (bytes.length != 4)
+            throw new UnsupportedEncodingException("Illegal content code length");
+            
 		System.arraycopy(bytes, 0, dst, offset, 4);
 		return 4;
 	}

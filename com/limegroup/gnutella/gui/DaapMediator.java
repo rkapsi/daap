@@ -208,7 +208,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
      * Returns true if the extension of name is a supported file type.
      */
     private static boolean isSupported(String name) {
-        String[] types = iTunesSettings.ITUNES_SUPPORTED_FILE_TYPES.getValue();        
+        String[] types = iTunesSettings.DAAP_SUPPORTED_FILE_TYPES.getValue();        
         for(int i = 0; i < types.length; i++)
             if (name.endsWith(types[i]))
                 return true;

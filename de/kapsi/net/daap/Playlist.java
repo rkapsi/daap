@@ -141,7 +141,7 @@ public class Playlist implements SongListener {
         return deletedItems;
     }
     
-	public void addSong(Song song) {
+	public void add(Song song) {
 		
 		if (items.contains(song)==false) {
 			
@@ -153,12 +153,12 @@ public class Playlist implements SongListener {
 			deletedItems.remove(id);
 			
 			if (notifyMasterPlaylistAddSong && masterPlaylist != null) {
-                masterPlaylist.addSong(song);
+                masterPlaylist.add(song);
             }
 		}
 	}
     
-	public boolean removeSong(Song song) {
+	public boolean remove(Song song) {
 		
 		if (items.remove(song)) {
 		
@@ -169,7 +169,7 @@ public class Playlist implements SongListener {
 			deletedItems.add(id);
 			
 			if (notifyMasterPlaylistRemoveSong && masterPlaylist != null) {
-                masterPlaylist.removeSong(song);
+                masterPlaylist.remove(song);
             }
 			
 			return true;

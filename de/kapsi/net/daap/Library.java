@@ -1,14 +1,13 @@
 
 package de.kapsi.net.daap;
 
-import org.apache.commons.httpclient.*;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.*;
-
-import java.util.*;
+import de.kapsi.net.daap.chunks.ServerDatabases;
 
 public class Library {
 	
@@ -66,11 +65,28 @@ public class Library {
 		return open;
 	}
 	
+    public void delete() {
+        if (open) {
+			if (LOG.isErrorEnabled()) {
+				LOG.error("Library is open.");
+			}
+			return;
+		}
+        
+        revisions.clear();
+
+        current = null;
+        temp = null;
+	
+        serverDatabases = null;
+        serverDatabasesUpdate = null;
+    }
+
 	public void open() {
 		
 		if (open) {
-			if (LOG.isWarnEnabled()) {
-				LOG.warn("Library is already opened for edit");
+			if (LOG.isErrorEnabled()) {
+				LOG.error("Library is already opened for edit");
 			}
 			return;
 		}
@@ -92,8 +108,8 @@ public class Library {
 	
 	public void close() {
 		if (!open) {
-			if (LOG.isWarnEnabled()) {
-				LOG.warn("Library wasn't opened for edit");
+			if (LOG.isErrorEnabled()) {
+				LOG.error("Library wasn't opened for edit");
 			}
 			return;
 		}
@@ -207,47 +223,56 @@ public class Library {
 		return null;
 	}
 	
-	public void addSong(Song song) {
+	public void add(Song song) {
     
 		if (!open) {
 			throw new IllegalStateException();
 		}
 		
-		temp.getMasterPlaylist().addSong(song);
+		temp.getMasterPlaylist().add(song);
 	}
 	
-	public boolean removeSong(Song song) {
+	public boolean remove(Song song) {
 	
 		if (!open) {
 			throw new IllegalStateException();
 		}
 		
-		return temp.getMasterPlaylist().removeSong(song);
+		return temp.getMasterPlaylist().remove(song);
 	}
 	
-	public void addPlaylist(Playlist playlist) {
+	public void add(Playlist playlist) {
 		
 		if (!open) {
 			throw new IllegalStateException();
 		}
 		
-		temp.addPlaylist(playlist);
+		temp.add(playlist);
 	}
 	
-	public boolean removePlaylist(Playlist playlist) {
+	public boolean remove(Playlist playlist) {
 	
 		if (!open) {
 			throw new IllegalStateException();
 		}
 		
-		return temp.removePlaylist(playlist);
+		return temp.remove(playlist);
 	}
 	
 	public int size() {
 		if (current==null) {
 			return 0;
 		} else {
-			return current.getMasterPlaylist().size();
+    
+            Playlist masterPlaylist = current.getMasterPlaylist();
+            if (masterPlaylist == null && temp != null)
+                masterPlaylist = temp.getMasterPlaylist();
+            
+            if (masterPlaylist != null) {
+                return masterPlaylist.size();
+            } else {
+                return 0;
+            }
 		}
 	}
 	

@@ -86,7 +86,7 @@ public class Database {
         return deletedContainers;
     }
     
-	public void addPlaylist(Playlist playlist) {
+	public void add(Playlist playlist) {
 		if (containers.contains(playlist)==false) {
 			containers.add(playlist);
 			playlist.setMasterPlaylist(masterPlaylist);
@@ -95,7 +95,7 @@ public class Database {
 		}
 	}
 	
-	public boolean removePlaylist(Playlist playlist) {
+	public boolean remove(Playlist playlist) {
 		if (containers.remove(playlist)) {
 			deletedContainers.add(new Integer(playlist.getId()));
             playlist.setMasterPlaylist(null);

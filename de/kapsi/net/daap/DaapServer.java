@@ -33,7 +33,6 @@ public class DaapServer {
 	private ServerInfoResponse serverInfo;
 	private ContentCodesResponse contentCodes;
 	
-    private Thread acceptThread;
     private DaapAcceptor acceptor;
     
 	private HashSet sessionIds;
@@ -93,11 +92,13 @@ public class DaapServer {
         return config;
     }
     
-    public boolean isRunning() {
-        return (acceptor != null && acceptor.isRunning());
+    public synchronized boolean isRunning() {
+        if (acceptor == null)
+            return false;
+        return acceptor.isRunning();
     }
     
-    public void start() throws IOException {
+    public synchronized void start() throws IOException {
         
         if (isRunning())
             return;
@@ -106,19 +107,18 @@ public class DaapServer {
         
         acceptor = new DaapAcceptor(this);
         
-        acceptThread = new Thread(acceptor, "DaapAcceptorThread");
+        Thread acceptThread = new Thread(acceptor, "DaapAcceptorThread");
+        acceptThread.setDaemon(true);
         acceptThread.start();
     }
     
-    public void stop() {
+    public synchronized void stop() {
         
         if (!isRunning())
             return;
         
         acceptor.stop();
-        
         acceptor = null;
-        acceptThread = null;
         
         synchronized(connections) {
             Iterator it = connections.iterator();
@@ -139,6 +139,71 @@ public class DaapServer {
         synchronized(sessionIds) {
             sessionIds.clear();
         }
+    }
+    
+    /**
+     * Adds connection to the internal connection pool and returns true
+     * on success. False is retuned in the following cases: Max connections
+     * reached or server is down.
+     */
+    private synchronized boolean addConnection(DaapConnection connection) {
+        
+        if (!isRunning()) {
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Server is down.");
+            }
+                    
+            return false;
+        }
+        
+        if (connection.isAudioStream()) {
+            
+            synchronized(streams) {
+                
+                if (streams.size() < config.getMaxConnections()) {
+                    streams.add(connection);
+                    
+                } else {
+                    
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("Connection limit reached");
+                    }
+                    
+                    return false;
+                }
+            }
+            
+        } else {
+            
+            synchronized(connections) {
+                
+                if (connections.size() < config.getMaxConnections()) {
+                    connection.connectionKeepAlive();
+                    connections.add(connection);
+                    
+                } else {
+                
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("Connection limit reached");
+                    }
+                    
+                    // This allows us to disconnect iTunes silently. We
+                    // process the first request (/server-info) and don't
+                    // keep the connection alive. An alternative would be
+                    // to 'return false' but iTunes displays a misleading
+                    // error dialog then... 
+                    // TODO: someone has to check which of these two options 
+                    // is the default behaviour)
+                    
+                    //connection.setKeepAlive(-1); // silent disconnect
+                    
+                    return false;
+                }
+            }
+        }
+        
+        return true;
     }
     
     public boolean accept(Socket socket) 
@@ -175,44 +240,9 @@ public class DaapServer {
         // or a standart DAAP connection. 
         connection.setAudioStream(request.isSongRequest());
         
-        if (connection.isAudioStream()) {
-            
-            synchronized(streams) {
-                if (streams.size() < config.getMaxConnections()) {
-                    streams.add(connection);
-                } else {
-                
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Connection limit reached");
-                    }
-                    
-                    return false;
-                }
-            }
-            
-        } else {
-            
-            synchronized(connections) {
-                
-                if (connections.size() < config.getMaxConnections()) {
-                    connection.connectionKeepAlive();
-                    connections.add(connection);
-                } else {
-                
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Connection limit reached");
-                    }
-                    
-                    // This allows us to disconnect iTunes silently. We
-                    // process the first request (/server-info) and don't
-                    // keep the connection alive. An alternative would be
-                    // to 'return false' but iTunes displays a misleading
-                    // error dialog then... (TODO: someone has to check
-                    // which of these two options is the default behaviour)
-                    
-                    connection.setKeepAlive(-1);
-                }
-            }
+        // add connection to the connection pool
+        if ( ! addConnection(connection) ) {
+            return false;
         }
         
         Thread connThread = new Thread(connection, "DaapConnectionThread-" + (++threadNo));

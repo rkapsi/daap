@@ -51,13 +51,12 @@ public class Song {
 	private final PersistentId persistentId = new PersistentId();
 	private final NormVolume normVolume = new NormVolume();
 	
-	public Song(String name) {
-
-		synchronized(Song.class) {
+    public Song() {
+    
+        synchronized(Song.class) {
 			itemId.setValue(ID++);
 		}
 		
-		itemName.setValue(name);
 		persistentId.setValue(itemId.getValue());
 		containerItemId.setValue(itemId.getValue());
 		
@@ -99,6 +98,11 @@ public class Song {
 		add(normVolume);
 		
 		//setFormat("mp3");
+    }
+    
+	public Song(String name) {
+        this();
+        itemName.setValue(name);
 	}
 	
 	public int getId() {
@@ -375,9 +379,14 @@ public class Song {
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		
-		buffer.append("Name: ").append(getName());
-		buffer.append(", id: ").append(getId());
-		
-		return buffer.toString();
+		buffer.append("Name: ").append(getName()).append("\n");
+		buffer.append("ID: ").append(getId()).append("\n");
+		buffer.append("Artist: ").append(getArtist()).append("\n");
+        buffer.append("Album: ").append(getAlbum()).append("\n");
+        buffer.append("Bitrate: ").append(getBitrate()).append("\n");
+        buffer.append("Genre: ").append(getGenre()).append("\n");
+        buffer.append("Comment: ").append(getComment()).append("\n");
+        
+		return buffer.append("\n").toString();
 	}
 }

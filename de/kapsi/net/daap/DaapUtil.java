@@ -6,12 +6,13 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
-import org.apache.commons.httpclient.*;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class DaapUtil {
+/**
+ * Misc methods and constants
+ */
+public final class DaapUtil {
 	
 	private static final Log LOG = LogFactory.getLog(DaapUtil.class);
 	
@@ -70,6 +71,9 @@ public class DaapUtil {
 			"dmap.containeritemid"
 		};
 	
+    private DaapUtil() {
+    }
+    
 	public static int toContentCodeNumber(String contentCode) {
 		if (contentCode.length() != 4) {
 			throw new IllegalArgumentException("content code must have 4 characters!");
@@ -98,6 +102,8 @@ public class DaapUtil {
             gzip.close();
         } else {
             chunk.serialize(buffer);
+            buffer.flush();
+            buffer.close();
         }
 		
 		return buffer.toByteArray();
@@ -124,7 +130,7 @@ public class DaapUtil {
 		return map;
 	}
 	
-	private static final ArrayList parseMeta2(String meta) {
+	/*private static final ArrayList parseMeta2(String meta) {
 		StringTokenizer tok = new StringTokenizer(meta, ",");
 		ArrayList list = new ArrayList();
 		while(tok.hasMoreTokens()) {
@@ -137,7 +143,7 @@ public class DaapUtil {
 			}
 		}
 		return list;
-	}
+	}*/
 	
 	public static final ArrayList parseMeta(String meta) {
 		StringTokenizer tok = new StringTokenizer(meta, ",");
@@ -154,7 +160,7 @@ public class DaapUtil {
 		return list;
 	}
 	
-	public static final void dump(String file, byte[] bytes) throws IOException {
+	/*public static final void dump(String file, byte[] bytes) throws IOException {
 		FileOutputStream out = new FileOutputStream(new File(file));
 		out.write(bytes, 0, bytes.length);
 		out.close();
@@ -172,7 +178,7 @@ public class DaapUtil {
 		
 		in.close();
 		out.close();
-	}
+	}*/
 	
 	/*public static void main(String[] args) throws IOException {
 		
