@@ -8,6 +8,7 @@ import com.limegroup.gnutella.gui.SizedTextField;
 
 import com.limegroup.gnutella.gui.LabeledComponent;
 import com.limegroup.gnutella.settings.iTunesSettings;
+import com.limegroup.gnutella.gui.DaapMediator;
 
 public final class DaapSupportPaneItem extends AbstractPaneItem {
 
@@ -77,18 +78,23 @@ public final class DaapSupportPaneItem extends AbstractPaneItem {
 			throw new IOException(); 
 		}
 		
-        if (enabledChanged) {
-            iTunesSettings.DAAP_SUPPORT_ENABLED.setValue(CHECK_BOX.isSelected());
-        }
-        
+        iTunesSettings.DAAP_SUPPORT_ENABLED.setValue(CHECK_BOX.isSelected());
+        iTunesSettings.DAAP_SERVICE_NAME.setValue(text);
+        iTunesSettings.DAAP_LIBRARY_NAME.setValue(text);
+            
         if (enabledChanged) {
             
-            iTunesSettings.DAAP_SERVICE_NAME.setValue(text);
-            iTunesSettings.DAAP_LIBRARY_NAME.setValue(text);
-		}
+            if (iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
+                DaapMediator.instance().start();
+                DaapMediator.instance().init();
+            } else {
+                DaapMediator.instance().stop();
+            }
+            
+        } else if (textChanged) {
+            DaapMediator.instance().updateService();
+        }
         
-        System.out.println("SupportPanel");
-        
-        return enabledChanged;
+        return false;
 	}
 }

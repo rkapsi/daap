@@ -10,6 +10,10 @@ import com.limegroup.gnutella.util.I18NConvert;
 import com.limegroup.gnutella.gui.init.*;
 import com.limegroup.gnutella.gui.notify.NotifyUserProxy;
 
+import java.io.IOException;
+import com.limegroup.gnutella.gui.DaapMediator;
+import com.limegroup.gnutella.settings.iTunesSettings;
+
 import java.lang.reflect.*;
 import javax.swing.UIManager;
 
@@ -205,16 +209,16 @@ public final class Initializer {
         // Activate a download for magnet URL locally if one exists
         ExternalControl.runQueuedMagnetRequest();
 		
-		if (CommonUtils.isJava14OrLater() && 
-			com.limegroup.gnutella.settings.iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
-			
-			try {
-				com.limegroup.gnutella.gui.DaapMediator.instance().startServer();
-				com.limegroup.gnutella.gui.DaapMediator.instance().registerService();
-			} catch (java.io.IOException err) {
-				ErrorService.error(err);
-			}
-		}
+        if (CommonUtils.isJava14OrLater() && 
+                iTunesSettings.DAAP_SUPPORT_ENABLED.getValue()) {
+            
+            try {
+                DaapMediator.instance().start();
+                DaapMediator.instance().init();
+            } catch (IOException err) {
+                ErrorService.error(err);
+            }
+        }
     }
     
     /**

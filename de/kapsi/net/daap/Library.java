@@ -11,10 +11,10 @@ import de.kapsi.net.daap.chunks.ServerDatabases;
 
 public class Library {
 	
+    private static final Log LOG = LogFactory.getLog(Library.class);
+	
 	private static final int DATABASE_ID = 1;
-	
-	private static final Log LOG = LogFactory.getLog(Library.class);
-	
+
 	private ArrayList revisions = new ArrayList();
 	
 	private int keepNumRevisions;

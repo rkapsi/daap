@@ -47,100 +47,90 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
 	private DaapServer server;
     private LimeConfig config;
 	private RendezvousService rendezvous;
-	
-    private DaapMediator() {
-	}
+	private boolean annotateEnabled = false;
     
-	private static boolean check() {
-		return ( ! CommonUtils.isJava14OrLater() 
-				|| ! iTunesSettings.DAAP_SUPPORT_ENABLED.getValue());
+    private DaapMediator() {
+    }
+    
+	private static boolean isEnabled() {
+		return (CommonUtils.isJava14OrLater() 
+				&& iTunesSettings.DAAP_SUPPORT_ENABLED.getValue());
 	}
 	
-	public void startServer() throws IOException {
-	
-		if (check()) {
-			return;
-		}
-		
-		if (server == null) {
-			
-			map = new SongURNMap();
-			
-			library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
+    public synchronized void init() {
+        
+        if (CommonUtils.isJava14OrLater() && isServerRunning()) {
+            if (annotateEnabled)
+                setAnnotateEnabled(true);
+        }
+    }
+    
+	public synchronized void start() 
+            throws IOException {
+        
+        if (CommonUtils.isJava14OrLater() && !isServerRunning()) {
             
-            config = new LimeConfig();
-			server = new DaapServer(library, config);
-			server.setAuthenticator(this);
-			server.setAudioStream(this);
-			server.start();
+            try {
             
-            updateWorker = new UpdateWorker();
-            
-            Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
-            updateWorkerThread.setDaemon(true);
-            updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
-            updateWorkerThread.start();
-		}
+                map = new SongURNMap();
+                library = new Library(iTunesSettings.DAAP_LIBRARY_NAME.getValue());
+                config = new LimeConfig();
+                updateWorker = new UpdateWorker();
+
+                server = new DaapServer(library, config);
+                server.setAuthenticator(this);
+                server.setAudioStream(this);
+                        
+                server.start();
+                
+                Thread updateWorkerThread = new Thread(updateWorker, "UpdateWorkerThread");
+                updateWorkerThread.setDaemon(true);
+                updateWorkerThread.setPriority(Thread.MIN_PRIORITY+2);
+                updateWorkerThread.start();
+                
+                rendezvous = new RendezvousService();
+                rendezvous.registerService();
+                
+            } catch (IOException err) {
+                stop();
+                throw err;
+            }
+        }
 	}
 	
-	public void stopServer() throws IOException {
+	public synchronized void stop() {
 		
-		if (check()) {
-			return;
-		}
-		
-		if (server != null) {
-			
-			server.stop();
-			server = null;
-			
-            updateWorker.stop();
+        if (CommonUtils.isJava14OrLater()) {
+            
+            if (rendezvous != null)
+                rendezvous.close();
+            
+            if (updateWorker != null)
+                updateWorker.stop();
+            
+            if (server != null)
+                server.stop();
+                
+            if (map != null)
+                map.clear();
+            
+            rendezvous = null;
+            server = null;
             updateWorker = null;
-            
-			library = null;
-			
-			map.clear();
-			map = null;
-		}
+            map = null;
+            library = null;
+            config = null;
+        }
 	}
 	
-	public void registerService() throws IOException {
-		
-		if (check()) {
-			return;
-		}
-		
-        if (rendezvous != null)
-            return;
+    public synchronized void updateService() 
+            throws IOException {
             
-        rendezvous = new RendezvousService();
-        rendezvous.registerService();
-	}
-	
-	public void unregisterService() {
-		
-		if (check()) {
-			return;
-		}
-		
-        if (rendezvous == null)
-            return;
-            
-		rendezvous.close();
-        rendezvous = null;
-	}
-	
-    public void updateService() throws IOException {
-        if (check())
-            return;
-            
-        if (rendezvous == null)
-            return;
-            
-        rendezvous.updateService();
+        if (CommonUtils.isJava14OrLater() && isServerRunning())
+            rendezvous.updateService();
     }
 
-	public boolean isServerRunning() {
+	public synchronized boolean isServerRunning() {
 		if (server != null) {
 			return server.isRunning();
 		}
@@ -153,10 +143,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
 	
 	// username is don't care (not supported by iTunes)
 	public boolean authenticate(String username, String password) {
-		if (password != null) {
-			return password.equals(iTunesSettings.DAAP_PASSWORD.getValue());
-		}
-		return false;
+        return password.equals(iTunesSettings.DAAP_PASSWORD.getValue());
 	}
 	
 	public void stream(Song song, OutputStream out, int begin, int length) 
@@ -219,7 +206,7 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
     
     public void handleMetaFileManagerEvent(MetaFileManagerEvent evt) {
         
-        if (check())
+        if (!isEnabled())
             return;
         
         //System.out.println("handleMetaFileManagerEvent");
@@ -280,9 +267,9 @@ public final class DaapMediator implements DaapAuthenticator, DaapAudioStream {
     
     public void setAnnotateEnabled(boolean enabled) {
         
-        //System.out.println("setAnnotateEnabled(" + enabled +  ")");
+        this.annotateEnabled = enabled;
         
-        if (check() || !enabled)
+        if (!isEnabled() || !enabled)
             return;
         
         // disable updateWorker
