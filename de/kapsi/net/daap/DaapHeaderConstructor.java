@@ -39,7 +39,7 @@ public class DaapHeaderConstructor {
     private static final Log LOG = LogFactory.getLog(DaapHeaderConstructor.class);
     
     private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
-    private static final String ISO_8859_1 = "ISO-8859-1";
+    private static final String ISO_8859_1 = "8859_1";
     
     private static final String HTTP_OK = "HTTP/1.1 200 OK";
     private static final String HTTP_AUTH = "HTTP/1.1 401 Authorization Required";

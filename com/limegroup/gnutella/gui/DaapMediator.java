@@ -139,7 +139,7 @@ public final class DaapMediator implements FinalizeListener {
                             throw bindErr;
                         }
                     }
-		}
+                }
                 
                 Thread serverThread = new ManagedThread(server, "DaapServerThread");
                 serverThread.setDaemon(true);
