@@ -53,7 +53,7 @@ public class Database {
     private Database() {
     }
     
-    public int getRevision() {
+    int getRevision() {
         return revision;
     }
     
@@ -61,36 +61,60 @@ public class Database {
         return id;
     }
     
-    public String getName() {
+    String getName() {
         return name;
     }
     
-    public void setName(String name) {
+    void setName(String name) {
         this.name = name;
         masterPlaylist.setName(name);
     }
     
-    public String getPersistentId() {
+    String getPersistentId() {
         return persistentId;
     }
     
-    public int size() {
+    int size() {
         return masterPlaylist.size();
     }
     
-    public Playlist getMasterPlaylist() {
+    Playlist getMasterPlaylist() {
         return masterPlaylist;
     }
     
-    public List getPlaylists() {
+    List getPlaylists() {
         return containers;
     }
     
-    public List getDeletedPlaylists() {
+    List getDeletedPlaylists() {
         return deletedContainers;
     }
     
-    public void add(Playlist playlist) {
+    /**
+     * Adds the Song to the Master Playlist
+     */
+    void add(Song song) {
+        masterPlaylist.add(song);
+    }
+    
+    /**
+     * Removes the Song from the Master Playlist
+     * and from all other Playlists
+     */
+    boolean remove(Song song) {
+        if (masterPlaylist.remove(song)) {
+            Iterator it = containers.iterator();
+            while(it.hasNext()) {
+                Playlist pl = (Playlist)it.next();
+                if (pl != masterPlaylist)
+                    pl.remove(song);
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    void add(Playlist playlist) {
         if (containers.contains(playlist)==false) {
             containers.add(playlist);
             playlist.setMasterPlaylist(masterPlaylist);
@@ -99,7 +123,7 @@ public class Database {
         }
     }
     
-    public boolean remove(Playlist playlist) {
+    boolean remove(Playlist playlist) {
         if (containers.remove(playlist)) {
             deletedContainers.add(new Integer(playlist.getId()));
             playlist.setMasterPlaylist(null);
@@ -130,7 +154,7 @@ public class Database {
         return "Name: " + getName() + ", revision: " + revision;
     }
     
-    public synchronized Object select(DaapRequest request) {
+    synchronized Object select(DaapRequest request) {
         
         if (request.isSongRequest()) {
             return getSong(request.getItemId());
@@ -172,6 +196,9 @@ public class Database {
         return null;
     }
     
+    /**
+     * Used to speed up the destruction process
+     */
     void destroy() {
         
         if (containers != null) {
@@ -196,6 +223,9 @@ public class Database {
         databasePlaylistsUpdate = null;
     }
     
+    /**
+     * Used internally. See Library.open()
+     */
     void open() {
         revision++;
         
@@ -207,6 +237,9 @@ public class Database {
         }
     }
     
+    /**
+     * Used internally. See Library.open()
+     */
     void close() {
         
         List items = masterPlaylist.getSongs();

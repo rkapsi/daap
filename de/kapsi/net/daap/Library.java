@@ -314,7 +314,7 @@ public class Library {
             throw new IllegalStateException("Library is not open");
         }
 
-        temp.getMasterPlaylist().add(song);
+        temp.add(song);
     }
 
     /**
@@ -326,7 +326,7 @@ public class Library {
             throw new IllegalStateException("Library is not open");
         }
 
-        return temp.getMasterPlaylist().remove(song);
+        return temp.remove(song);
     }
 
     /**
