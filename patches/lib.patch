@@ -4,7 +4,7 @@ RCS file: /cvs/lib/messagebundles/MessagesBundle.properties,v
 retrieving revision 1.99
 diff -u -r1.99 MessagesBundle.properties
 --- messagebundles/MessagesBundle.properties	8 Jun 2004 15:16:36 -0000	1.99
-+++ messagebundles/MessagesBundle.properties	8 Jun 2004 16:20:32 -0000
++++ messagebundles/MessagesBundle.properties	10 Jun 2004 19:38:39 -0000
 @@ -1039,6 +1039,7 @@
  OPTIONS_CHAT_MAIN_TITLE=Chat
  OPTIONS_PLAYER_MAIN_TITLE=Player

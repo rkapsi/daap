@@ -14,6 +14,8 @@ import com.limegroup.gnutella.gui.notify.NotifyUserProxy;
 
 import java.lang.reflect.*;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicHTML;
+import javax.swing.JLabel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -150,29 +152,14 @@ public final class Initializer {
         // Show the splash screen if we're not starting automatically on 
         // system startup
         SplashWindow splash = null;
-        if(!isStartup) {
+        if(!isStartup)
             splash = new SplashWindow();
-            
-            SplashWindow.setStatusText(
-                GUIMediator.getStringResource("SPLASH_STATUS_USER_SETTINGS"));
-                
-            // Load up the HTML engine.
-            String html =
-                GUIMediator.getStringResource("SPLASH_STATUS_HTML_ENGINE");
-            SplashWindow.setStatusText(html);
-            SplashWindow.setHTMLStatusText(html);
-            
-            // TODO: Initialize SettingsHandler things?
-            
-            SplashWindow.setStatusText(
-                GUIMediator.getStringResource("SPLASH_STATUS_SHARED_FILES"));
-        }
-
-        // update the repaintInterval after the Splash is created,
-        // so that the splash gets the smooth animation.
-        if(CommonUtils.isMacOSX() && CommonUtils.isJava14OrLater())
-            UIManager.put("ProgressBar.repaintInterval", new Integer(500));        
         
+        // Load up the HTML engine.
+        SplashWindow.setStatusText(
+            GUIMediator.getStringResource("SPLASH_STATUS_HTML_ENGINE"));
+        BasicHTML.createHTMLView(new JLabel(), "<html>.</html>");
+
         //Initialize the bug manager
         LOG.trace("START BugManager");
         BugManager.instance();
@@ -269,13 +256,12 @@ public final class Initializer {
         // Activate a download for magnet URL locally if one exists
         ExternalControl.runQueuedMagnetRequest();
         
-        // Tell the GUI that loading is all done.
-        GUIMediator.instance().loadFinished();
-        
+        // Start DaapMediator if Java 1.4 or later and DAAP support
+        // is enabled
         if (CommonUtils.isJava14OrLater() && 
                 DaapSettings.DAAP_ENABLED.getValue()) {
             
-        		LOG.trace("START DaapMediator");
+            LOG.trace("START DaapMediator");
             try {
                 DaapMediator.instance().start();
                 DaapMediator.instance().init();
@@ -284,6 +270,14 @@ public final class Initializer {
             }
             LOG.trace("STOP DaapMediator");
         }
+        
+        // Tell the GUI that loading is all done.
+        GUIMediator.instance().loadFinished();
+        
+        // update the repaintInterval after the Splash is created,
+        // so that the splash gets the smooth animation.
+        if(CommonUtils.isMacOSX() && CommonUtils.isJava14OrLater())
+            UIManager.put("ProgressBar.repaintInterval", new Integer(500));
         
         if(LOG.isTraceEnabled()) {
             long stopMemory = Runtime.getRuntime().totalMemory()
