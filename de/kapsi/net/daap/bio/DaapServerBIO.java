@@ -499,7 +499,9 @@ public class DaapServerBIO implements DaapServer {
                     
                 } catch (IOException err) {
                     LOG.error(err);
-                    socket.close();
+                    try {
+                        socket.close();
+                    catch(IOException ignored) {}
                 }
                 
                 Thread.sleep(100);
@@ -507,17 +509,17 @@ public class DaapServerBIO implements DaapServer {
             
         } catch (InterruptedException err) {
             LOG.error(err);
-            throw new RuntimeException(err);
+         //   throw new RuntimeException(err);
             
         } catch (SocketException err) {
             if (running) {
                 LOG.error(err);
             }
-            throw new RuntimeException(err);
+          //  throw new RuntimeException(err);
             
         } catch (IOException err) {
             LOG.error(err);
-            throw new RuntimeException(err);
+          //  throw new RuntimeException(err);
             
         } finally {
             stop();
