@@ -19,7 +19,6 @@
 
 package de.kapsi.net.daap;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 /**
@@ -153,32 +152,6 @@ public class SimpleConfig implements DaapConfig {
     }
     
     /**
-     * 
-     * @param port
-     */
-    public void setInetSocketAddress(int port) {
-        this.bindAddr = new InetSocketAddress(port);
-    }
-    
-    /**
-     * 
-     * @param addr
-     * @param port
-     */
-    public void setInetSocketAddress(InetAddress addr, int port) {
-        this.bindAddr = new InetSocketAddress(addr, port);
-    }
-    
-    /**
-     * 
-     * @param host
-     * @param port
-     */
-    public void setInetSocketAddress(String host, int port) {
-        this.bindAddr = new InetSocketAddress(host, port);
-    }
-    
-     /**
      *
      * @return
      */    

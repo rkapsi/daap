@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.BindException;
 
 import com.limegroup.gnutella.URN;
@@ -39,7 +40,7 @@ import de.kapsi.net.daap.Playlist;
 import de.kapsi.net.daap.Library;
 import de.kapsi.net.daap.DaapServer;
 import de.kapsi.net.daap.DaapServerFactory;
-import de.kapsi.net.daap.SimpleConfig;
+import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.DaapStreamSource;
 import de.kapsi.net.daap.DaapAuthenticator;
@@ -106,12 +107,7 @@ public final class DaapMediator implements FinalizeListener {
                 
                 updateWorker = new UpdateWorker();
                 
-                // Reset PORT to default value to prevent increasing
-                // it to infinity
-                DaapSettings.DAAP_PORT.revertToDefault();
-                
-                SimpleConfig config = new SimpleConfig(CommonUtils.getHttpServer(), DaapSettings.DAAP_PORT.getValue());
-                config.setMaxConnections(DaapSettings.DAAP_MAX_CONNECTIONS.getValue());
+                LimeConfig config = new LimeConfig();
                 
                 final boolean NIO = DaapSettings.DAAP_USE_NIO.getValue();
                 server = DaapServerFactory.createServer(library, config, NIO);
@@ -132,9 +128,7 @@ public final class DaapMediator implements FinalizeListener {
                     } catch (BindException bindErr) {
                         if (i < (maxAttempts-1)) {
                             // try next port...
-                            int port = DaapSettings.DAAP_PORT.getValue()+1;
-                            config.setInetSocketAddress(port);
-                            DaapSettings.DAAP_PORT.setValue(port);
+                            config.nextPort();
                         } else {
                             throw bindErr;
                         }
@@ -583,6 +577,9 @@ public final class DaapMediator implements FinalizeListener {
         return update;
     }
     
+    /**
+     * This factory creates ManagedThreads for the DAAP server
+     */
     private final class LimeThreadFactory implements DaapThreadFactory {
         
         public LimeThreadFactory() {    
@@ -672,6 +669,40 @@ public final class DaapMediator implements FinalizeListener {
             
             // Is it a annoying fellow? >:-)
             return IPFilter.instance().allow(address.getAddress());
+        }
+    }
+    
+    /**
+     * A LimeWire specific implementation of DaapConfig
+     */
+    private final class LimeConfig implements DaapConfig {
+        
+        public LimeConfig() {
+            // Reset PORT to default value to prevent increasing
+            // it to infinity
+            DaapSettings.DAAP_PORT.revertToDefault();
+        }
+        
+        public String getServerName() {
+            return CommonUtils.getHttpServer();
+        }
+        
+        public void nextPort() {
+            int port = DaapSettings.DAAP_PORT.getValue();
+            DaapSettings.DAAP_PORT.setValue(port+1);
+        }
+        
+        public int getBacklog() {
+            return 0;
+        }
+        
+        public InetSocketAddress getInetSocketAddress() {
+            int port = DaapSettings.DAAP_PORT.getValue();
+            return new InetSocketAddress(port);
+        }
+        
+        public int getMaxConnections() {
+            return DaapSettings.DAAP_MAX_CONNECTIONS.getValue();
         }
     }
     
