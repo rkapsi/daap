@@ -311,7 +311,7 @@ public class MetaFileManager extends FileManager {
         // if added, but no metadata, try and create some.
         if( metadata == null || metadata.size() == 0) {
             // not mp3, can't create any ... 
-            if(!LimeXMLUtils.isSupportedAudioFormat(file))
+            if(!LimeXMLUtils.isSupportedFormat(file))
                 return fd;
 
             LimeXMLDocument doc;
