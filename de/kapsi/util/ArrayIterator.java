@@ -29,27 +29,56 @@ import java.util.Iterator;
 public class ArrayIterator implements Iterator {
 	
     private Object[] array;
-    private int from;
-    private int to;
+    private int i;
+    private int index;
+    private int length;
 
+    /**
+     * Creates a new ArrayIterator for all elements
+     * from 0 to array.length
+     * 
+     * @param array the Array
+     */
     public ArrayIterator(Object[] array) {
         this(array, 0, array.length);
     }
 
-    public ArrayIterator(Object[] array, int from, int to) {
+    /**
+     * Creates a new ArrayIterator for elements from
+     * index to index+length
+     * 
+     * @param array the Array
+     * @param index starting index
+     * @param length the number of elements begining at index
+     */
+    public ArrayIterator(Object[] array, int index, int length) {
         this.array = array;
-        this.from = from;
-        this.to = to;
+        this.index = index;
+        this.length = length;
+        this.i = 0;
     }
 
+    /**
+     * Returns <code>true</code> if ArrayIterator
+     * has more elements 
+     */
     public boolean hasNext() {
-        return (from < to);
+        return (i < length);
     }
 
+    /**
+     * Returns the current element and increments
+     * the internal index by 1
+     */
     public Object next() {
-        return array[from++];
+        Object obj = array[index+i];
+        i++;
+        return obj;
     }
 
+    /**
+     * Throws an UnsupportedOperationException
+     */
     public void remove() {
         throw new UnsupportedOperationException();
     }
