@@ -318,6 +318,7 @@ public class Transaction {
      */
     private static final class AutoCommitTask extends TimerTask {
         
+        private Library library;
         private ArrayList list = new ArrayList();
         
         private AutoCommitTask() {
@@ -326,38 +327,45 @@ public class Transaction {
         
         private void add(Transaction txn) {
             list.add(txn);
+            
+            if(library == null)
+                library = txn.library;
+            //else if(txn.library != library)
+            //  multiple libraries?  huh?  that isn't happening yet!
         }
         
         public void run() {
-            synchronized(Transaction.class) {
-                if (list.isEmpty()) {
-                    cancel();
-                    timer.cancel();
-                    timer = null;
-                    timerTask = null;
-                }
-                
-                Iterator it = list.iterator();
-                Transaction root = null;
-                
-                while(it.hasNext()) {
-                    Transaction txn = (Transaction)it.next();
-                    
-                    if (!txn.isOpen()) {
-                        it.remove();
-                        
-                    } else if (System.currentTimeMillis() - txn.lastModified() > SCHEDULE_INTERVAL) {
-                        if (root == null) {
-                            root = txn;
-                        } else {
-                            root.join(txn);
-                        }
-                        it.remove();
+            synchronized(library) {
+                synchronized(Transaction.class) {
+                    if (list.isEmpty()) {
+                        cancel();
+                        timer.cancel();
+                        timer = null;
+                        timerTask = null;
                     }
+                    
+                    Iterator it = list.iterator();
+                    Transaction root = null;
+                    
+                    while(it.hasNext()) {
+                        Transaction txn = (Transaction)it.next();
+                        
+                        if (!txn.isOpen()) {
+                            it.remove();
+                            
+                        } else if (System.currentTimeMillis() - txn.lastModified() > SCHEDULE_INTERVAL) {
+                            if (root == null) {
+                                root = txn;
+                            } else {
+                                root.join(txn);
+                            }
+                            it.remove();
+                        }
+                    }
+                    
+                    if (root != null)
+                        root.commit();
                 }
-                
-                if (root != null)
-                    root.commit();
             }
         }
     }
