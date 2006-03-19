@@ -19,7 +19,6 @@
 
 package de.kapsi.net.daap;
 
-
 /**
  * Miscellaneous Java primitive to byte array and vice versa
  * methods.
@@ -114,5 +113,19 @@ public final class ByteUtil {
         dst[++offset] = (byte)((value >> 8) & 0xFF);
         dst[++offset] = (byte)(value & 0xFF);
         return 8;
+    }
+    
+    /**
+     * 64bit to long
+     */
+    public static final long toLongBE(byte[] src, int offset) {
+        return (((src[  offset] & 0xFFl) << 56l) +
+                ((src[++offset] & 0xFFl) << 48l) +
+                ((src[++offset] & 0xFFl) << 40l) +
+                ((src[++offset] & 0xFFl) << 32l) +
+                ((src[++offset] & 0xFFl) << 24l) +
+                ((src[++offset] & 0xFFl) << 16l) +
+                ((src[++offset] & 0xFFl) << 8l) +
+                 (src[++offset] & 0xFFl));
     }
 }

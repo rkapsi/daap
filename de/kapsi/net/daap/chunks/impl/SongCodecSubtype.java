@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Unknown purpose.
@@ -27,7 +27,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * @author  Roger Kapsi
  * @since iTunes 4.5
  */
-public class SongCodecSubtype extends IntChunk {
+public class SongCodecSubtype extends UIntChunk {
     
     public static final int MPEG = 0x03;
     public static final int MP4A = 0x02;
@@ -37,7 +37,7 @@ public class SongCodecSubtype extends IntChunk {
         this(0);
     }
     
-    public SongCodecSubtype(int subtype) {
+    public SongCodecSubtype(long subtype) {
         super("ascs", "daap.songcodecsubtype", subtype);
     }
 }

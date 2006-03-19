@@ -27,7 +27,7 @@ import de.kapsi.net.daap.DaapAuthResponse;
 import de.kapsi.net.daap.DaapRequest;
 
 /**
- * NIO (New or Non-Blocking I/O) based DaapAuthResponse.
+ * DaapAuthResponse.
  *
  * @author  Roger Kapsi
  */
@@ -46,21 +46,14 @@ public class DaapAuthResponseNIO extends DaapAuthResponse {
         headerBuffer = ByteBuffer.wrap(header);
     }
     
-    
-    public boolean hasRemainig() {
+    public boolean hasRemaining() {
         return headerBuffer.hasRemaining();
     }
-    
-    
-    /**
-     *
-     * @throws IOException
-     * @return
-     */    
+       
     public boolean write() throws IOException {
-        if (headerBuffer.hasRemaining()) {
+        if (hasRemaining()) {
             channel.write(headerBuffer);
-            return !headerBuffer.hasRemaining();
+            return !hasRemaining();
         }
         
         return true;

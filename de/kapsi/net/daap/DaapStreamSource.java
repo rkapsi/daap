@@ -20,7 +20,6 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
-import java.io.FileInputStream;
 
 /**
  * Use this interface to implement a Stream Source which maps
@@ -34,5 +33,5 @@ public interface DaapStreamSource {
      * Returns an <code>InputStream</code> for the provided
      * Song.
      */
-    public FileInputStream getSource(Song song) throws IOException;
+    public Object getSource(Song song) throws IOException;
 }

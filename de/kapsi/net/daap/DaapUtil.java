@@ -20,8 +20,11 @@
 package de.kapsi.net.daap;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,15 +32,17 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.auth.AuthenticationException;
+import org.apache.commons.httpclient.auth.DigestScheme;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Misc methods and constants
@@ -45,6 +50,11 @@ import de.kapsi.net.daap.chunks.Chunk;
  * @author  Roger Kapsi
  */
 public final class DaapUtil {
+    
+    private static final Log LOG = LogFactory.getLog(DaapUtil.class);
+    
+    /** */
+    private static final Random generator = new Random();
     
     /**
      * NULL value (Zero) is a forbidden value (in some cases) in 
@@ -58,95 +68,61 @@ public final class DaapUtil {
      */
     public static final boolean COMPRESS = true;
     
-    private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
-    private static final String ISO_8859_1 = "ISO-8859-1";
+    /** ISO Latin 1 encoding */
+    public static final String ISO_8859_1 = "ISO-8859-1";
     
-    private static final Log LOG = LogFactory.getLog(DaapUtil.class);
+    /** UTF-8 encoding */
+    public static final String UTF_8 = "UTF-8";
+    
+    /** "\r\n" <b>DON'T TOUCH!</b> */
+    static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
+    
+    //private static final Log LOG = LogFactory.getLog(DaapUtil.class);
     
     private final static SimpleDateFormat formatter = 
         new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z", Locale.US);
     
-    private final static Random generator = new Random();
+    /** DAAP 1.0.0 (iTunes 4.0) */
+    public static final int DAAP_VERSION_1 = 0x00010000; // 1.0.0
     
-    static {
-        // warm up...
-        for(int i = 0; i < 100; i++) {
-            generator.nextInt();
-        }
-    }
+    /** DAAP 2.0.0 (iTunes 4.1, 4.2) */
+    public static final int DAAP_VERSION_2 = 0x00020000; // 2.0.0
     
-    /**
-     * A hard coded list of Song attributes.
-     */
-    public static final String[] DATABASE_SONGS_META = {
-        "dmap.itemkind",
-        "daap.songalbum",
-        "daap.songgrouping",
-        "daap.songartist",
-        "daap.songbeatsperminute",
-        "daap.songbitrate",
-        "daap.songcomment",
-        "daap.songcompilation",
-        "daap.songcomposer",
-        "daap.songdateadded",
-        "daap.songdatemodified",
-        "daap.songdisccount",
-        "daap.songdiscnumber",
-        "daap.songdatakind",
-        "daap.songformat",
-        "daap.songeqpreset",
-        "daap.songgenre",
-        "dmap.itemid",
-        "daap.songdescription",
-        "dmap.itemname",
-        "com.apple.itunes.norm-volume",
-        "dmap.persistentid",
-        "daap.songdisabled",
-        "daap.songrelativevolume",
-        "daap.songsamplerate",
-        "daap.songsize",
-        "daap.songstarttime",
-        "daap.songstoptime",
-        "daap.songtime",
-        "daap.songtrackcount",
-        "daap.songtracknumber",
-        "daap.songuserrating",
-        "daap.songyear",
-        "dmap.containeritemid",
-        "daap.songdataurl"
+    /** DAAP Version 3.0.0 (iTunes 4.5, 4.6) */
+    public static final int DAAP_VERSION_3 = 0x00030000; // 3.0.0
+    
+    /** DAAP Version 3.0.2 (iTunes 5.0) */
+    public static final int DAAP_VERSION_302 = 0x003002; // 3.0.2
+    
+    /** DMAP Version 2.0.1 */
+    public static final int DMAP_VERSION_201 = 0x00020001; // 2.0.1
+    
+    /** DMAP Version 2.0.1 (iTunes 5.0) */
+    public static final int DMAP_VERSION_202 = 0x00020002; // 2.0.2
+    
+    /** Music Sharing Version 2.0.1 */
+    public static final int MUSIC_SHARING_VERSION_201 = 0x00020001; // 2.0.1
+    
+    /** 0, 1, ... F */
+    private static final char[] HEX = { 
+        '0', '1', '2', '3', '4', '5', 
+        '6', '7', '8', '9', 'A', 'B', 
+        'C', 'D', 'E', 'F' 
     };
     
-    /**
-     * A hard coded list of Playlist attributes.
+    /** Default DAAP realm */
+    static final String DAAP_REALM = "daap";
+    
+    /** 
+     * List of sharable formats/extensions. The list
+     * is likely not complete!
+     * 
+     * TODO: complete list
      */
-    public static final String[] DATABASE_PLAYLISTS_META = {
-        "dmap.itemid",
-        "dmap.persistentid",
-        "dmap.itemname",
-        "com.apple.itunes.smart-playlist",
-        "dmap.itemcount"
+    private static final String[] SUPPORTED_FORMATS = {
+        ".mp3", ".m4a", ".m4p", ".wav", 
+        ".aif", ".aiff", ".m1a"
     };
-    
-    /**
-     * A hard coded list of Playlist/Song attributes.
-     */
-    public static final String[] PLAYLIST_SONGS_META = {
-        "dmap.itemkind",
-        "dmap.itemid",
-        "dmap.containeritemid"
-    };
-    
-    /** 1.0.0 (iTunes 4.0) */
-    public static final int VERSION_1 = 0x00010000; // 1.0.0
-    
-    /** 2.0.0 (iTunes 4.1, 4.2) */
-    public static final int VERSION_2 = 0x00020000; // 2.0.0
-    
-    /** Version 3.0.0 (iTunes 4.5, 4.6) */
-    public static final int VERSION_3 = 0x00030000; // 3.0.0
-    
-    private static final String CLIENT_DAAP_VERSION = "Client-DAAP-Version";
-    private static final String USER_AGENT = "User-Agent";
     
     private DaapUtil() {
     }
@@ -160,7 +136,7 @@ public final class DaapUtil {
      * @return <code>true</code> if version is a supported
      */
     public static boolean isSupportedProtocolVersion(int version) {
-        if (version >= VERSION_3) {
+        if (version >= DAAP_VERSION_3) {
             return true;
         } else {
             return false;
@@ -178,13 +154,22 @@ public final class DaapUtil {
             throw new IllegalArgumentException("content code must have 4 characters!");
         }
         
-        try {
-            byte[] chars = contentCode.getBytes("UTF-8");
-            return ByteUtil.toIntBE(chars, 0);
-        } catch (UnsupportedEncodingException err) {
-            LOG.error(err);
-            return 0;
-        }
+        return    (int)((contentCode.charAt(0) & 0xFF) << 24)
+                | (int)((contentCode.charAt(1) & 0xFF) << 16)
+                | (int)((contentCode.charAt(2) & 0xFF) <<  8)
+                | (int)((contentCode.charAt(3) & 0xFF));
+    }
+    
+    /**
+     * Converts an four byte int to a string
+     */
+    public static String toContentCodeString(int contentCode) {
+        char[] code = new char[4];
+        code[0] = (char)((contentCode >> 24) & 0xFF);
+        code[1] = (char)((contentCode >> 16) & 0xFF);
+        code[2] = (char)((contentCode >>  8) & 0xFF);
+        code[3] = (char)((contentCode      ) & 0xFF);
+        return new String(code);
     }
     
     /**
@@ -199,19 +184,18 @@ public final class DaapUtil {
      * The serialized data is returned as a byte-Array.
      */
     public static final byte[] serialize(Chunk chunk, boolean compress) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(255);
+        DaapOutputStream out = null;
         
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream(chunk.getSize());
-        
-        if (compress) {
+        if (DaapUtil.COMPRESS && compress) {
             GZIPOutputStream gzip = new GZIPOutputStream(buffer);
-            chunk.serialize(gzip);
-            gzip.finish();
-            gzip.close();
+            out = new DaapOutputStream(gzip);
         } else {
-            chunk.serialize(buffer);
-            buffer.flush();
-            buffer.close();
+            out = new DaapOutputStream(buffer);
         }
+        
+        out.writeChunk(chunk);
+        out.close();
         
         return buffer.toByteArray();
     }
@@ -272,30 +256,6 @@ public final class DaapUtil {
     }
     
     /**
-     * Creates and returns an unique session ID
-     * 
-     * @param knownIDs all known session IDs
-     * @return a uniquie session id
-     */
-    public static Integer createSessionId(Set knownIDs) {
-        Integer sessionId = null;
-        
-        while(sessionId == null || knownIDs.contains(sessionId)) {
-            int tmp = generator.nextInt();
-            
-            if (tmp == 0) {
-                continue;
-            } else if (tmp < 0) {
-                tmp = -tmp;
-            }
-            
-            sessionId = new Integer(tmp);
-        }
-        
-        return sessionId;
-    }
-    
-    /**
      * Converts major, minor to a DAAP version.
      * Version 2 is for example 0x00020000
      * 
@@ -324,15 +284,13 @@ public final class DaapUtil {
      * 
      * @param major the major version (x)
      * @param minor the minor version (y)
-     * @param patch the patch version (z)
+     * @param micro the patch version (z)
      * @return x.y.z
      */
-    public static int toVersion(int major, int minor, int patch) {
-        byte[] dst = new byte[4];
-        ByteUtil.toByte16BE((major & 0xFFFF), dst, 0);
-        dst[2] = (byte)(minor & 0xFF);
-        dst[3] = (byte)(patch & 0xFF);
-        return ByteUtil.toIntBE(dst, 0);
+    public static int toVersion(int major, int minor, int micro) {
+       return (major & 0xFFFF) << 16
+               | (minor & 0xFF) << 8
+               | (micro & 0xFF);
     }
     
     /**
@@ -345,10 +303,10 @@ public final class DaapUtil {
         if (request.isUnknownRequest())
             return DaapUtil.NULL;
         
-        Header header = request.getHeader(CLIENT_DAAP_VERSION);
+        Header header = request.getHeader(DaapRequest.CLIENT_DAAP_VERSION);
         
         if (header == null && request.isSongRequest()) {
-            header = request.getHeader(USER_AGENT);
+            header = request.getHeader(DaapRequest.USER_AGENT);
         }
         
         if (header == null)
@@ -361,20 +319,27 @@ public final class DaapUtil {
         // header. As a workaround we can estimate the protocol version
         // by User-Agent but that is weak an may break with non iTunes
         // hosts...
-        if ( request.isSongRequest() && name.equals(USER_AGENT)) {
+        if ( request.isSongRequest() && name.equals(DaapRequest.USER_AGENT)) {
             
             // Note: the protocol version of a Song request is estimated
             // by the server with the aid of the sessionId, i.e. this block
             // is actually never touched...
-            if (value.startsWith("iTunes/4.5") || value.startsWith("iTunes/4.6"))
-                return DaapUtil.VERSION_3;
-            else if (value.startsWith("iTunes/4.2") || value.startsWith("iTunes/4.1"))
-                return DaapUtil.VERSION_2;
-            else if (value.startsWith("iTunes/4.0"))
-                return DaapUtil.VERSION_1;
-            else
+            if (value.startsWith("iTunes/5.0")) {
+                return DaapUtil.DAAP_VERSION_302;
+            } else if (value.startsWith("iTunes/4.9")
+                    || value.startsWith("iTunes/4.8")
+                    || value.startsWith("iTunes/4.7") 
+                    || value.startsWith("iTunes/4.6")
+                    || value.startsWith("iTunes/4.5")) {
+                return DaapUtil.DAAP_VERSION_3;
+            } else if (value.startsWith("iTunes/4.2") 
+                    || value.startsWith("iTunes/4.1")) {
+                return DaapUtil.DAAP_VERSION_2;
+            } else if (value.startsWith("iTunes/4.0")) {
+                return DaapUtil.DAAP_VERSION_1;
+            } else {
                 return DaapUtil.NULL;
-            
+            }
         } else {
             
             StringTokenizer tokenizer = new StringTokenizer(value, ".");
@@ -401,5 +366,261 @@ public final class DaapUtil {
         }
         
         return DaapUtil.NULL;
+    }
+    
+    /**
+     * 
+     */
+    public static long parseUInt(String value) 
+            throws NumberFormatException {
+        try {
+            return UIntChunk.checkUIntRange(Long.parseLong(value));
+        } catch (IllegalArgumentException err) {
+            throw new NumberFormatException("For input: " + value);
+        }
+    }
+    
+    /**
+     * Generates a random int
+     */
+    public static int nextInt() {
+        synchronized(generator) {
+            return generator.nextInt();
+        }
+    }
+    
+    /**
+     * Generates a random int
+     */
+    public static int nextInt(int max) {
+        synchronized(generator) {
+            return generator.nextInt(max);
+        }
+    }
+
+    /**
+     * String to byte Array
+     */
+    public static byte[] getBytes(String s, String charsetName) {
+        try {
+            return s.getBytes(charsetName);
+        } catch (UnsupportedEncodingException e) {
+            // should never happen
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * Byte Array to String
+     */
+    public static String toString(byte[] b, String charsetName) {
+        try {
+            return new String(b, charsetName);
+        } catch (UnsupportedEncodingException e) {
+            // should never happen
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * Returns b as hex String
+     */
+    public static String toHexString(byte[] b) {
+        if (b.length % 2 != 0) {
+            throw new IllegalArgumentException("Argument's length must be power of 2");
+        }
+        
+        StringBuffer buffer = new StringBuffer(b.length * 2);
+        for(int i = 0; i < b.length; i++) {
+            char hi = HEX[((b[i] >> 4) & 0xF)];
+            char lo = HEX[b[i] & 0xF];
+            
+            buffer.append(hi).append(lo);
+        }
+        return buffer.toString();
+    }
+    
+    public static byte[] parseHexString(String s) {
+        if (s.length() % 2 != 0) {
+            throw new IllegalArgumentException("Argument's length() must be power of 2");
+        }
+        
+        byte[] buffer = new byte[s.length() / 2];
+        for(int i = 0, j = 0; i < buffer.length; i++) { 
+            buffer[i] = (byte)((parseHexToInt(s.charAt(j++) & 0xFF) << 0x4)
+                                | parseHexToInt(s.charAt(j++) & 0xFF));
+        }
+        return buffer;
+    }
+    
+    private static int parseHexToInt(int hex) {
+        switch(hex) {
+            case '0': return 0;
+            case '1': return 1;
+            case '2': return 2;
+            case '3': return 3;
+            case '4': return 4;
+            case '5': return 5;
+            case '6': return 6;
+            case '7': return 7;
+            case '8': return 8;
+            case '9': return 9;
+            case 'A': return 10;
+            case 'a': return 10;
+            case 'B': return 11;
+            case 'b': return 11;
+            case 'C': return 12;
+            case 'c': return 12;
+            case 'D': return 13;
+            case 'd': return 13;
+            case 'E': return 14;
+            case 'e': return 14;
+            case 'F': return 15;
+            case 'f': return 15;
+            default: throw new NumberFormatException("'" + Character.toString((char)hex) + "'");
+        }
+    }
+    
+    /**
+     * Creates a random nonce
+     */
+    public static String nonce() {
+        try {
+            return DigestScheme.createCnonce();
+        } catch (AuthenticationException err) {
+            // should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    public static byte[] toMD5(String s) {
+        try {
+            return MessageDigest.getInstance("MD5").digest(getBytes(s, ISO_8859_1));
+        } catch (NoSuchAlgorithmException err) {
+            // should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    public static String calculateHA1(String username, String password) {
+        return calculateHA1(username, getBytes(password, ISO_8859_1));
+    }
+    
+    public static String calculateHA1(String username, byte[] password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(getBytes(username, ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(DAAP_REALM, ISO_8859_1));
+            md.update((byte)':');
+            //md.update(getBytes(password, ISO_8859_1));
+            md.update(password);
+            return toHexString(md.digest());
+        } catch (NoSuchAlgorithmException err) {
+            // should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    public static String calculateHA2(String uri) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            md.update(getBytes("GET", ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(uri, ISO_8859_1));
+            return toHexString(md.digest());
+        } catch (NoSuchAlgorithmException err) {
+            // should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    public static String digest(String ha1, String ha2, String nonce) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            
+            md.update(getBytes(ha1, ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(nonce, ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(ha2, ISO_8859_1));
+            return toHexString(md.digest());
+        } catch (NoSuchAlgorithmException err) {
+            // should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    // see org.apache.commons.httpclient.auth.DigestScheme
+    /*public static String digest(String username, byte[] password, String nonce, String uri) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            
+            md.update(getBytes(username, ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(DAAP_REALM, ISO_8859_1));
+            md.update((byte)':');
+            //md.update(getBytes(password, ISO_8859_1));
+            md.update(password);
+            final String HA1 = toHexString(md.digest());
+            md.reset();
+            
+            md.update(getBytes("GET", ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(uri, ISO_8859_1));
+            final String HA2 = toHexString(md.digest());
+            md.reset();
+            
+            md.update(getBytes(HA1, ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(nonce, ISO_8859_1));
+            md.update((byte)':');
+            md.update(getBytes(HA2, ISO_8859_1));
+            return toHexString(md.digest());
+        } catch (NoSuchAlgorithmException err) {
+            // should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    /**
+     * Returns the extension of file or null if file
+     * has no extension
+     */
+    public static String getExtension(File file) {
+        return file.isFile() ? getExtension(file.getName()) : null;
+    }
+    
+    /**
+     * Returns the extension of fileName or null if file
+     * has no extension
+     */
+    public static String getExtension(String fileName) {
+        int p = fileName.lastIndexOf('.');
+        if (p != -1 && ++p < fileName.length()) {
+            return fileName.substring(p).toLowerCase(Locale.US);
+        }
+        return null;
+    }
+    
+    /**
+     * Returns true if file is a supported format
+     */
+    public static boolean isSupportedFormat(File file) {
+        return file.isFile() && isSupportedFormat(file.getName());
+    }
+    
+    /**
+     * Returns true if fileName is a supported format 
+     */
+    public static boolean isSupportedFormat(String fileName) {
+        fileName = fileName.toLowerCase(Locale.US);
+        for(int i = 0; i < SUPPORTED_FORMATS.length; i++) {
+            if (fileName.endsWith(SUPPORTED_FORMATS[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 }

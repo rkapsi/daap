@@ -22,27 +22,9 @@
     </path>
     
     <target name="init">
-        <available file="${gui}" type="dir" property="gui.present"/>
-        <available file="${core}" type="dir" property="core.present"/>
         <available file="${jars}" type="dir" property="jars.present"/>
         <tstamp/>
-        <antcall target="checkgui"/>
-        <antcall target="checkcore"/>
         <antcall target="checkjars"/>
-    </target>
-	
-    <target name="checkgui" unless="gui.present">
-        <echo message="*******************************************************"/>
-        <echo message="*******  YOU MUST CHECKOUT THE gui MODULE *************"/>
-        <echo message="**** and place it as a sibling to this daap module ****"/>
-        <echo message="*******************************************************"/>
-    </target>
-    
-    <target name="checkcore" unless="core.present">
-        <echo message="*******************************************************"/>
-        <echo message="*******  YOU MUST CHECKOUT THE core MODULE ************"/>
-        <echo message="**** and place it as a sibling to this daap module ****"/>
-        <echo message="*******************************************************"/>
     </target>
     
     <target name="checkjars" unless="jars.present">
@@ -101,9 +83,9 @@
 		
 			<classpath refid="default.classpath"/>
 			
-			<classpath>
+			<!--<classpath>
 				<fileset dir="${tests}" includes="lib/*.jar"/>
-			</classpath>
+			</classpath>-->
 			
 			<packageset dir="${basedir}"/>
 		

@@ -53,7 +53,6 @@ public class SongFormat extends StringChunk {
      */
     public static final String WAV = "wav";
     
-    
     /**
      * Playlist
      */

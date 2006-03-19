@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The total number of Songs, Databases or whatever the Library
@@ -28,7 +28,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * @see ReturnedCount
  * @author  Roger Kapsi
  */
-public class SpecifiedTotalCount extends IntChunk {
+public class SpecifiedTotalCount extends UIntChunk {
     
     public SpecifiedTotalCount() {
         this(0);

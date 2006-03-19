@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The total number of Tracks.
  *
  * @author  Roger Kapsi
  */
-public class SongTrackCount extends ShortChunk {
+public class SongTrackCount extends UShortChunk {
     
     /**
      * Creates a new SongTrackCount with 0 tracks.

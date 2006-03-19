@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ByteChunk;
+import de.kapsi.net.daap.chunks.SByteChunk;
 
 /**
  * The relative loudness of the Song to the main volume
@@ -28,16 +28,16 @@ import de.kapsi.net.daap.chunks.ByteChunk;
  *
  * @author  Roger Kapsi
  */
-public class SongRelativeVolume extends ByteChunk {
+public class SongRelativeVolume extends SByteChunk {
     
     /** Decrease the volume by 100% */
-    public static final int MIN_VALUE = -128;
+    public static final int MIN_VALUE = -100;
     
     /** Do not increase or decrease the sound volume */
     public static final int NONE = 0;
     
     /** Increase the volume by 100% */
-    public static final int MAX_VALUE = 127;
+    public static final int MAX_VALUE = 100;
   
     public SongRelativeVolume() {
         this(0);

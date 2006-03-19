@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The disk number of the Song.
  * 
  * @author  Roger Kapsi
  */
-public class SongDiscNumber extends ShortChunk {
+public class SongDiscNumber extends UShortChunk {
     
     /**
      * Creates a new SongDiscNumber where disc is 0.

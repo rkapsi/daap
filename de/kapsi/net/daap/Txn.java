@@ -25,40 +25,25 @@ package de.kapsi.net.daap;
  * 
  * @author Roger Kapsi
  */
-interface Txn {
+/*public*/ class Txn {
     
     /**
      * Called by Transaction with a reference to
      * itself
      * 
      * @param txn a Transaction
-     * @throws DaapException
      */
-    void commit(Transaction txn) throws DaapException;
+    public void commit(Transaction txn) {
+        // OVERWRITE IN SUBCLASSES
+    }
     
     /**
      * Called by Transaction with a reference to
      * itself
      * 
      * @param txn a Transaction
-     * @throws DaapException
      */
-    void rollback(Transaction txn) throws DaapException;
-    
-    /**
-     * Called by Transaction with a reference to
-     * itself
-     * 
-     * @param txn a Transaction
-     * @throws DaapException
-     */
-    void cleanup(Transaction txn) throws DaapException;
-    
-    /**
-     * Join 'this' with value
-     * 
-     * @param value
-     * @throws DaapException
-     */
-    void join(Txn value) throws DaapException;
+    public void rollback(Transaction txn) {
+        // OVERWRITE IN SUBCLASSES
+    }
 }

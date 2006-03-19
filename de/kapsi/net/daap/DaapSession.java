@@ -34,7 +34,7 @@ public class DaapSession {
     private final long creationTime = System.currentTimeMillis();
     private final HashMap attributes = new HashMap();
     
-    private final Integer sessionId;
+    private final SessionId sessionId;
     private boolean valid;
     private long lastAccesedTime;
     private int maxInactiveTime;
@@ -43,7 +43,7 @@ public class DaapSession {
      * Creates a new DaapSession
      * @param sessionId
      */    
-    public DaapSession(Integer sessionId) {
+    public DaapSession(SessionId sessionId) {
         this.sessionId = sessionId;
         this.valid = true;
         this.lastAccesedTime = creationTime;
@@ -55,7 +55,7 @@ public class DaapSession {
      * 
      * @return the sessionId of this DaapSession
      */    
-    public Integer getSessionId() {
+    public SessionId getSessionId() {
         return sessionId;
     }
     

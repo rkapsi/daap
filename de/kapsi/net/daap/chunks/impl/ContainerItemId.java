@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The ID of a Container (Playlist).
  *
  * @author  Roger Kapsi
  */
-public class ContainerItemId extends IntChunk {
+public class ContainerItemId extends UIntChunk {
     
     public ContainerItemId() {
         this(0);
     }
     
-    public ContainerItemId(int id) {
+    public ContainerItemId(long id) {
         super("mcti", "dmap.containeritemid", id);
     }
 }

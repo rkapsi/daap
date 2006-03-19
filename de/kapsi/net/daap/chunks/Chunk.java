@@ -19,9 +19,6 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
-
 /**
  * A Chuck is a tagged value (key/value pair). Chunks can either 
  * contain other Chunks or data of various types.
@@ -30,33 +27,52 @@ import java.io.IOException;
  */
 public interface Chunk {
     
-    /** Type for byte Chunks */
-    public static final int BYTE_TYPE       = 1;
+    // Note this is technically a char as known 
+    // from C. An 8 bit unsigned value.
+    /** Type for unsigned byte Chunks */
+    public static final int U_BYTE_TYPE = 1;
     
-    /** 
-     * Type for boolean Chunks. NOTE: this type is actually not
-     * defined in DAAP and it is my own construct for Java. If you
-     * do an DAAP protocol analysis you will see that boolean
-     * values are bytes where <code>0 == false</code> and 
-     * <code>!0 == true</code>. So a boolean type is actually a
-     * {@see #BYTE_TYPE}.
-     */
-    public static final int BOOLEAN_TYPE    = BYTE_TYPE;
+    /** Type for signed byte Chunks */
+    public static final int BYTE_TYPE   = 2;
     
-    /** Type for short Chunks */
-    public static final int SHORT_TYPE      = 3;
+    /** Length of byte Chunks */
+    public static final int BYTE_LENGTH = 1;
     
-    /** Type for int Chunks */
-    public static final int INT_TYPE        = 5;
+    /** Type for unsigned short Chunks */
+    public static final int U_SHORT_TYPE    = 3;
+    
+    /** Type for signed short Chunks */
+    public static final int SHORT_TYPE  = 4;
+    
+    /** Length of short chunks */
+    public static final int SHORT_LENGTH = 2;
+    
+    /** Type for unsigned int Chunks */
+    public static final int U_INT_TYPE  = 5;
+    
+    /** Type for signed int Chunks */
+    public static final int INT_TYPE    = 6;
+   
+    /** Length of int chunks */
+    public static final int INT_LENGTH = 4;
+    
+    /** Type for unsigned long Chunks */
+    public static final int U_LONG_TYPE = 7;
     
     /** Type for long Chunks */
-    public static final int LONG_TYPE       = 7;
+    public static final int LONG_TYPE    = 8;
+    
+    /** Length of long chunks */
+    public static final int LONG_LENGTH = 8;
     
     /** Type for String Chunks (encoded as UTF-8) */
-    public static final int STRING_TYPE     = 9;
+    public static final int STRING_TYPE = 9;
     
     /** Type for Date Chunks (Time in <u>seconds</u> since 1970) */
-    public static final int DATE_TYPE       = 10;
+    public static final int DATE_TYPE   = 10;
+    
+    /** Length of date chunks */
+    public static final int DATE_LENGTH = 4;
     
     /** 
      * Type for Version Chunks (an int value split up into major, minor 
@@ -64,27 +80,23 @@ public interface Chunk {
      */
     public static final int VERSION_TYPE    = 11;
     
+    /** Length of version chunks */
+    public static final int VERSION_LENGTH = 4;
+    
     /** Type for Container Chunks. Chunks that contain other Chunks */
     public static final int CONTAINER_TYPE  = 12;
     
-    /**
-     * Returns the size of this Chunk. The size is defined as
-     * header + {@see #getLength()} in bytes.
-     */
-    public int getSize();
+    /** */
+    public int getContentCode();
     
-    /**
-     * Returns the length of this Chunk's payload in bytes.
-     */
-    public int getLength();
+    /** */
+    public String getContentCodeString();
+    
+    /** */
+    public String getName();
     
     /**
      * Returns the type of this Chunk. For example {@see #BOOLEAN_TYPE}.
      */
     public int getType();
-    
-    /**
-     * Writes the serialized form of this Chunk to <code>out</code>
-     */
-    public void serialize(OutputStream out) throws IOException;
 }

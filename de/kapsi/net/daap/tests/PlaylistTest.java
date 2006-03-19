@@ -41,24 +41,36 @@ public class PlaylistTest extends TestCase {
         database = new Database("PlaylistTestDatabase");
         playlist = new Playlist("PlaylistTest");
         
-        assertTrue(library.size()==0 && library.getRevision()==0);
+        assertTrue(library.getDatabaseCount()==0 && library.getRevision()==1);
         
-        Transaction txn = library.open(false);
-        database.add(txn, playlist);
-        library.add(txn, database);
+        Transaction txn = library.beginTransaction();
+        database.addPlaylist(txn, playlist);
+        library.addDatabase(txn, database);
         txn.commit();
         
-        assertTrue(library.size()==1 && library.getRevision()==1);
-        assertTrue(database.contains(playlist));
-        assertTrue(library.contains(database));
+        assertTrue(library.getDatabaseCount()==1 && library.getRevision()==2);
+        assertTrue(database.containsPlaylist(playlist));
+        assertTrue(library.containsDatabase(database));
     }
     
+    public void testSetName() {
+        
+        int revision = library.getRevision();
+        
+        Transaction txn = library.beginTransaction();
+        playlist.setName(txn, "Hello World!");
+        txn.commit();
+        
+        assertTrue(library.getRevision() == (revision+1));
+        assertEquals(playlist.getName(), "Hello World!");
+    }
+
     public void testSetSmart() {
         
         int revision = library.getRevision();
         boolean isSmart = playlist.isSmartPlaylist();
         
-        Transaction txn = library.open(false);
+        Transaction txn = library.beginTransaction();
         playlist.setSmartPlaylist(txn, !isSmart);
         txn.commit();
         
@@ -66,84 +78,49 @@ public class PlaylistTest extends TestCase {
         assertTrue(playlist.isSmartPlaylist() != isSmart);
     }
     
+    public void testSetPodcast() {
+        
+        int revision = library.getRevision();
+        boolean podcast = playlist.isPodcastPlaylist();
+        
+        Transaction txn = library.beginTransaction();
+        playlist.setPodcastPlaylist(txn, !podcast);
+        txn.commit();
+        
+        assertTrue(library.getRevision() == (revision+1));
+        assertTrue(playlist.isPodcastPlaylist() != podcast);
+    }
+
     public void testAddSong() {
         
         int revision = library.getRevision();
         
         Song song = new Song("Song");
         
-        Transaction txn = library.open(false);
-        playlist.add(txn, song);
+        Transaction txn = library.beginTransaction();
+        playlist.addSong(txn, song);
         txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
-        assertTrue(playlist.contains(song));
+        assertTrue(playlist.containsSong(song));
     }
     
     public void testRemoveSong() {
         
         Song song = new Song("Song");
         
-        Transaction txn = library.open(false);
-        playlist.add(txn, song);
+        Transaction txn = library.beginTransaction();
+        playlist.addSong(txn, song);
         txn.commit();
         
         int revision = library.getRevision();
         
-        txn = library.open(false);
-        playlist.remove(txn, song);
+        txn = library.beginTransaction();
+        playlist.removeSong(txn, song);
         txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
-        assertFalse(playlist.contains(song));
-    }
-    
-    public void testInteractionWithMasterPlaylist() {
-        Playlist masterPlaylist = database.getMasterPlaylist();
-        
-        Song song1 = new Song("Song1");
-        Song song2 = new Song("Song2");
-        
-        int revision = library.getRevision();
-        
-        // Test add (notify master playlist, default)
-        Transaction txn = library.open(false);
-        playlist.add(txn, song1);
-        txn.commit();
-        
-        assertTrue(playlist.contains(song1));
-        assertTrue(masterPlaylist.contains(song1));
-        
-        // Test add (do not notify master playlist)
-        playlist.setNotifyMasterPlaylistOnAdd(false);
-        txn = library.open(false);
-        playlist.add(txn, song2);
-        txn.commit();
-        
-        assertTrue(playlist.contains(song2));
-        assertFalse(masterPlaylist.contains(song2));
-        
-        // Test remove (do not notify master playlist, default)
-        txn = library.open(false);
-        playlist.remove(txn, song1);
-        txn.commit();
-        
-        assertFalse(playlist.contains(song1));
-        assertTrue(masterPlaylist.contains(song1));
-        
-        // Test remove (notify master playlist)
-        playlist.setNotifyMasterPlaylistOnRemove(true);
-        txn = library.open(false);
-        playlist.remove(txn, song2);
-        txn.commit();
-        
-        assertFalse(playlist.contains(song2));
-        assertFalse(masterPlaylist.contains(song2));
-        
-        // Final state...
-        assertTrue(library.getRevision() == (revision+4)); // 4*commit
-        assertTrue(playlist.isEmpty()); // both songs were removed
-        assertTrue(masterPlaylist.size()==1); // masterPlaylist contains song1
-        assertTrue(masterPlaylist.contains(song1));
+        assertFalse(playlist.containsSong(song));
+        assertFalse(database.containsSong(song));
     }
 }

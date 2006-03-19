@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ByteChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
  * This class describes if a song is either a Radio stream 
@@ -28,7 +28,7 @@ import de.kapsi.net.daap.chunks.ByteChunk;
  *
  * @author  Roger Kapsi
  */
-public class SongDataKind extends ByteChunk {
+public class SongDataKind extends UByteChunk {
     
     /** Radio stream */
     public static final int RADIO_STREAM    = 1;

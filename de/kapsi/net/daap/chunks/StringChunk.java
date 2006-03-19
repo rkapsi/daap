@@ -19,80 +19,61 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import de.kapsi.net.daap.DaapUtil;
 
 /**
  * This class implements a String chunk. DAAP Strings are
  * encoded in UTF-8.
- * <p>Note: <code>null</code> is valid value for DAAP and should
- * be favored over "" for empty Strings as this saves 
- * 1 byte per String.</p>
  *
  * @author  Roger Kapsi
  */
-public class StringChunk extends AbstractChunk {
+public abstract class StringChunk extends AbstractChunk {
     
-    private static final Log LOG = LogFactory.getLog(StringChunk.class);
+    protected String value;
     
-    private byte[] bytes;
+    public StringChunk(int type, String name, String value) {
+        super(type, name);
+        setValue(value);
+    }
     
-    protected StringChunk(String type, String name, String value) {
+    public StringChunk(String type, String name, String value) {
         super(type, name);
         setValue(value);
     }
     
     public String getValue() {
-        if (bytes != null) {
-            try {
-                return new String(bytes, "UTF-8");
-            } catch (UnsupportedEncodingException err) {
-                LOG.error(err); // shouldn't happen but who knows!?
-            }
-        }
-        return null;
+        return value;
     }
     
     public void setValue(String value) {
-        if (value != null) {
-            try {
-                bytes = value.getBytes("UTF-8");
-            } catch (UnsupportedEncodingException err) {
-                LOG.error(err); // shouldn't happen but who knows!?
-            }
+        this.value = value;
+    }
+    
+    public byte[] getBytes() {
+        String value = this.value;
+        
+        if (value == null || value.length() == 0) {
+            return new byte[0];
         } else {
-            bytes = null;
+            try {
+                return value.getBytes(DaapUtil.UTF_8);
+            } catch (UnsupportedEncodingException err) {
+                // Should never happen
+                throw new RuntimeException(err);
+            }
         }
     }
     
     /**
-     * Length is <code>String.getBytes("UTF-8").length</code>
-     */
-    public int getLength() {
-        return (bytes != null) ? bytes.length : 0;
-    }
-    
-    /**
-     * Returns {@see Chunk.STRING_TYPE}
+     * Returns {@see #STRING_TYPE}
      */
     public int getType() {
         return Chunk.STRING_TYPE;
     }
-    
-    public void serialize(OutputStream out) throws IOException {
-        
-        super.serialize(out);
-        
-        if (bytes != null) {
-            out.write(bytes, 0, bytes.length);
-        }
-    }
-    
-    public String toString() {
-        return super.toString() + "=" + getValue();
+
+    public String toString(int indent) {
+        return indent(indent) + name + "(" + getContentCodeString() + "; string)=" + getValue();
     }
 }

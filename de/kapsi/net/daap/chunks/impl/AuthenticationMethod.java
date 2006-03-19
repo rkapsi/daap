@@ -19,17 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ByteChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
- * Unknown purpose.
+ * 
  *
  * @author  Roger Kapsi
  */
-public class AuthenticationMethod extends ByteChunk {
+public class AuthenticationMethod extends UByteChunk {
+    
+    public static final int USERNAME_PASSWORD_METHOD = 0x01;
+    public static final int PASSWORD_METHOD = 0x02;
     
     public AuthenticationMethod() {
-        this(0);
+        this(PASSWORD_METHOD);
     }
     
     public AuthenticationMethod(int method) {

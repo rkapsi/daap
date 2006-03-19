@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The stop time of the Song in milliseconds. I.e. you can use it
@@ -27,7 +27,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class SongStopTime extends IntChunk {
+public class SongStopTime extends UIntChunk {
     
     /**
      * Creates a new SongStopTime where stop time is not set.
@@ -43,7 +43,7 @@ public class SongStopTime extends IntChunk {
      * You can change this value with {@see #setValue(int)}.
      * @param <tt>time</tt> the stop time of this song in milliseconds.
      */
-    public SongStopTime(int time) {
+    public SongStopTime(long time) {
         super("assp", "daap.songstoptime", time);
     }
 }

@@ -19,59 +19,7 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
-import de.kapsi.net.daap.ByteUtil;
-
-/**
- * This class is an implementation of an 4 byte
- * int chnunk.
- *
- * @author  Roger Kapsi
- */
-public class IntChunk extends AbstractChunk {
-    
-    private int value;
-    
-    protected IntChunk(String type, String name, int value) {
-        super(type, name);
-        
-        this.value = value;
-    }
-    
-    public int getValue() {
-        return value;
-    }
-    
-    public void setValue(int value) {
-        this.value = value;
-    }
-    
-    /**
-     * Length is 4 bytes
-     */
-    public int getLength() {
-        return 4;
-    }
-    
-    /**
-     * Returns {@see Chunk.INT_TYPE}
-     */
-    public int getType() {
-        return Chunk.INT_TYPE;
-    }
-    
-    public void serialize(OutputStream out) throws IOException {
-        
-        super.serialize(out);
-        
-        byte[] dst = new byte[4];
-        ByteUtil.toByteBE(value, dst, 0);
-        
-        out.write(dst, 0, dst.length);
-    }
-    
-    public String toString() {
-        return super.toString() + "=" + value;
-    }
+public interface IntChunk extends Chunk {
+    public void setValue(int value);
+    public int getValue();
 }

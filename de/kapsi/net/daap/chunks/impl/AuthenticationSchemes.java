@@ -19,21 +19,29 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
- * Unknown purpose.
+ * Authentication Schemes.
+ * 
+ * ATTENTION: There's a bug in DAAP/iTunes! /content-codes 
+ * says 'msas' is of type 0x0005 (signed int) however has 
+ * the 'msas' Chunk a length of 1 in /server-info respones 
+ * and is thus a Byte!
  * 
  * @author  Roger Kapsi
  */
-public class AuthenticationSchemes extends IntChunk {
+public class AuthenticationSchemes extends UByteChunk {
+    
+    public static final int BASIC_SCHEME = 0x01;
+    public static final int DIGEST_SCHEME = 0x02;
     
     /** Creates a new instance of AuthenticationSchemes */
     public AuthenticationSchemes() {
-        this(0);
+        this(BASIC_SCHEME | DIGEST_SCHEME);
     }
     
-    public AuthenticationSchemes(int schemas) {
-        super("msas", "dmap.authenticationschemes", schemas);
+    public AuthenticationSchemes(int schemes) {
+        super("msas", "dmap.authenticationschemes", schemes);
     }
 }

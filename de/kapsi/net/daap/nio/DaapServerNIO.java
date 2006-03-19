@@ -21,8 +21,8 @@ package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
 import java.net.BindException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.CancelledKeyException;
@@ -32,55 +32,44 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.DaapAuthenticator;
 import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapFilter;
 import de.kapsi.net.daap.DaapServer;
 import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapStreamException;
-import de.kapsi.net.daap.DaapStreamSource;
-import de.kapsi.net.daap.DaapThreadFactory;
-import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.SimpleConfig;
+import de.kapsi.net.daap.SessionId;
 
 /**
  * A DAAP server written with NIO and a single Thread.
  *
  * @author  Roger Kapsi
  */
-public class DaapServerNIO implements DaapServer {
+public class DaapServerNIO extends DaapServer {
     
     private static final Log LOG = LogFactory.getLog(DaapServerNIO.class);
     
-    private static final long TIMEOUT = 50;
+    /** Selector.select() timeout */
+    private static final long TIMEOUT = 250;
     
+    /** The ServerSocket */
     private ServerSocketChannel ssc = null;
+    
+    /** Selector for ServerSocket and Sockets */
     private Selector selector = null;
     
-    private Library library;
-    
-    private HashSet streams;
-    private HashSet connections;
-    
-    private HashSet sessionIds;
-    
-    private DaapConfig config;
-    
-    private DaapFilter filter;
-    private DaapStreamSource streamSource;
-    private DaapAuthenticator authenticator;
-    
-    private boolean running = false;
+    /** Flag to indicate that all clients shall be disconnected */
     private boolean disconnectAll = false;
+    
+    /** 
+     * Flag to indicate there are Library updates 
+     * available in the queue 
+     */
     private boolean update = false;
     
     /**
@@ -89,18 +78,7 @@ public class DaapServerNIO implements DaapServer {
      * @param library a Library
      */    
     public DaapServerNIO(Library library) {
-        this(library, new SimpleConfig());
-    }
-    
-    /**
-     * Creates new DAAP server with Library, a {@see SimpleConfig} and 
-     * the Port
-     * 
-     * @param library a Library
-     * @param port a Port used by SimpleConfig
-     */    
-    public DaapServerNIO(Library library, int port) {
-        this(library, new SimpleConfig(port));
+        this(library, new DaapConfig());
     }
     
     /**
@@ -110,105 +88,7 @@ public class DaapServerNIO implements DaapServer {
      * @param config a DaapConfig
      */    
     public DaapServerNIO(Library library, DaapConfig config) {
-        this.library = library;
-        this.config = config;
-    }
-    
-    /**
-     * Returns the Library of this server
-     * 
-     * @return Library
-     */    
-    public Library getLibrary() {
-        return library;
-    }
-    
-    /**
-     * Sets the DaapConfig for this server
-     * 
-     * @param config DaapConfig
-     */    
-    public void setConfig(DaapConfig config) {
-        this.config = config;
-    }
-    
-    /**
-     * Returns the DaapConfig of this server
-     * 
-     * @return DaapConfig of this server
-     */    
-    public DaapConfig getConfig() {
-        return config;
-    }
-    
-    /**
-     * Sets the DaapAuthenticator for this server
-     * 
-     * @param authenticator a DaapAuthenticator
-     */    
-    public void setAuthenticator(DaapAuthenticator authenticator) {
-        this.authenticator = authenticator;
-    }
-    
-    /**
-     * Retrieves the DaapAuthenticator of this server
-     * 
-     * @return DaapAuthenticator or <code>null</code>
-     */    
-    public DaapAuthenticator getAuthenticator() {
-        return authenticator;
-    }
-    
-    /**
-     * Sets the DaapStreamSource for this server
-     * 
-     * @param streamSource a DaapStreamSource
-     */    
-    public void setStreamSource(DaapStreamSource streamSource) {
-        this.streamSource = streamSource;
-    }
-    
-    /**
-     * Retrieves the DaapStreamSource of this server
-     * 
-     * @return DaapStreamSource or <code>null</code>
-     */    
-    public DaapStreamSource getStreamSource() {
-        return streamSource;
-    }
-    
-    /**
-     * Sets a DaapFilter for this server
-     * 
-     * @param filter a DaapFilter
-     */    
-    public void setFilter(DaapFilter filter) {
-        this.filter = filter;
-    }
-    
-    /**
-     * Returns a DaapFilter
-     * 
-     * @return a DaapFilter or <code>null</code>
-     */    
-    public DaapFilter getFilter() {
-        return filter;
-    }
-    
-    /**
-     * Throws an {@see java.lang.UnsupportedOperationException} as
-     * the NIO server is implemented with a single Thread.
-     */
-    public void setThreadFactory(DaapThreadFactory factory) {
-        throw new UnsupportedOperationException();
-    }
-    
-    /**
-     * Returns <code>true</code> if DAAP Server
-     * accepts incoming connections.
-     */
-    public boolean isRunning() {
-        return running;
+        super(library, config);
     }
     
     /**
@@ -244,98 +124,20 @@ public class DaapServerNIO implements DaapServer {
                 LOG.info("DaapServerNIO bound to " + bindAddr);
             }
             
-            streams = new HashSet();
-            connections = new HashSet();
-            sessionIds = new HashSet();
-            
         } catch (IOException err) {
             close();
             throw err;
         }
     }
     
-    /**
-     * Call this to notify the server that Library has changed
-     */
-    public void update() {
+    protected synchronized void update() {
         update = true;
-    }
-    
-    /**
-     * Returns <code>true</code> if sessionId is known and valid
-     */
-    synchronized boolean isSessionIdValid(int sessionId) {
-        return isSessionIdValid(new Integer(sessionId));
-    }
-    
-    /**
-     * Returns <code>true</code> if sessionId is known and valid
-     * 
-     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
-     * DUE TO SOME DESIGN ISSUES!</p>
-     */    
-    public synchronized boolean isSessionIdValid(Integer sessionId) {
-        return (sessionIds != null) ? sessionIds.contains(sessionId) : false;
-    }
-    
-    /**
-     * Returns a DaapConnection for sessionId or <code>null</code>
-     * if sessionId is unknown.
-     * 
-     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
-     * DUE TO SOME DESIGN ISSUES!</p>
-     */ 
-    public DaapConnection getConnection(Integer sessionId) {
-        if (connections == null)
-            return null;
-        
-        Iterator it = connections.iterator();
-        while(it.hasNext()) {
-            DaapConnection connection = (DaapConnection)it.next();
-            DaapSession session = connection.getSession(false);
-            if (session != null) {
-                Integer sid = session.getSessionId();
-                if (sid.equals(sessionId)) {
-                    return connection;
-                }
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Creates an unique sessionId and retuns it.
-     * 
-     * <p>DO NOT CALL THIS METHOD! THIS METHOD IS ONLY PUBLIC 
-     * DUE TO SOME DESIGN ISSUES!</p>
-     */    
-    public Integer createSessionId() {
-        if (sessionIds == null)
-            return null;
-        
-        Integer sid = DaapUtil.createSessionId(sessionIds);
-        sessionIds.add(sid);
-        return sid;
-    }
-    
-    /**
-     * Returns the number of connections
-     */
-    public synchronized int getNumberOfConnections() {
-        return (connections != null) ? connections.size() : 0;
-    }
-    
-    /**
-     * Returns the number of streams
-     */
-    public synchronized int getNumberOfStreams() {
-        return (streams != null) ? streams.size() : 0;
     }
     
    /**
     * Stops the DAAP Server
     */
-    public void stop() {
+    public synchronized void stop() {
         running = false;
     }
     
@@ -375,26 +177,15 @@ public class DaapServerNIO implements DaapServer {
             ssc = null;
         }
        
-        if (sessionIds != null) {
-            sessionIds.clear();
-            sessionIds = null;
-        }
-        
-        if (streams != null) {
-            streams.clear();
-            streams = null;
-        }
-        
-        if (connections != null) {
-            connections.clear();
-            connections = null;
-        }
+        sessionIds.clear();
+        connections.clear();
+        libraryQueue.clear();
     }
     
     /**
      * Disconnects all DAAP and Stream connections
      */
-    public void disconnectAll() {
+    public synchronized void disconnectAll() {
         disconnectAll = true;
     }
    
@@ -419,61 +210,18 @@ public class DaapServerNIO implements DaapServer {
             
             DaapSession session = connection.getSession(false);
             if (session != null) {
-                sessionIds.remove(session.getSessionId());
+                destroySessionId(session.getSessionId());
             }
             
             connection.close();
             
-            if (connection.isDaapConnection()) {
-                connections.remove(connection);
-            } else if (connection.isAudioStream()) {
-                streams.remove(connection);
+            try {
+                removeConnection(connection);
+            } catch (IllegalStateException err) {
+                // Shouldn't happen
+                LOG.error(err);
             }
         }
-    }
-    
-    /**
-     *
-     * @throws IOException
-     */
-    void registerConnection(DaapConnection connection) throws IOException {
-        
-        if (connection.isAudioStream()) {
-            
-            if (streams.size() < config.getMaxConnections()) {
-                streams.add(connection);
-                return;
-            }
-            
-        } else if (connection.isDaapConnection()) {
-            
-            if (connections.size() < config.getMaxConnections()) {
-                connections.add(connection);
-                return;
-            }
-        }
-        
-        throw new IOException("Too many connections");
-    }
-    
-    /**
-     * Returns <code>true</code> if host with <code>addr</code> is
-     * allowed to connect to this DAAP server.
-     * 
-     * @return true host with <code>addr</code> is allowed to connect
-     */
-    private boolean accept(InetAddress addr) {
-        
-        if (filter != null && filter.accept(addr) == false) {
-            
-            if (LOG.isInfoEnabled()) {
-                LOG.info("DaapFilter refused connection from " + addr);
-            }
-            
-            return false;
-        }
-        
-        return true;
     }
     
     /**
@@ -492,21 +240,24 @@ public class DaapServerNIO implements DaapServer {
         if (channel == null)
             return;
         
-        if (channel.isOpen() && accept(channel.socket().getInetAddress())) {
-
-            channel.configureBlocking(false);
-
-            DaapConnection connection 
-                = new DaapConnectionNIO(this, channel);
-            
-            SelectionKey key = channel.register(selector, SelectionKey.OP_READ, connection);
-            
-        } else {
-            try {
+        try {
+            Socket socket = channel.socket();
+            if (channel.isOpen() && accept(socket.getInetAddress())) {
+                
+                channel.configureBlocking(false);
+                
+                DaapConnection connection 
+                    = new DaapConnectionNIO(this, channel);
+    
+                SelectionKey key = channel.register(selector, SelectionKey.OP_READ, connection);
+                addPendingConnection(connection);
+                
+            } else {
                 channel.close();
-            } catch (IOException err) {
-                LOG.error("SocketChannel.close()", err);
             }
+        } catch (IOException err) {
+            LOG.error(err);
+            try { channel.close(); } catch (IOException iox) {}
         }
     }
     
@@ -524,7 +275,6 @@ public class DaapServerNIO implements DaapServer {
         SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;
-        
         keepAlive = connection.read();
         
         if (keepAlive) {
@@ -557,7 +307,7 @@ public class DaapServerNIO implements DaapServer {
             // or whatever. Just close the connection and go 
             // ahead
             keepAlive = false;
-            //LOG.error(err);
+            LOG.error(err);
         }
         
         if (keepAlive) {
@@ -571,7 +321,7 @@ public class DaapServerNIO implements DaapServer {
     /**
      * Disconnects all clients from this server
      */
-    private void processDisconnect() {
+    private void processDisconnectAll() {
         Iterator it = selector.keys().iterator();
         while(it.hasNext()) {
             SelectionKey sk = (SelectionKey)it.next();
@@ -580,42 +330,73 @@ public class DaapServerNIO implements DaapServer {
                 cancel(sk);
             }
         }
+        
+        libraryQueue.clear();
     }
     
     /**
      * Notify all clients about an update of the Library
      */
     private void processUpdate() {
-        
-        Set keys = selector.keys(); 
-        Iterator it = keys.iterator();
-        while(it.hasNext()) {
-            SelectionKey sk = (SelectionKey)it.next();
-            SelectableChannel channel = (SelectableChannel)sk.channel();
+
+        for(Iterator it = getDaapConnections().iterator(); it.hasNext(); ) {
             
-            if (channel instanceof SocketChannel) {
+            DaapConnectionNIO connection = (DaapConnectionNIO)it.next();
+            SelectionKey sk = connection.getChannel().keyFor(selector);
+            
+            try {
                 
-                DaapConnection connection = (DaapConnection)sk.attachment();
+                for(int i = 0; i < libraryQueue.size(); i++) {
+                    connection.enqueueLibrary((Library)libraryQueue.get(i));
+                }
                 
-                if (connection.isDaapConnection()) {
+                connection.update();
+                if (sk.isValid()) {
                     try {
-                        connection.update();
-                        if (sk.isValid()) {
-                            try {
-                                sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-                            } catch (CancelledKeyException err) {
-                                cancel(sk);
-                                LOG.error("SelectionKey.interestOps()", err);
-                            }
-                        }
-                    } catch (ClosedChannelException err) {
+                        sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                    } catch (CancelledKeyException err) {
                         cancel(sk);
-                        LOG.error("DaapConnection.update()", err);
-                    }  catch (IOException err) {
-                        cancel(sk);
-                        LOG.error("DaapConnection.update()", err);
+                        LOG.error("SelectionKey.interestOps()", err);
                     }
                 }
+            } catch (ClosedChannelException err) {
+                cancel(sk);
+                LOG.error("DaapConnection.update()", err);
+            }  catch (IOException err) {
+                cancel(sk);
+                LOG.error("DaapConnection.update()", err);
+            }
+        }
+        
+        libraryQueue.clear();
+    }
+    
+    /**
+     * 1) Disconnect all connections that are in undefined state and
+     * that have exceeded their timeout.
+     * 
+     * 2) Empty the libraryQueue of daap connections if they've 
+     * exceeded their timeout. Some clients do not support live updates
+     * and this will prevent us from running out of memory if the client 
+     * doesn't fetch its updates).
+     */
+    private void processTimeout() throws IOException {
+        for(Iterator it = getPendingConnections().iterator(); it.hasNext(); ) {
+            DaapConnectionNIO connection 
+                = (DaapConnectionNIO)it.next();
+            
+            if (connection.timeout()) {
+                SelectionKey sk = connection.getChannel().keyFor(selector);
+                cancel(sk);
+            }
+        }
+        
+        for(Iterator it = getDaapConnections().iterator(); it.hasNext(); ) {
+            DaapConnectionNIO connection 
+                = (DaapConnectionNIO)it.next();
+            
+            if (connection.timeout()) {
+                connection.clearLibraryQueue();
             }
         }
     }
@@ -643,56 +424,62 @@ public class DaapServerNIO implements DaapServer {
                 continue;
             }
             
-            if (!running) {
-                break;
-            }
-            
-            if (disconnectAll) {
-                processDisconnect();
-                disconnectAll = false;
-                continue;   // as all clients were disconnected
-                            // there is nothing more to do
-            }
-            
-            if (update) {
-                processUpdate();
-                update = false;
-            }
-            
-            if (n == 0)
-                continue;
-            
-            Iterator it = selector.selectedKeys().iterator();
-            
-            while (it.hasNext() && running) {
-                SelectionKey sk = (SelectionKey)it.next();
-                it.remove();
+            synchronized(this) {
                 
-                try {
-                    if (sk.isAcceptable()) {
-                        processAccept(sk);
-
-                    } else {
-
-                        if (sk.isReadable()) {
-                            try {
-                                processRead(sk);
-                            } catch (IOException err) {
-                                cancel(sk);
-                                LOG.error("An exception occured in processRead()", err);
+                if (!running) {
+                    break;
+                }
+                
+                if (disconnectAll) {
+                    processDisconnectAll();
+                    disconnectAll = false;
+                    continue;   // as all clients were disconnected
+                                // there is nothing more to do
+                }
+                
+                if (update) {
+                    processUpdate();
+                    update = false;
+                }
+                
+                if (n > 0) {
+                
+                    for (Iterator it = selector.selectedKeys().iterator(); 
+                            it.hasNext() && running; ) {
+                        
+                        SelectionKey sk = (SelectionKey)it.next();
+                        it.remove();
+                        
+                        try {
+                            if (sk.isAcceptable()) {
+                                processAccept(sk);
+        
+                            } else {
+        
+                                if (sk.isReadable()) {
+                                    try {
+                                        processRead(sk);
+                                    } catch (IOException err) {
+                                        cancel(sk);
+                                        LOG.error("An exception occured in processRead()", err);
+                                    }
+                                } else if (sk.isWritable()) {
+                                    try {
+                                        processWrite(sk);
+                                    } catch (IOException err) {
+                                        cancel(sk);
+                                        LOG.error("An exception occured in processWrite()", err);
+                                    }
+                                }
                             }
-                        } else if (sk.isWritable()) {
-                            try {
-                                processWrite(sk);
-                            } catch (IOException err) {
-                                cancel(sk);
-                                LOG.error("An exception occured in processWrite()", err);
-                            }
+                        } catch (CancelledKeyException err) {
+                            continue;
                         }
                     }
-                } catch (CancelledKeyException err) {
-                    continue;
                 }
+                
+                // Kill the gremlins
+                processTimeout();
             }
         }
         
@@ -726,20 +513,24 @@ public class DaapServerNIO implements DaapServer {
         }
     }
     
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("Name: ").append(config.getServerName()).append("\n");
-        buffer.append("Address: ").append(config.getInetSocketAddress()).append("\n");
-        buffer.append("Backlog: ").append(config.getBacklog()).append("\n");
-        buffer.append("Max connections: ").append(config.getMaxConnections()).append("\n");
-        buffer.append("IsRunning: ").append(isRunning()).append("\n");
-        
-        if (isRunning()) {
-            buffer.append("Connections: ").append(getNumberOfConnections()).append("\n");
-            buffer.append("Streams: ").append(getNumberOfStreams()).append("\n");
-        }
-        
-        return buffer.toString();
+    /* Make them accessible for classes in this package */
+    protected synchronized DaapConnection getAudioConnection(SessionId sessionId) {
+        return super.getAudioConnection(sessionId);
+    }
+    
+    /* Make them accessible for classes in this package */
+    protected synchronized DaapConnection getDaapConnection(SessionId sessionId) {
+        return super.getDaapConnection(sessionId);
+    }
+    
+    /* Make them accessible for classes in this package */
+    protected synchronized boolean isSessionIdValid(SessionId sessionId) {
+        return super.isSessionIdValid(sessionId);
+    }
+    
+    /* Make them accessible for classes in this package */
+    protected synchronized boolean updateConnection(DaapConnection connection) {
+        return super.updateConnection(connection);
     }
 }
 

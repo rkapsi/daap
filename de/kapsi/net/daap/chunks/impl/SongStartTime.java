@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The start time of the Song in milliseconds. I.e. you can use it
@@ -27,7 +27,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class SongStartTime extends IntChunk {
+public class SongStartTime extends UIntChunk {
     
     /**
      * Creates a new SongStartTime which starts at the
@@ -43,7 +43,7 @@ public class SongStartTime extends IntChunk {
      * You can change this value with {@see #setValue(int)}.
      * @param <tt>time</tt> the start time of this song in milliseconds.
      */
-    public SongStartTime(int time) {
+    public SongStartTime(long time) {
         super("asst", "daap.songstarttime", time);
     }
 }

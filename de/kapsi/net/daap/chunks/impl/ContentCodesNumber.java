@@ -19,7 +19,8 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The number of a ContentCode (it's actually a four character code). 
@@ -28,13 +29,21 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class ContentCodesNumber extends IntChunk {
+public class ContentCodesNumber extends UIntChunk {
     
     public ContentCodesNumber() {
         this(0);
     }
     
-    public ContentCodesNumber(int number) {
+    public ContentCodesNumber(long number) {
         super("mcnm", "dmap.contentcodesnumber", number);
+    }
+    
+    public String getValueContentCode() {
+        return DaapUtil.toContentCodeString(getValue());
+    }
+    
+    public String toString(int indent) {
+        return indent(indent) + name + "(" + contentCode + "; int)=" + getValueContentCode();
     }
 }

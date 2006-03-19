@@ -19,21 +19,42 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
+import de.kapsi.net.daap.chunks.VersionChunk;
 
 /**
  * Unknown purpose.
  * 
+ * Is for some reason derivated from signed int. Should
+ * be a VersionChunk!
+ * 
  * @author  Roger Kapsi
  */
-public class MusicSharingVersion extends IntChunk {
+public class MusicSharingVersion extends UIntChunk {
     
     /** Creates a new instance of MusicSharingVersion */
     public MusicSharingVersion() {
         this(0);
     }
     
-    public MusicSharingVersion(int sharingVersion) {
+    public MusicSharingVersion(long sharingVersion) {
         super("aeSV", "com.apple.itunes.music-sharing-version", sharingVersion);
+    }
+    
+    public int getMajorVersion() {
+        return VersionChunk.getMajorVersion(getValue());
+    }
+    
+    public int getMinorVersion() {
+        return VersionChunk.getMinorVersion(getValue());
+    }
+
+    public int getMicroVersion() {
+        return VersionChunk.getMicroVersion(getValue());
+    }
+
+    public String toString(int indent) {
+        return indent(indent) + name + "(" + contentCode + "; uint)="
+            + getMajorVersion() + "." + getMinorVersion() + "." + getMicroVersion();
     }
 }

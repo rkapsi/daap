@@ -35,7 +35,7 @@ public interface DaapResponse {
      * @return <code>true</code> if response has remining
      *  bytes in the buffer
      */
-    public boolean hasRemainig();
+    public boolean hasRemaining();
     
     /**
      * Returns <code>true</code> when the write() operation

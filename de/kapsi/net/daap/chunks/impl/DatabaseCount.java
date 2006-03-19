@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Used to indicate the number of databases a library has.
  *
  * @author  Roger Kapsi
  */
-public class DatabaseCount extends IntChunk {
+public class DatabaseCount extends UIntChunk {
     
     public DatabaseCount() {
         this(0);
     }
     
-    public DatabaseCount(int count) {
+    public DatabaseCount(long count) {
         super("msdc", "dmap.databasescount", count);
     }
 }

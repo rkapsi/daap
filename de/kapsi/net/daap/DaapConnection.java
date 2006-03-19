@@ -20,6 +20,10 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
+import java.util.LinkedList;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * An abstract base class for DaapConnections.
@@ -27,7 +31,12 @@ import java.io.IOException;
  * @author  Roger Kapsi
  */
 public abstract class DaapConnection {
-   
+    
+    private static final Log LOG = LogFactory.getLog(DaapConnection.class);
+    
+    public static final int TIMEOUT = 3000;
+    public static final int LIBRARY_TIMEOUT = 30000;
+    
     /** Undef type of connection */
     protected static final int UNDEF  = DaapUtil.NULL;
     
@@ -39,15 +48,21 @@ public abstract class DaapConnection {
     
     protected final DaapResponseWriter writer;
     
-    private DaapServer server;
-    private DaapSession session;
+    protected DaapServer server;
+    protected DaapSession session;
     
-    private int type = UNDEF;
-    private int protocolVersion = UNDEF;
-
+    protected int type = UNDEF;
+    protected int protocolVersion = UNDEF;
+    protected String nonce;
+    
+    protected LinkedList libraryQueue;
+    
+    protected boolean locked = false;
+    
     public DaapConnection(DaapServer server) {
         this.server = server;
         writer = new DaapResponseWriter();
+        libraryQueue = new LinkedList();
     }
     
     /**
@@ -166,11 +181,151 @@ public abstract class DaapConnection {
      *  and no DaapSession object existed
      */    
     public DaapSession getSession(boolean create) {
-        
         if (session == null && create) {
             session = new DaapSession(server.createSessionId());
         }
         
         return session;
+    }
+    
+    /**
+     * 
+     */
+    public SessionId getSessionId(boolean create) {
+        SessionId sessionId = SessionId.INVALID;
+        DaapSession session = getSession(create);
+        if (session != null) {
+            sessionId = session.getSessionId();
+        }
+        return sessionId;
+    }
+    
+    /**
+     * Clears the library queue
+     */
+    public void clearLibraryQueue() {
+        synchronized(libraryQueue) {
+            libraryQueue.clear();
+        }
+    }
+    
+    /**
+     * Adds library to the library queue
+     */
+    public void enqueueLibrary(Library library) {
+        synchronized(libraryQueue) {
+            libraryQueue.add(library);
+        }
+    }
+    
+    /**
+     * Returns the first item from the library queue
+     */
+    protected Library getFirstInQueue() {
+        synchronized(libraryQueue) {
+            if (!libraryQueue.isEmpty()) {
+                return (Library)libraryQueue.getFirst();
+            }
+            return server.getLibrary();
+        }
+    }
+    
+    /**
+     * Returns the last item from the library queue
+     */
+    protected Library getLastInQueue() {
+        synchronized(libraryQueue) {
+            if (!libraryQueue.isEmpty()) {
+                return (Library)libraryQueue.getLast();
+            }
+            return server.getLibrary();
+        }
+    }
+    
+    /**
+     * Returns the next item from the library queue
+     */
+    public Library nextLibrary(DaapRequest request) {
+        synchronized(libraryQueue) {
+            int delta = request.getDelta();
+            if (delta == DaapUtil.NULL
+                    || libraryQueue.isEmpty()) {
+                return server.getLibrary();
+            }
+            
+            Library first = (Library)libraryQueue.getFirst();
+            
+            if (first.getRevision() != request.getRevisionNumber()) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error("Client doesn't request the current revision: " + delta + "/" + request.getRevisionNumber() + "/" + first.getRevision());
+                }
+                clearLibraryQueue();
+                return null;
+            } else if (delta > first.getRevision()) {
+                if (LOG.isErrorEnabled()) {
+                    LOG.error("Client is ahead of us: " + delta + "/" + first.getRevision());
+                }
+                clearLibraryQueue();
+                return null;
+            } else if (first.getRevision() == delta) {
+                libraryQueue.removeFirst();
+                
+                if (libraryQueue.isEmpty()) {
+                    return server.getLibrary();
+                } else {
+                    
+                    if (request.getRevisionNumber() != delta) {
+                        return nextLibrary(request);
+                    } else {
+                        return nextLibrary(new DaapRequest(this, getSessionId(false), 
+                                request.getRevisionNumber()+1, delta));
+                    }
+                }
+            } else {
+                return first;
+            }
+        }
+    }
+    
+    /**
+     * Locks the connection
+     * @see #update()
+     * @see DaapRequestProcessor#processUpdateRequest(DaapRequest)
+     */
+    protected synchronized void lock() {
+        locked = true;
+    }
+    
+    /**
+     * Unlocks the connection
+     * @see #update()
+     * @see DaapRequestProcessor#processUpdateRequest(DaapRequest)
+     */
+    protected synchronized void unlock() {
+        locked = false;
+    }
+    
+    /**
+     * Returns true if connection is marked as locked
+     * @see #update()
+     * @see DaapRequestProcessor#processUpdateRequest(DaapRequest)
+     */
+    protected synchronized boolean isLocked() {
+        return locked;
+    }
+    
+    /**
+     * 
+     */
+    synchronized String getNonce() {
+        return nonce;
+    }
+
+    /**
+     * 
+     */
+    synchronized String createNonce() {
+        nonce = DaapUtil.nonce();
+        return nonce;
     }
 }

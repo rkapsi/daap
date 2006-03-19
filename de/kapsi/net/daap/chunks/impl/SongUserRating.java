@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ByteChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
  * You can use this class to assign a rating to a Song to indicate 
@@ -28,7 +28,7 @@ import de.kapsi.net.daap.chunks.ByteChunk;
  *
  * @author  Roger Kapsi
  */
-public class SongUserRating extends ByteChunk {
+public class SongUserRating extends UByteChunk {
     
     /**
      * Constant field for zero stars.

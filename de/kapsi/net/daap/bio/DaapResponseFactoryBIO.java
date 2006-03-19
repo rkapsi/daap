@@ -19,13 +19,14 @@
 
 package de.kapsi.net.daap.bio;
 
-import java.io.IOException;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
-import de.kapsi.net.daap.Song;
-import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapRequest;
+import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapResponseFactory;
+import de.kapsi.net.daap.Song;
 
 /**
  * This factory creates BIO DaapRespones.
@@ -35,10 +36,14 @@ import de.kapsi.net.daap.DaapResponseFactory;
 class DaapResponseFactoryBIO implements DaapResponseFactory {
     
     /** Creates a new instance of DaapResponseFactoryBIO */
-    DaapResponseFactoryBIO() {
+    protected DaapResponseFactoryBIO() {
     }
     
-    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, File file, long pos, long end) throws IOException {
+        return new DaapAudioResponseBIO(request, song, file, pos, end);
+    }
+    
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
         return new DaapAudioResponseBIO(request, song, in, pos, end);
     }
     
@@ -48,5 +53,9 @@ class DaapResponseFactoryBIO implements DaapResponseFactory {
     
     public DaapResponse createChunkResponse(DaapRequest request, byte[] data) {
         return new DaapChunkResponseBIO(request, data);
+    }
+    
+    public DaapResponse createNoContentResponse(DaapRequest request) {
+        return new DaapNoContentResponseBIO(request);
     }
 }

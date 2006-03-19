@@ -21,21 +21,55 @@ package de.kapsi.net.daap.chunks;
 
 /**
  * This class is an implementation of a date chunk.
- * The date is an integer with seconds since 1970
- * (standard UNIX time).
+ * The date is an integer int seconds since 1.1.1970.
  *
  * @author  Roger Kapsi
  */
-public class DateChunk extends IntChunk {
+public abstract class DateChunk extends AbstractChunk {
     
-    protected DateChunk(String type, String name, int date) {
-        super(type, name, date);
+    public static final long MIN_VALUE = 0l;
+    public static final long MAX_VALUE = 0xFFFFFFFFl;
+    
+    protected int date;
+    
+    public DateChunk(int type, String name, long value) {
+        super(type, name);
+        setValue(value);
+    }
+    
+    public DateChunk(String type, String name, long date) {
+        super(type, name);
+        setValue(date);
+    }
+    
+    public long getValue() {
+        return (long)(date & MAX_VALUE);
+    }
+    
+    public void setValue(long date) {
+        this.date = (int)checkDateRange(date);
     }
     
     /**
-     * Returns {@see Chunk.DATE_TYPE}
+     * Checks if #MIN_VALUE <= value <= #MAX_VALUE and if 
+     * not an IllegalArgumentException is thrown.
+     */
+    public static long checkDateRange(long value) 
+            throws IllegalArgumentException {
+        if (value < MIN_VALUE || value > MAX_VALUE) {
+            throw new IllegalArgumentException("Value is outside of Date range: " + value);
+        }
+        return value;
+    }
+    
+    /**
+     * Returns {@see #DATE_TYPE}
      */
     public int getType() {
         return Chunk.DATE_TYPE;
+    }
+    
+    public String toString(int indent) {
+        return indent(indent) + name + "(" + getContentCodeString() + "; date)="+getValue();
     }
 }

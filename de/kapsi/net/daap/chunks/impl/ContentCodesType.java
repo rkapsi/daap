@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The type of a ContentCode (i.e. boolean or String etc. etc.). It is 
@@ -28,7 +28,7 @@ import de.kapsi.net.daap.chunks.ShortChunk;
  *
  * @author  Roger Kapsi
  */
-public class ContentCodesType extends ShortChunk {
+public class ContentCodesType extends UShortChunk {
     
     public ContentCodesType() {
         this(0);

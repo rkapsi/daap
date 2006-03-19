@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The bitrate of this song in kilo bits per second (kbps).
  *
  * @author  Roger Kapsi
  */
-public class SongBitrate extends ShortChunk {
+public class SongBitrate extends UShortChunk {
     
     /**
      * Creates a new SongBitrate with 0 kbps

@@ -19,15 +19,12 @@
 
 package de.kapsi.net.daap;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.ByteArrayOutputStream;
-
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A helper class to create easily misc DAAP response header
@@ -36,14 +33,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DaapHeaderConstructor {
     
-    private static final Log LOG = LogFactory.getLog(DaapHeaderConstructor.class);
-    
-    private static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
-    private static final String ISO_8859_1 = "8859_1";
+    //private static final Log LOG = LogFactory.getLog(DaapHeaderConstructor.class);
     
     private static final String HTTP_OK = "HTTP/1.1 200 OK";
-    private static final String HTTP_AUTH = "HTTP/1.1 401 Authorization Required";
+    private static final String HTTP_NO_CONTENT = "HTTP/1.1 204 No Content";
     private static final String HTTP_PARTIAL_CONTENT = "HTTP/1.1 206 Partial Content";
+    private static final String HTTP_AUTH = "HTTP/1.1 401 Authorization Required";
+    
+    //private static final String BAD_REQUEST = "HTTP/1.1 400 Bad Request";
+    //private static final String HTTP_FORBIDDEN = "HTTP/1.1 403 Forbidden";
+    //private static final String HTTP_SERVICE_UNAVAILABLE = "HTTP/1.1 503 Service Unavailable";
     
     /**
      * Creates a new Chunk Header
@@ -52,8 +51,12 @@ public class DaapHeaderConstructor {
      * @param contentLength
      * @return
      */    
-    public static byte[] createChunkHeader(DaapRequest request, int contentLength) {
+    public static byte[] createChunkHeader(DaapRequest request, long contentLength) {
         
+        /*if (request.isLoginRequest()) {
+            return createServiceUnavialable(request);
+        }*/
+
         try {
             
             DaapConnection connection = request.getConnection();
@@ -63,17 +66,14 @@ public class DaapHeaderConstructor {
             headers.add(new Header("Date", DaapUtil.now()));
             headers.add(new Header("DAAP-Server", serverName));
             headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
-            headers.add(new Header("Content-Length", Integer.toString(contentLength)));
+            headers.add(new Header("Content-Length", Long.toString(contentLength)));
+            headers.add(new Header("Connection", "Keep-Alive"));
             
-            if (DaapUtil.COMPRESS) {
+            if (DaapUtil.COMPRESS && request.isGZIPSupported()) {
                 headers.add(new Header("Content-Encoding", "gzip"));
             }
             
             return toByteArray(HTTP_OK, (Header[])headers.toArray(new Header[0]));
-            
-        } catch (UnsupportedEncodingException err) {
-            // Should never happen
-            throw new RuntimeException(err);
             
         } catch (IOException err) {
             // Should never happen
@@ -88,8 +88,8 @@ public class DaapHeaderConstructor {
      * @param contentLength
      * @return
      */    
-    public static byte[] createAudioHeader(DaapRequest request, int pos, int end, int contentLength) {
-
+    public static byte[] createAudioHeader(DaapRequest request, long pos, long end, long contentLength) {
+        
         try {
             
             DaapConnection connection = request.getConnection();
@@ -107,18 +107,19 @@ public class DaapHeaderConstructor {
             headers.add(new Header("Date", DaapUtil.now()));
             headers.add(new Header("DAAP-Server", serverName));
             headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
+            headers.add(new Header("Connection", "close"));
             
             // 
-            if (pos == 0 || version <= DaapUtil.VERSION_2 ) {
+            if (pos == 0 || version <= DaapUtil.DAAP_VERSION_2 ) {
                 
                 statusLine = HTTP_OK;
-                headers.add(new Header("Content-Length", Integer.toString(contentLength)));
+                headers.add(new Header("Content-Length", Long.toString(contentLength)));
             
             } else {
                 
                 statusLine = HTTP_PARTIAL_CONTENT;
                 
-                String cotentLengthStr = Integer.toString(contentLength - pos);
+                String cotentLengthStr = Long.toString(contentLength - pos);
                 String contentRange = "bytes " + pos + "-" + (contentLength-1) + "/" + contentLength;
                 headers.add(new Header("Content-Length", cotentLengthStr));
                 headers.add(new Header("Content-Range", contentRange));
@@ -128,10 +129,6 @@ public class DaapHeaderConstructor {
             
             return toByteArray(statusLine, (Header[])headers.toArray(new Header[0]));
             
-        } catch (UnsupportedEncodingException err) {
-            // Should never happen
-            throw new RuntimeException(err);
-            
         } catch (IOException err) {
             // Should never happen
             throw new RuntimeException(err);
@@ -139,12 +136,12 @@ public class DaapHeaderConstructor {
     }
     
     /**
-     * Creates a new Authentication Header
+     * Creates a new Basic Authentication Header
      *
      * @param request
      * @return
      */    
-    public static byte[] createAuthHeader(DaapRequest request) {
+    public static byte[] createBasicAuthHeader(DaapRequest request) {
         
         try {
             
@@ -156,40 +153,176 @@ public class DaapHeaderConstructor {
                 new Header("DAAP-Server", serverName),
                 new Header("Content-Type", "text/html"),
                 new Header("Content-Length", "0"),
-                new Header("WWW-Authenticate", "Basic-realm=\"daap\"")
+                new Header("WWW-Authenticate", "Basic realm=\"" + DaapUtil.DAAP_REALM + "\""),
+                new Header("Connection", "Keep-Alive")
             };
             
             return toByteArray(HTTP_AUTH, headers);
-            
-        } catch (UnsupportedEncodingException err) {
-            // Should never happen
-            throw new RuntimeException(err);
             
         } catch (IOException err) {
             // Should never happen
             throw new RuntimeException(err);
         }
     }
-   
+    
+    /**
+     * Creates a Digest Authentication Header
+     */
+    public static byte[] createDigestAuthHeader(DaapRequest request) {
+        try {
+            
+            DaapConnection connection = request.getConnection();
+            String serverName = connection.getServer().getConfig().getServerName();
+            String nonce = connection.createNonce();
+            
+            Header[] headers = {
+                new Header("Date", DaapUtil.now()),
+                new Header("DAAP-Server", serverName),
+                new Header("Content-Type", "text/html"),
+                new Header("Content-Length", "0"),
+                new Header("WWW-Authenticate", "Digest realm=\"" + DaapUtil.DAAP_REALM + "\", nonce=\"" + nonce + "\""),
+                new Header("Connection", "Keep-Alive")
+            };
+            
+            return toByteArray(HTTP_AUTH, headers);
+            
+        } catch (IOException err) {
+            // Should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    /**
+     * Creates a new No Content Header
+     *
+     * @param request
+     * @return
+     */    
+    public static byte[] createNoContentHeader(DaapRequest request) {
+        
+        try {
+            
+            DaapConnection connection = request.getConnection();
+            String serverName = connection.getServer().getConfig().getServerName();
+
+            Header[] headers = {
+                new Header("Date", DaapUtil.now()),
+                new Header("DAAP-Server", serverName),
+                new Header("Content-Type", "application/x-dmap-tagged"),
+                new Header("Content-Length", "0"),
+                new Header("Connection", request.isLogoutRequest() ? "close" : "Keep-Alive")
+            };
+            
+            return toByteArray(HTTP_NO_CONTENT, headers);
+            
+        } catch (IOException err) {
+            // Should never happen
+            throw new RuntimeException(err);
+        }
+    }
+    
+    /*public static byte[] createForbidden(DaapRequest request) {
+        try {
+            
+            DaapServer server = request.getServer();
+            DaapConfig config = server.getConfig();
+            String serverName = config.getServerName();
+            
+            Header[] headers = {
+                new Header("Date", DaapUtil.now()),
+                new Header("DAAP-Server", serverName),
+                new Header("Content-Type", "application/x-dmap-tagged"),
+                new Header("Content-Length", "0")
+            };
+            
+            return toByteArray(HTTP_FORBIDDEN, headers);
+            
+        } catch (IOException err) {
+            // Should never happen
+            throw new RuntimeException(err);
+        }
+    }*/
+
+    /**
+     * As a response to /login this will produce two types of
+     * error messages on the client side.
+     * 
+     * 1) if max connections is equal to iTunes five unique 
+     * connections per day limit you'll get the following message:
+     * 
+     * "The shared music library "The WIRED CD" accepts 
+     * only five different users each day. Please try again
+     * later."
+     * 
+     * 2) if max connections is something else you'll get this
+     * message:
+     * 
+     * "The shared music library "The WIRED CD" is not 
+     * accepting connections at this time. Please try again
+     * later."
+     */
+    /*public static byte[] createServiceUnavialable(DaapRequest request) {
+        try {
+            
+            DaapServer server = request.getServer();
+            DaapConfig config = server.getConfig();
+            String serverName = config.getServerName();
+            
+            // Contents is the max number of connections 
+            // encoded as binary string.
+            
+            String max = "";
+            if (config.getMaxConnections() > 0) {
+                max = Integer.toBinaryString(config.getMaxConnections());
+            }
+            
+            byte[] maxBinString = DaapUtil.getBytes(max, DaapUtil.ISO_8859_1);
+            
+            Header[] headers = {
+                new Header("Date", DaapUtil.now()),
+                new Header("DAAP-Server", serverName),
+                new Header("Content-Type", "text/html"),
+                new Header("Content-Length", Integer.toString(maxBinString.length))
+            };
+            
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            toByteArray(out, HTTP_SERVICE_UNAVAILABLE, headers);
+            out.write(maxBinString);
+            out.close();
+            return out.toByteArray();
+            
+        } catch (IOException err) {
+            // Should never happen
+            throw new RuntimeException(err);
+        }
+    }*/
+    
     /**
      * Converts statusLine and headers to an byte-Array
      */
     private static byte[] toByteArray(String statusLine, Header[] headers) 
-            throws UnsupportedEncodingException, IOException {
-        
+            throws IOException {
+       
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        toByteArray(out, statusLine, headers).close();
+        return out.toByteArray();
+    }
+    
+    /**
+     * Converts statusLine and headers to an byte-Array
+     */
+    private static OutputStream toByteArray(OutputStream out, String statusLine, Header[] headers) 
+            throws IOException {
         
-        out.write(statusLine.getBytes(ISO_8859_1));
-        out.write(CRLF);
+        out.write(DaapUtil.getBytes(statusLine, DaapUtil.ISO_8859_1));
+        out.write(DaapUtil.CRLF);
         
         for(int i = 0; i < headers.length; i++) {
-            out.write(headers[i].toExternalForm().getBytes(ISO_8859_1));
+            out.write(DaapUtil.getBytes(headers[i].toExternalForm(), DaapUtil.ISO_8859_1));
         }
         
-        out.write(CRLF);
-        out.close();
-        
-        return out.toByteArray();
+        out.write(DaapUtil.CRLF);
+        return out;
     }
     
     /** Creates a new instance of DaapHeaderConstructor */

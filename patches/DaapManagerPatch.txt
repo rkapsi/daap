@@ -1,0 +1,1316 @@
+Index: DaapManager.java
+===================================================================
+RCS file: /cvs/gui/com/limegroup/gnutella/gui/DaapManager.java,v
+retrieving revision 1.21
+diff -u -r1.21 DaapManager.java
+--- DaapManager.java	23 Jan 2006 17:36:10 -0000	1.21
++++ DaapManager.java	31 Jan 2006 18:04:11 -0000
+@@ -4,11 +4,8 @@
+ import java.io.FileInputStream;
+ import java.io.IOException;
+ import java.net.BindException;
+-import java.net.Inet4Address;
+ import java.net.InetAddress;
+ import java.net.InetSocketAddress;
+-import java.net.NetworkInterface;
+-import java.util.Enumeration;
+ import java.util.HashMap;
+ import java.util.Iterator;
+ import java.util.Locale;
+@@ -26,6 +23,7 @@
+ import com.limegroup.gnutella.URN;
+ import com.limegroup.gnutella.filters.IPFilter;
+ import com.limegroup.gnutella.settings.DaapSettings;
++import com.limegroup.gnutella.settings.PasswordSetting;
+ import com.limegroup.gnutella.util.CommonUtils;
+ import com.limegroup.gnutella.util.FileUtils;
+ import com.limegroup.gnutella.util.ManagedThread;
+@@ -35,6 +33,7 @@
+ import com.limegroup.gnutella.xml.LimeXMLReplyCollection;
+ import com.limegroup.gnutella.xml.SchemaReplyCollectionMapper;
+ 
++import de.kapsi.net.daap.AutoCommitTransaction;
+ import de.kapsi.net.daap.DaapAuthenticator;
+ import de.kapsi.net.daap.DaapConfig;
+ import de.kapsi.net.daap.DaapFilter;
+@@ -48,7 +47,6 @@
+ import de.kapsi.net.daap.Playlist;
+ import de.kapsi.net.daap.Song;
+ import de.kapsi.net.daap.Transaction;
+-import de.kapsi.net.daap.TransactionListener;
+ 
+ /**
+  * This class handles the mDNS registration and acts as an
+@@ -57,26 +55,33 @@
+ public final class DaapManager implements FinalizeListener {
+     
+     private static final Log LOG = LogFactory.getLog(DaapManager.class);
+-    private static final DaapManager INSTANCE = new DaapManager();
+     
+-    public static DaapManager instance() {
+-        return INSTANCE;
++    private static DaapManager instance = null;
++    
++    public static synchronized DaapManager instance() {
++        if (instance == null) {
++            instance = new DaapManager();
++        }
++        return instance;
+     }
+ 
+-    private SongURNMap map;
+-    
+     private Library library;
+     private Database database;
++    private Playlist masterPlaylist;
+     private Playlist whatsNew;
+     private Playlist creativecommons;
+     private Playlist videos;
+         
+     private DaapServer server;
+-    private RendezvousService rendezvous;
++    
++    private BonjourService bonjour;
++    private AutoCommitTransaction autoCommitTxn;
+     
+     private boolean enabled = false;
+     private int maxPlaylistSize;
+     
++    private HashMap urnToSong;
++    
+     private DaapManager() {
+         GUIMediator.addFinalizeListener(this);
+     }
+@@ -100,63 +105,40 @@
+             
+             try {
+                 
+-                InetAddress addr = InetAddress.getLocalHost();
+-                
+-                if (addr.isLoopbackAddress() || !(addr instanceof Inet4Address)) {
+-                    addr = null;
+-                    Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
+-                    if (interfaces != null) {
+-                        while(addr == null && interfaces.hasMoreElements()) {
+-                            NetworkInterface nif = (NetworkInterface)interfaces.nextElement();
+-                            Enumeration addresses = nif.getInetAddresses();
+-                            while(addresses.hasMoreElements()) {
+-                                InetAddress address = (InetAddress)addresses.nextElement();
+-                                if (!address.isLoopbackAddress() 
+-                                        && address instanceof Inet4Address) {
+-                                    addr = address;
+-                                    break;
+-                                }
+-                            }
+-                        }
+-                    }
+-                }
+-                
+-                if (addr == null) {
+-                    stop();
+-                    // No valid IP address -- just ignore, since
+-                    // it's probably the user isn't connected to the
+-                    // internet.  Next time they start, it might work.
+-                    return;
+-                }
+-                
+-                rendezvous = new RendezvousService(addr);
++                InetAddress addr = NetworkUtils.getLocalAddress();
+                 
+-                map = new SongURNMap();
++                bonjour = new BonjourService(addr);
++                urnToSong = new HashMap();
+                 
+                 maxPlaylistSize = DaapSettings.DAAP_MAX_LIBRARY_SIZE.getValue();
+                 
+                 String name = DaapSettings.DAAP_LIBRARY_NAME.getValue();
+-                int revisions = DaapSettings.DAAP_LIBRARY_REVISIONS.getValue();
+-                boolean useLibraryGC = DaapSettings.DAAP_LIBRARY_GC.getValue();
+-                library = new Library(name, revisions, useLibraryGC);
++                
++                library = new Library(name);
++                autoCommitTxn = new AutoCommitTransaction(library);
+                 
+                 database = new Database(name);
+                 whatsNew = new Playlist(GUIMediator.getStringResource("SEARCH_TYPE_WHATSNEW"));
+                 creativecommons = new Playlist(GUIMediator.getStringResource("LICENSE_CC"));
+                 videos = new Playlist(GUIMediator.getStringResource("MEDIA_VIDEO"));
+                 
+-                Transaction txn = library.open(false);
+-                library.add(txn, database);
+-                database.add(txn, creativecommons);
+-                database.add(txn, whatsNew);
+-                database.add(txn, videos);
+-                creativecommons.setSmartPlaylist(txn, true);
+-                whatsNew.setSmartPlaylist(txn, true);
+-                videos.setSmartPlaylist(txn, true);
+-                txn.commit();
+-                
++                library.addDatabase(null, database);
++                database.addPlaylist(null, creativecommons);
++                database.addPlaylist(null, whatsNew);
++                creativecommons.setSmartPlaylist(null, true);
++                whatsNew.setSmartPlaylist(null, true);
++                masterPlaylist = database.getMasterPlaylist();
++
+                 LimeConfig config = new LimeConfig(addr);
+                 
++                if (DaapSettings.DAAP_REQUIRES_USERNAME.getValue()) {
++                    config.setAuthenticationMethod(DaapConfig.USERNAME_AND_PASSWORD);
++                    config.setAuthenticationScheme(DaapConfig.DIGEST_SCHEME);
++                } else {
++                    config.setAuthenticationMethod(DaapConfig.PASSWORD);
++                    config.setAuthenticationScheme(DaapConfig.BASIC_SCHEME);
++                }
++                
+                 final boolean NIO = DaapSettings.DAAP_USE_NIO.getValue();
+ 
+                 server = DaapServerFactory.createServer(library, config, NIO);
+@@ -184,65 +166,66 @@
+                         }
+                     }
+                 }
+-                
++
+                 Thread serverThread = new ManagedThread(server, "DaapServerThread") {
+                     protected void managedRun() {
+                         try {
+                             super.managedRun();
+                         } catch (Throwable t) {
+                             DaapManager.this.stop();
+-                            if(!handleError(t)) {
++                            if (!handleError(t)) {
+                                 GUIMediator.showError("ERROR_DAAP_RUN_ERROR");
+                                 DaapSettings.DAAP_ENABLED.setValue(false);
+-                                if(t instanceof RuntimeException)
+-                                    throw (RuntimeException)t;
+-								throw new RuntimeException(t);
++                                if (t instanceof RuntimeException)
++                                    throw (RuntimeException) t;
++                                else
++                                    throw new RuntimeException(t);
+                             }
+                         }
+                     }
+                 };
+-                
++
+                 serverThread.setDaemon(true);
+                 serverThread.start();
+-                
+-                rendezvous.registerService();
+-                
++
++                bonjour.registerService();
++
+             } catch (IOException err) {
+                 stop();
+                 throw err;
+             }
+         }
+     }
+-    
++
+     /**
+      * Stops the DAAP Server and releases all resources
+      */
+     public synchronized void stop() {
+-        
+-        if (rendezvous != null)
+-            rendezvous.close();
+-        
+-		if (server != null) {
+-			server.stop();
+-			server = null;
+-		}
+-        
+-        if (map != null)
+-            map.clear();
+-        
+-        rendezvous = null;
+ 
+-        map = null;
++        if (bonjour != null)
++            bonjour.close();
++
++        if (server != null)
++            server.stop();
++
++        if (urnToSong != null)
++            urnToSong.clear();
++
++        bonjour = null;
++        server = null;
++        urnToSong = null;
+         library = null;
+         whatsNew = null;
+         creativecommons = null;
+         database = null;
++        autoCommitTxn = null;
+     }
+-    
++
+     /**
+-     * Restarts the DAAP server and re-registers it via mDNS.
+-     * This is equivalent to:<p>
+-     *
++     * Restarts the DAAP server and re-registers it via mDNS. This is equivalent
++     * to:
++     * <p>
++     * 
+      * <code>
+      * stop();
+      * start();
+@@ -252,38 +235,37 @@
+     public synchronized void restart() throws IOException {
+         if (isServerRunning())
+             stop();
+-    
++
+         start();
+         init();
+     }
+-    
++
+     /**
+-     * Shutdown the DAAP service properly. In this case
+-     * is the main focus on mDNS (Rendezvous) as in
+-     * some rare cases iTunes doesn't recognize that
+-     * LimeWire/DAAP is no longer online.
++     * Shutdown the DAAP service properly. In this case is the main focus on
++     * mDNS as in some rare cases iTunes doesn't recognize that LimeWire/DAAP 
++     * is no longer online.
+      */
+     public void doFinalize() {
+         stop();
+     }
+-    
++
+     /**
+-     * Updates the multicast-DNS servive info
++     * Updates the mDNS servive info
+      */
+     public synchronized void updateService() throws IOException {
+-        
++
+         if (isServerRunning()) {
+-            rendezvous.updateService();
++            bonjour.updateService();
+ 
+-            Transaction txn = library.open(false);
++            Transaction txn = library.beginTransaction();
+             String name = DaapSettings.DAAP_LIBRARY_NAME.getValue();
+             library.setName(txn, name);
++            masterPlaylist.setName(txn, name);
+             database.setName(txn, name);
+             txn.commit();
+-            server.update();
+         }
+     }
+-    
++
+     /**
+      * Disconnects all clients
+      */
+@@ -292,7 +274,7 @@
+             server.disconnectAll();
+         }
+     }
+-    
++
+     /**
+      * Returns <tt>true</tt> if server is running
+      */
+@@ -302,43 +284,46 @@
+         }
+         return false;
+     }
+-    
++
+     /**
+-     * Attempts to handle an exception.
+-     * Returns true if we could handle it correctly.
++     * Attempts to handle an exception. Returns true if we could handle it
++     * correctly.
+      */
+     private boolean handleError(Throwable t) {
+-        if(t == null)
++        if (t == null)
+             return false;
+-            
++
+         String msg = t.getMessage();
+-        if(msg == null || msg.indexOf("Unable to establish loopback connection") == -1)
++        if (msg == null
++                || msg.indexOf("Unable to establish loopback connection") == -1)
+             return handleError(t.getCause());
+-        
++
+         // Problem with XP SP2. -- Loopback connections are disallowed.
+-        // Why?  Who knows.  This patch fixes it:
++        // Why? Who knows. This patch fixes it:
+         // http://support.microsoft.com/default.aspx?kbid=884020
+-        if(CommonUtils.isWindowsXP()) {
+-            int answer = GUIMediator.showYesNoCancelMessage("ERROR_DAAP_LOOPBACK_FAILED");
+-            switch(answer) {
+-            case GUIMediator.YES_OPTION:
+-                GUIMediator.openURL("http://support.microsoft.com/default.aspx?kbid=884020");
+-                break;
+-            case GUIMediator.NO_OPTION:
+-                DaapSettings.DAAP_ENABLED.setValue(false);
+-                break;
++        if (CommonUtils.isWindowsXP()) {
++            int answer = GUIMediator
++                    .showYesNoCancelMessage("ERROR_DAAP_LOOPBACK_FAILED");
++            switch (answer) {
++                case GUIMediator.YES_OPTION:
++                    GUIMediator
++                            .openURL("http://support.microsoft.com/default.aspx?kbid=884020");
++                    break;
++                case GUIMediator.NO_OPTION:
++                    DaapSettings.DAAP_ENABLED.setValue(false);
++                    break;
+             }
+         } else {
+             // Also a problem on non XP systems with firewalls.
+-            int answer = GUIMediator.showYesNoMessage("ERROR_DAAP_LOOPBACK_FAILED_NONXP");
+-            if(answer == GUIMediator.NO_OPTION)
++            int answer = GUIMediator
++                    .showYesNoMessage("ERROR_DAAP_LOOPBACK_FAILED_NONXP");
++            if (answer == GUIMediator.NO_OPTION)
+                 DaapSettings.DAAP_ENABLED.setValue(false);
+         }
+-        
++
+         return true;
+     }
+-        
+-    
++
+     /**
+      * Returns true if the extension of name is a supported file type.
+      */
+@@ -358,39 +343,44 @@
+         }
+         return false;
+     }
+-    
++
+     /**
+      * Handles a change event.
+      */
+     private void handleChangeEvent(FileManagerEvent evt) {
+-        FileDesc oldDesc = evt.getFileDescs()[0];        
+-        Song song = map.remove(oldDesc.getSHA1Urn());
+-        
+-        if (song != null) {            
++        FileDesc oldDesc = evt.getFileDescs()[0];
++        Song song = (Song)urnToSong.remove(oldDesc.getSHA1Urn());
++
++        if (song != null) {
+             FileDesc newDesc = evt.getFileDescs()[1];
+-            map.put(song, newDesc.getSHA1Urn());
++            urnToSong.put(newDesc.getSHA1Urn(), song);
+             
+-            // Any changes in the meta data?
+-            if (updateSongAudioMeta(song, newDesc) 
+-                    || updateSongVideoMeta(song, newDesc)) {
+-                Transaction txn = library.open(true);
+-                txn.addTransactionListener(new ServerUpdater(server));
+-                database.update(txn, song);
++            String name = newDesc.getFileName().toLowerCase(Locale.US);
++            
++            if (isSupportedAudioFormat(name)) {
++                updateSongAudioMeta(autoCommitTxn, song, newDesc);
++            } else if (isSupportedVideoFormat(name)) {
++                updateSongVideoMeta(autoCommitTxn, song, newDesc);
++            } else {
++                database.removeSong(autoCommitTxn, song);
+             }
++            
++            // auto commit
+         }
+     }
+-    
++
+     /**
+      * Handles an add event.
+      */
+-    private void handleAddEvent(FileManagerEvent evt) {        
+-        if (database.getMasterPlaylist().size() >= maxPlaylistSize)
++    private void handleAddEvent(FileManagerEvent evt) {
++        if (database.getSongCount() >= maxPlaylistSize)
+             return;
+-        
++
+         FileDesc file = evt.getFileDescs()[0];
+         if (!(file instanceof IncompleteFileDesc)) {
++
+             String name = file.getFileName().toLowerCase(Locale.US);
+-            
++
+             Song song = null;
+             
+             if (isSupportedAudioFormat(name)) {
+@@ -400,60 +390,60 @@
+             }
+             
+             if (song != null) {
+-                map.put(song, file.getSHA1Urn());
++                urnToSong.put(file.getSHA1Urn(), song);
+                 
+-                Transaction txn = library.open(true);
+-                txn.addTransactionListener(new ServerUpdater(server));
+-                
+-                database.getMasterPlaylist().add(txn, song);
+-                whatsNew.add(txn, song);
++                database.getMasterPlaylist().addSong(autoCommitTxn, song);
++                whatsNew.addSong(autoCommitTxn, song);
+                 
+                 if (file.isLicensed()) {
+-                    creativecommons.add(txn, song);
++                    creativecommons.addSong(autoCommitTxn, song);
+                 }
+-                
++
+                 if (isSupportedVideoFormat(name)) {
+-                    videos.add(txn, song);
++                    videos.addSong(autoCommitTxn, song);
+                 }
++                
++                // auto commit
+             }
+         }
+     }
+-    
++
+     /**
+      * Handles a rename event.
+      */
+     private void handleRenameEvent(FileManagerEvent evt) {
+         FileDesc oldDesc = evt.getFileDescs()[0];
+-        Song song = map.remove(oldDesc.getSHA1Urn());
+-        
++        Song song = (Song)urnToSong.remove(oldDesc.getSHA1Urn());
++
+         if (song != null) {
+             FileDesc newDesc = evt.getFileDescs()[1];
+-            map.put(song, newDesc.getSHA1Urn());
++            urnToSong.put(newDesc.getSHA1Urn(), song);
++            song.setAttachment(newDesc);
+         }
+     }
+-    
++
+     /**
+      * Handles a remove event.
+      */
+     private void handleRemoveEvent(FileManagerEvent evt) {
+         FileDesc file = evt.getFileDescs()[0];
+-        Song song = map.remove(file.getSHA1Urn());
+-        
++        Song song = (Song)urnToSong.remove(file.getSHA1Urn());
++
+         if (song != null) {
+-            Transaction txn = library.open(true);
+-            txn.addTransactionListener(new ServerUpdater(server));
+-            database.remove(txn, song);
++            database.removeSong(autoCommitTxn, song);
++            song.setAttachment(null);
++            
++            // auto commit
+         }
+     }
+-    
+-    
++
+     /**
+      * Called by VisualConnectionCallback
+      */
+     public synchronized void handleFileManagerEvent(FileManagerEvent evt) {
+         if (!enabled || !isServerRunning())
+             return;
+-              
++
+         if (evt.isChangeEvent())
+             handleChangeEvent(evt);
+         else if (evt.isAddEvent())
+@@ -463,7 +453,7 @@
+         else if (evt.isRemoveEvent())
+             handleRemoveEvent(evt);
+     }
+-    
++
+     /**
+      * Called by VisualConnectionCallback/MetaFileManager.
+      */
+@@ -490,9 +480,11 @@
+         if (!enabled || !isServerRunning())
+             return;
+         
+-        int size = database.getMasterPlaylist().size();        
+-        Transaction txn = library.open(false);        
+-        SongURNMap tmpMap = new SongURNMap();        
++        HashMap tmpUrnToSong = new HashMap();
++        
++        int size = masterPlaylist.getSongCount();        
++        Transaction txn = library.beginTransaction();    
++   
+         FileDesc[] files = RouterService.getFileManager().getAllSharedFileDescriptors();
+         
+         for(int i = 0; i < files.length; i++) {
+@@ -512,12 +504,12 @@
+             
+             // 1)
+             // _Remove_ URN from the current 'map'...
+-            Song song = map.remove(urn);
++            Song song = (Song)urnToSong.remove(urn);
+                 
+             // Check if URN is already in the tmpMap.
+             // If so do nothing as we don't want add 
+             // the same file multible times...
+-            if(tmpMap.contains(urn)) {
++            if(tmpUrnToSong.containsKey(urn)) {
+                 continue;
+             }
+             
+@@ -525,27 +517,26 @@
+             // Save the Song (again) and update the meta
+             // data if necessary
+             if (song != null) {
+-                tmpMap.put(song, urn);
+-
+-                // Any changes in the meta data?
+-                if ((audio && updateSongAudioMeta(song, file)) 
+-                        || updateSongVideoMeta(song, file)) {
+-                    database.update(txn, song);
++                tmpUrnToSong.put(urn, song);
++                
++                if (audio) {
++                    updateSongAudioMeta(txn, song, file);
++                } else {
++                    updateSongVideoMeta(txn, song, file);
+                 }
+                 
+-            } else if (size < maxPlaylistSize){
+-                // URN was unknown and we must create a
+-                // new Song for this URN...
++            } else if (size < maxPlaylistSize) {
++
+                 song = createSong(file, audio);
+-                tmpMap.put(song, urn);
+-                database.getMasterPlaylist().add(txn, song);
++                tmpUrnToSong.put(urn, song);
++                database.getMasterPlaylist().addSong(txn, song);
+                 
+                 if (file.isLicensed()) {
+-                    creativecommons.add(txn, song);
++                    creativecommons.addSong(txn, song);
+                 }
+                 
+                 if (isSupportedVideoFormat(name)) {
+-                    videos.add(txn, song);
++                    videos.addSong(txn, song);
+                 }
+                 
+                 size++;
+@@ -556,16 +547,15 @@
+         // As all known URNs were removed from 'map' only
+         // deleted FileDesc URNs can be leftover! We must 
+         // remove the associated Songs from the Library now
+-        Iterator it = map.getSongIterator();
+-        while(it.hasNext()) {
+-            Song song = (Song)it.next();
+-            database.remove(txn, song);
++        for(Iterator it = urnToSong.keySet().iterator(); it.hasNext(); ) {
++            Song song = (Song) urnToSong.get(it.next());
++            database.removeSong(txn, song);
++            song.setAttachment(null);
+         }
+         
+-        map.clear();
+-        map = tmpMap; // tempMap is the new 'map'
+-        
+-        txn.addTransactionListener(new ServerUpdater(server));
++        urnToSong.clear();
++        urnToSong = tmpUrnToSong; // tempMap is the new 'map'
++
+         txn.commit();
+     }
+     
+@@ -576,33 +566,44 @@
+     private Song createSong(FileDesc desc, boolean audio) {
+         
+         Song song = new Song(desc.getFileName());
+-        song.setSize((int)desc.getFileSize());
+-        song.setDateAdded((int)(System.currentTimeMillis()/1000));
++        
++        song.setSize(null, desc.getFileSize() & 0xFFFFFFFFL);
++        song.setDateAdded(null, System.currentTimeMillis()/1000L);
+         
+         File file = desc.getFile();
+         String ext = FileUtils.getFileExtension(file);
+         
++        if (!audio) {
++            song.setHasVideo(null, true);
++        }
++        
+         if (ext != null) {
+-            
+             // Note: This is required for formats other than MP3
+             // For example AAC (.m4a) files won't play if no
+             // format is set. As far as I can tell from the iTunes
+             // 'Get Info' dialog are Songs assumed as MP3 until
+             // a format is set explicit.
+-            
+-            song.setFormat(ext.toLowerCase(Locale.US));
+-            
++            ext = ext.toLowerCase(Locale.US);
++            if (!ext.endsWith("mp3"))
++                song.setFormat(null, ext);
++
+             if (audio) {
+-                updateSongAudioMeta(song, desc);
++                updateSongAudioMeta(null, song, desc);
+             } else {
+-                updateSongVideoMeta(song, desc);
++                updateSongVideoMeta(null, song, desc);
+             }
++            
++        } else {
++            song.setAttachment(desc);
+         }
+-        
++
+         return song;
+     }
+     
+-    private boolean updateSongVideoMeta(Song song, FileDesc desc) {
++    private boolean updateSongVideoMeta(Transaction txn, Song song, FileDesc desc) {
++        
++        song.setAttachment(desc);
++        
+         SchemaReplyCollectionMapper map = SchemaReplyCollectionMapper.instance();
+         LimeXMLReplyCollection collection = map.getReplyCollection(LimeXMLNames.VIDEO_SCHEMA);
+         
+@@ -642,7 +643,7 @@
+             String currentTitle = song.getName();
+             if (currentTitle == null || !title.equals(currentTitle)) {
+                 update = true;
+-                song.setName(title);
++                song.setName(txn, title);
+             }
+         }
+         
+@@ -652,27 +653,27 @@
+                 int num = Integer.parseInt(bitrate);
+                 if (num > 0 && num != currentBitrate) {
+                     update = true;
+-                    song.setBitrate(num);
++                    song.setBitrate(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentBitrate != 0) {
+             update = true;
+-            song.setBitrate(0);
++            song.setBitrate(txn, 0);
+         }
+         
+-        int currentLength = song.getTime();
++        long currentLength = song.getTime();
+         if (length != null) {
+             try {
+                 // iTunes expects the song length in milliseconds
+-                int num = (int)Integer.parseInt(length)*1000;
++                int num = (int)(Integer.parseInt(length)*1000L);
+                 if (num > 0 && num != currentLength) {
+                     update = true;
+-                    song.setTime(num);
++                    song.setTime(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentLength != 0) {
+             update = true;
+-            song.setTime(0);
++            song.setTime(txn, 0);
+         }
+         
+         int currentYear = song.getYear();
+@@ -681,12 +682,12 @@
+                 int num = Integer.parseInt(year);
+                 if (num > 0 && num != currentYear) {
+                     update = true;
+-                    song.setYear(num);
++                    song.setYear(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentYear != 0) {
+             update = true;
+-            song.setYear(0);
++            song.setYear(txn, 0);
+         }
+         
+         // Genre = License
+@@ -694,11 +695,11 @@
+         if (license != null) {
+             if (currentGenre == null || !license.equals(currentGenre)) {
+                 update = true;
+-                song.setGenre(license);
++                song.setGenre(txn, license);
+             }
+         } else if (currentGenre != null) {
+             update = true;
+-            song.setGenre(null);
++            song.setGenre(txn, null);
+         }
+         
+         // Artist = Director
+@@ -706,11 +707,11 @@
+         if (director != null) {
+             if (currentArtist == null || !director.equals(currentArtist)) {
+                 update = true;
+-                song.setArtist(director);
++                song.setArtist(txn, director);
+             }
+         } else if (currentArtist != null) {
+             update = true;
+-            song.setArtist(null);
++            song.setArtist(txn, null);
+         }
+         
+         // Rating = Album
+@@ -718,11 +719,11 @@
+         if (rating != null) {
+             if (currentAlbum == null || !rating.equals(currentAlbum)) {
+                 update = true;
+-                song.setAlbum(rating);
++                song.setAlbum(txn, rating);
+             }
+         } else if (currentAlbum != null) {
+             update = true;
+-            song.setAlbum(null);
++            song.setAlbum(txn, null);
+         }
+         
+         return update;
+@@ -731,10 +732,13 @@
+     /**
+      * Sets the audio meta data
+      */
+-    private boolean updateSongAudioMeta(Song song, FileDesc desc) {
++    private boolean updateSongAudioMeta(Transaction txn, Song song, FileDesc desc) {
++        
++        song.setAttachment(desc);
+         
+         SchemaReplyCollectionMapper map = SchemaReplyCollectionMapper.instance();
+         LimeXMLReplyCollection collection = map.getReplyCollection(LimeXMLNames.AUDIO_SCHEMA);
++
+         
+         if (collection == null) {
+             LOG.error("LimeXMLReplyCollection is null");
+@@ -762,7 +766,7 @@
+             String currentTitle = song.getName();
+             if (currentTitle == null || !title.equals(currentTitle)) {
+                 update = true;
+-                song.setName(title);
++                song.setName(txn, title);
+             }
+         }
+         
+@@ -772,56 +776,56 @@
+                 int num = Integer.parseInt(track);
+                 if (num > 0 && num != currentTrack) {
+                     update = true;
+-                    song.setTrackNumber(num);
++                    song.setTrackNumber(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentTrack != 0) {
+             update = true;
+-            song.setTrackNumber(0);
++            song.setTrackNumber(txn, 0);
+         }
+         
+         String currentArtist = song.getArtist();
+         if (artist != null) {
+             if (currentArtist == null || !artist.equals(currentArtist)) {
+                 update = true;
+-                song.setArtist(artist);
++                song.setArtist(txn, artist);
+             }
+         } else if (currentArtist != null) {
+             update = true;
+-            song.setArtist(null);
++            song.setArtist(txn, null);
+         }
+         
+         String currentAlbum = song.getAlbum();
+         if (album != null) {
+             if (currentAlbum == null || !album.equals(currentAlbum)) {
+                 update = true;
+-                song.setAlbum(album);
++                song.setAlbum(txn, album);
+             }
+         } else if (currentAlbum != null) {
+             update = true;
+-            song.setAlbum(null);
++            song.setAlbum(txn, null);
+         }
+         
+         String currentGenre = song.getGenre();
+         if (genre != null) {
+             if (currentGenre == null || !genre.equals(currentGenre)) {
+                 update = true;
+-                song.setGenre(genre);
++                song.setGenre(txn, genre);
+             }
+         } else if (currentGenre != null) {
+             update = true;
+-            song.setGenre(null);
++            song.setGenre(txn, null);
+         }
+         
+         /*String currentComments = song.getComment();
+         if (comments != null) {
+             if (currentComments == null || !comments.equals(currentComments)) {
+                 update = true;
+-                song.setComment(comments);
++                song.setComment(txn, comments);
+             }
+         } else if (currentComments != null) {
+             update = true;
+-            song.setComment(null);
++            song.setComment(txn, null);
+         }*/
+         
+         int currentBitrate = song.getBitrate();
+@@ -830,27 +834,27 @@
+                 int num = Integer.parseInt(bitrate);
+                 if (num > 0 && num != currentBitrate) {
+                     update = true;
+-                    song.setBitrate(num);
++                    song.setBitrate(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentBitrate != 0) {
+             update = true;
+-            song.setBitrate(0);
++            song.setBitrate(txn, 0);
+         }
+         
+-        int currentTime = song.getTime();
++        long currentTime = song.getTime();
+         if (time != null) {
+             try {
+                 // iTunes expects the song length in milliseconds
+-                int num = (int)Integer.parseInt(time)*1000;
++                long num = Integer.parseInt(time)*1000l;
+                 if (num > 0 && num != currentTime) {
+                     update = true;
+-                    song.setTime(num);
++                    song.setTime(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentTime != 0) {
+             update = true;
+-            song.setTime(0);
++            song.setTime(txn, 0);
+         }
+         
+         int currentYear = song.getYear();
+@@ -859,19 +863,19 @@
+                 int num = Integer.parseInt(year);
+                 if (num > 0 && num != currentYear) {
+                     update = true;
+-                    song.setYear(num);
++                    song.setYear(txn, num);
+                 }
+             } catch (NumberFormatException err) {}
+         } else if (currentYear != 0) {
+             update = true;
+-            song.setYear(0);
++            song.setYear(txn, 0);
+         }
+         
+         // iTunes expects the date/time in seconds
+         int mod = (int)(desc.lastModified()/1000);
+         if (song.getDateModified() != mod) {
+             update = true;
+-            song.setDateModified(mod);
++            song.setDateModified(txn, mod);
+         }
+ 
+         return update;
+@@ -894,14 +898,11 @@
+      */
+     private final class LimeStreamSource implements DaapStreamSource {
+         
+-        public FileInputStream getSource(Song song) throws IOException {
+-            URN urn = map.get(song);
+-            
+-            if (urn != null) {
+-                FileDesc fileDesc = RouterService.getFileManager().getFileDescForUrn(urn);
+-                if(fileDesc != null)
+-                    return new FileInputStream(fileDesc.getFile());
+-            }
++        public Object getSource(Song song) throws IOException {
++            FileDesc fileDesc = (FileDesc)song.getAttachment();
++
++            if(fileDesc != null)
++                return new FileInputStream(fileDesc.getFile());
+             
+             return null;
+         }
+@@ -912,17 +913,40 @@
+      */
+     private final class LimeAuthenticator implements DaapAuthenticator {
+         
+-        public boolean requiresAuthentication() {
+-            return DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
+-        }
+-        
+         /**
+          * Returns true if username and password are correct.<p>
+          * Note: iTunes does not support usernames (i.e. it's
+          * don't care)!
+          */
+-        public boolean authenticate(String username, String password) {
+-            return DaapSettings.DAAP_PASSWORD.equals(password);
++        public byte[] getPassword(String username, Object scheme) {
++            String password = DaapSettings.DAAP_PASSWORD.getValue();
++            if (password.startsWith("MD5/")) {
++                password = password.substring(4);
++            }
++            return DaapUtil.parseHexString(password);
++        }
++        
++        public boolean authenticate(String username, String password, String uri, String nonce) {
++            
++            if (uri == null && nonce == null) {
++                // BASIC
++                return DaapSettings.DAAP_PASSWORD.equals(password);
++            } else if (uri != null && nonce != null) {
++                // DIGEST
++                String ha1 = DaapSettings.DAAP_PASSWORD.getValue();
++                if (ha1.startsWith("MD5/")) {
++                    ha1 = ha1.substring(4);
++                }
++                String ha2 = DaapUtil.calculateHA2(uri);
++                String digest = DaapUtil.digest(ha1, ha2, nonce);
++                return digest.equalsIgnoreCase(password);
++            } else {
++                if (LOG.isErrorEnabled()) {
++                    LOG.error("Unknown scheme!");
++                }
++            }
++            
++            return false;
+         }
+     }
+     
+@@ -939,111 +963,113 @@
+          * Returns true if <tt>address</tt> is a private address
+          */
+         public boolean accept(InetAddress address) {
+-            
++
+             byte[] addr = address.getAddress();
+             try {
+                 // not private & not close, not allowed.
+-                if(!NetworkUtils.isVeryCloseIP(addr) &&
+-                   !NetworkUtils.isPrivateAddress(addr))
++                if (!NetworkUtils.isVeryCloseIP(addr)
++                        && !NetworkUtils.isPrivateAddress(addr))
+                     return false;
+             } catch (IllegalArgumentException err) {
+                 LOG.error(err);
+                 return false;
+             }
+-            
++
+             // Is it a annoying fellow? >:-)
+             return IPFilter.instance().allow(addr);
+         }
+     }
+-    
++
+     /**
+      * A LimeWire specific implementation of DaapConfig
+      */
+-    private final class LimeConfig implements DaapConfig {
+-        
++    private final class LimeConfig extends DaapConfig {
++
+         private InetAddress addr;
+-        
++
+         public LimeConfig(InetAddress addr) {
+             this.addr = addr;
+-            
++
+             // Reset PORT to default value to prevent increasing
+             // it to infinity
+             DaapSettings.DAAP_PORT.revertToDefault();
+         }
+-        
++
+         public String getServerName() {
+             return CommonUtils.getHttpServer();
+         }
+-        
++
+         public void nextPort() {
+             int port = DaapSettings.DAAP_PORT.getValue();
+-            DaapSettings.DAAP_PORT.setValue(port+1);
++            DaapSettings.DAAP_PORT.setValue(port + 1);
+         }
+-        
++
+         public int getBacklog() {
+             return 0;
+         }
+-        
++
+         public InetSocketAddress getInetSocketAddress() {
+             int port = DaapSettings.DAAP_PORT.getValue();
+             return new InetSocketAddress(addr, port);
+         }
+-        
++
+         public int getMaxConnections() {
+             return DaapSettings.DAAP_MAX_CONNECTIONS.getValue();
+         }
+     }
+-    
++
+     /**
+-     * Helps us to publicize and update the DAAP Service via
+-     * multicast-DNS (aka Rendezvous or Zeroconf)
++     * Helps us to publicize and update the DAAP Service via mDNS
+      */
+-    private final class RendezvousService {
+-        
++    private final class BonjourService {
++
+         private static final String VERSION = "Version";
++
+         private static final String MACHINE_NAME = "Machine Name";
++
+         private static final String PASSWORD = "Password";
+-        
++
+         private final JmDNS zeroConf;
+-        private ServiceInfo service;
+-        
+-        public RendezvousService(InetAddress addr) throws IOException {
++
++        private ServiceInfo serviceInfo;
++
++        public BonjourService(InetAddress addr) throws IOException {
+             zeroConf = new JmDNS(addr);
+         }
+-        
++
+         public boolean isRegistered() {
+-            return (service != null);
++            return (serviceInfo != null);
+         }
+-        
++
+         private ServiceInfo createServiceInfo() {
+-            
++
+             String type = DaapSettings.DAAP_TYPE_NAME.getValue();
+             String name = DaapSettings.DAAP_SERVICE_NAME.getValue();
+-            
++
+             int port = DaapSettings.DAAP_PORT.getValue();
+             int weight = DaapSettings.DAAP_WEIGHT.getValue();
+             int priority = DaapSettings.DAAP_PRIORITY.getValue();
+-            
++
+             boolean password = DaapSettings.DAAP_REQUIRES_PASSWORD.getValue();
+-            
++
+             java.util.Hashtable props = new java.util.Hashtable();
+-            
++
+             // Greys the share and the playlist names when iTunes's
+             // protocol version is different from this version. It's
+             // only a nice visual effect and has no impact to the
+-            // ability to connect this server! Disabled because 
++            // ability to connect this server! Disabled because
+             // iTunes 4.2 is still widespread...
+-            props.put(VERSION, Integer.toString(DaapUtil.VERSION_3));
+-            
++            props.put(VERSION, Integer.toString(DaapUtil.DAAP_VERSION_3));
++
+             // This is the inital share name
+             props.put(MACHINE_NAME, name);
+-            
++
+             // shows the small lock if Service is protected
+             // by a password!
+-            props.put(PASSWORD, Boolean.toString(password)); 
+-            
++            props.put(PASSWORD, Boolean.toString(password));
++
+             String qualifiedName = null;
+-            
++
+             // This isn't really required but as iTunes
+             // does it in this way I'm doing it too...
+             if (password) {
+@@ -1051,133 +1077,47 @@
+             } else {
+                 qualifiedName = name + "." + type;
+             }
+-            
+-            ServiceInfo serviceInfo = new ServiceInfo(type, qualifiedName, port, 
+-                                                     weight, priority, props);
+-            
++
++            ServiceInfo serviceInfo = new ServiceInfo(type, qualifiedName, port,
++                    weight, priority, props);
++
+             return serviceInfo;
+         }
+-        
++
+         public void registerService() throws IOException {
+-            
++
+             if (isRegistered())
+                 throw new IOException();
+-            
++
+             ServiceInfo serviceInfo = createServiceInfo();
+             zeroConf.registerService(serviceInfo);
+-            this.service = serviceInfo;
++            this.serviceInfo = serviceInfo;
+         }
+-        
++
+         public void unregisterService() {
+             if (!isRegistered())
+                 return;
+-            
+-            zeroConf.unregisterService(service);
+-            service = null;
++
++            zeroConf.unregisterService(serviceInfo);
++            serviceInfo = null;
+         }
+-        
++
+         public void updateService() throws IOException {
+             if (!isRegistered())
+                 throw new IOException();
+-            
+-            if (service.getPort() != DaapSettings.DAAP_PORT.getValue())
++
++            if (serviceInfo.getPort() != DaapSettings.DAAP_PORT.getValue())
+                 unregisterService();
+-            
++
+             ServiceInfo serviceInfo = createServiceInfo();
+             zeroConf.registerService(serviceInfo);
+-            
+-            this.service = serviceInfo;
++
++            this.serviceInfo = serviceInfo;
+         }
+-        
++
+         public void close() {
+             unregisterService();
+             zeroConf.close();
+-        }
+-    }
+-    
+-    /**
+-     * A simple wrapper for a two way mapping as we have to
+-     * deal in both directions with FileManager and DaapServer
+-     * <p>
+-     * Song -> URN
+-     * URN -> Song
+-     */
+-    private final class SongURNMap {
+-        
+-        private HashMap /* Song -> URN */ songToUrn = new HashMap();
+-        private HashMap /* URN -> Song */ urnToSong = new HashMap();
+-        
+-        public SongURNMap() {
+-        }
+-        
+-        public void put(Song song, URN urn) {
+-            songToUrn.put(song, urn);
+-            urnToSong.put(urn, song);
+-        }
+-        
+-        public URN get(Song song) {
+-            return (URN)songToUrn.get(song);
+-        }
+-        
+-        public Song get(URN urn) {
+-            return (Song)urnToSong.get(urn);
+-        }
+-        
+-        public Song remove(URN urn) {
+-            Song song = (Song)urnToSong.remove(urn);
+-            if (song != null)
+-                songToUrn.remove(song);
+-            return song;
+-        }
+-        
+-        public URN remove(Song song) {
+-            URN urn = (URN)songToUrn.remove(song);
+-            if (urn != null)
+-                urnToSong.remove(urn);
+-            return urn;
+-        }
+-        
+-        public boolean contains(URN urn) {
+-            return urnToSong.containsKey(urn);
+-        }
+-        
+-        public boolean contains(Song song) {
+-            return songToUrn.containsKey(song);
+-        }
+-        
+-        public Iterator getSongIterator() {
+-            return songToUrn.keySet().iterator();
+-        }
+-        
+-        public Iterator getURNIterator() {
+-            return urnToSong.keySet().iterator();
+-        }
+-        
+-        public void clear() {
+-            urnToSong.clear();
+-            songToUrn.clear();
+-        }
+-        
+-        public int size() {
+-            // NOTE: songToUrn.size() == urnToSong.size()
+-            return songToUrn.size();
+-        }
+-    }
+-    
+-    private static class ServerUpdater implements TransactionListener {
+-        private DaapServer server;
+-        	
+-        private ServerUpdater(DaapServer server) {
+-            this.server = server;
+-        }
+-        
+-        public void commit(Transaction arg0) {
+-            if (server != null) {
+-                server.update();
+-            }
+-        }
+-        
+-        public void rollback(Transaction arg0) {
+         }
+     }
+ }

@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The number of items (e.g. the number of Songs in a Playlist)
@@ -29,13 +29,13 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * @see SpecifiedTotalCount
  * @author  Roger Kapsi
  */
-public class ReturnedCount extends IntChunk {
+public class ReturnedCount extends UIntChunk {
     
     public ReturnedCount() {
         this(0);
     }
     
-    public ReturnedCount(int count) {
+    public ReturnedCount(long count) {
         super("mrco", "dmap.returnedcount", count);
     }
 }

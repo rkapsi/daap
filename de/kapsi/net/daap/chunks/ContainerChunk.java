@@ -19,12 +19,10 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
-
-import java.util.Iterator;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * A container contains a series of other chunks.
@@ -33,7 +31,7 @@ import java.util.ArrayList;
  */
 public class ContainerChunk extends AbstractChunk {
     
-    private Collection collection;
+    protected Collection collection;
     
     /**
      * Creates a new ContainerChunk with an <tt>ArrayList</tt>
@@ -56,25 +54,15 @@ public class ContainerChunk extends AbstractChunk {
      * Adds <tt>chunk</tt> to this container
      */
     public void add(Chunk chunk) {
+        if (chunk == null) {
+            throw new IllegalArgumentException();
+        }
         collection.add(chunk);
     }
-    
-    // Only required for testing etc.
-        /*public boolean remove(Chunk chunk) {
-                return collection.remove(chunk);
-        }
          
-        public boolean contains(Chunk chunk) {
-                return collection.contains(chunk);
-        }
-         
-        public Iterator iterator() {
-                return collection.iterator();
-        }
-         
-        public void clear() {
-                collection.clear();
-        }*/
+    public Iterator iterator() {
+        return Collections.unmodifiableCollection(collection).iterator();
+    }
     
     /**
      * Returns the number of childs
@@ -84,48 +72,24 @@ public class ContainerChunk extends AbstractChunk {
     }
     
     /**
-     * Returns the length of this chunk (size of all child Chunks)
-     */
-    public int getLength() {
-        int length = 0;
-        
-        Iterator it = collection.iterator();
-        
-        while(it.hasNext()) {
-            length += ((Chunk)it.next()).getSize();
-        }
-        
-        return length;
-    }
-    
-    /**
      * Returns {@see Chunk.CONTAINER_TYPE}
      */
     public int getType() {
         return Chunk.CONTAINER_TYPE;
     }
-    
-    public void serialize(OutputStream os) throws IOException {
-        super.serialize(os);
+
+    public String toString(int indent) {
+        StringBuffer buffer = new StringBuffer(indent(indent));
+        buffer.append(name).append("(").append(getContentCodeString()).append("; container)\n");
         
-        Iterator it = collection.iterator();
-        
-        while(it.hasNext()) {
-            ((Chunk)it.next()).serialize(os);
-        }
-    }
-    
-    public String toString() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(super.toString()).append("=[");
-        Iterator it = collection.iterator();
-        while(it.hasNext()) {
-            buffer.append(it.next());
+        Iterator it = iterator();
+        for(int i = 0; it.hasNext(); i++) {
+            AbstractChunk chunk = (AbstractChunk)it.next();
+            buffer./*append(i).append(": ").*/append(chunk.toString(indent + 4));
             if (it.hasNext()) {
-                buffer.append(", ");
+                buffer.append("\n");
             }
         }
-        buffer.append("]");
         return buffer.toString();
     }
 }

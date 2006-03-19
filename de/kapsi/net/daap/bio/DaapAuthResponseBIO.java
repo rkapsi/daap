@@ -26,7 +26,7 @@ import de.kapsi.net.daap.DaapAuthResponse;
 import de.kapsi.net.daap.DaapRequest;
 
 /**
- * BIO (Blocking I/O) based DaapAuthResponse.
+ * An Authentication Response.
  *
  * @author  Roger Kapsi
  */
@@ -43,8 +43,7 @@ public class DaapAuthResponseBIO extends DaapAuthResponse {
         out = connection.getOutputStream();
     }
     
-    
-    public boolean hasRemainig() {
+    public boolean hasRemaining() {
         return !headerWritten;
     }
     

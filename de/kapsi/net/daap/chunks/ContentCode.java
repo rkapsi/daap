@@ -19,7 +19,6 @@
 
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.chunks.impl.ContentCodesName;
 import de.kapsi.net.daap.chunks.impl.ContentCodesNumber;
 import de.kapsi.net.daap.chunks.impl.ContentCodesType;
@@ -32,10 +31,10 @@ import de.kapsi.net.daap.chunks.impl.Dictionary;
  */
 public final class ContentCode extends Dictionary {
     
-    public ContentCode(String type, String name, int value) {
+    public ContentCode(int type, String name, int value) {
         super();
         
-        add(new ContentCodesNumber(DaapUtil.toContentCodeNumber(type)));
+        add(new ContentCodesNumber(type));
         add(new ContentCodesName(name));
         add(new ContentCodesType(value));
     }

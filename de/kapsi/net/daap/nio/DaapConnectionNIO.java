@@ -33,6 +33,7 @@ import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapResponseFactory;
 import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.SessionId;
 
 /**
  * A NIO based implementation of DaapConnection.
@@ -46,17 +47,16 @@ public class DaapConnectionNIO extends DaapConnection {
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
      
-    private DaapServerNIO server;
     private SocketChannel channel;
     private DaapRequestReaderNIO reader;
+    
+    private long timer = System.currentTimeMillis();
     
     /** Creates a new instance of DaapConnection */
     public DaapConnectionNIO(DaapServerNIO server, SocketChannel channel) {
         super(server);
         
-        this.server = server;
         this.channel = channel;
-        
         reader = new DaapRequestReaderNIO(this);
     }
     
@@ -89,7 +89,7 @@ public class DaapConnectionNIO extends DaapConnection {
      *
      * @return
      */    
-    public SocketChannel getChannel() {
+    SocketChannel getChannel() {
         return channel;
     }
     
@@ -102,6 +102,7 @@ public class DaapConnectionNIO extends DaapConnection {
         
         if (!isAudioStream()) {
             
+            timer = System.currentTimeMillis();
             DaapRequest request = reader.read();
             
             if (request != null) {
@@ -112,15 +113,21 @@ public class DaapConnectionNIO extends DaapConnection {
                         setConnectionType(DaapConnection.AUDIO);
                         
                         // AudioStreams have a session-id and we must check the id
-                        Integer sid = new Integer(request.getSessionId());
-                        if (server.isSessionIdValid(sid) == false) {
+                        SessionId sid = request.getSessionId();
+                        if (((DaapServerNIO)server).isSessionIdValid(sid) == false) {
                             throw new IOException("Unknown Session-ID: " + sid);
                         }
                         
                         // Get the associated "normal" connection...
-                        DaapConnection connection = server.getConnection(sid);
+                        DaapConnection connection = ((DaapServerNIO)server).getDaapConnection(sid);
                         if (connection == null) {
                             throw new IOException("No connection associated with this Session-ID: " + sid);
+                        }
+                        
+                        // ... and check if there's already an audio connection
+                        DaapConnection audio = ((DaapServerNIO)server).getAudioConnection(sid);
+                        if (audio != null) {
+                            throw new IOException("Multiple audio connections not allowed: " + sid);
                         }
                         
                         // ...and use its protocolVersion for this Audio Stream
@@ -147,7 +154,9 @@ public class DaapConnectionNIO extends DaapConnection {
                     }
                     
                     // All checks passed successfully...
-                    server.registerConnection(this);
+                    if (! ((DaapServerNIO)server).updateConnection(this)) {
+                        throw new IOException("Too may connections");
+                    }
                 }
                 
                 DaapResponse response = PROCESSOR.process(request);
@@ -169,31 +178,45 @@ public class DaapConnectionNIO extends DaapConnection {
     }
     
     /**
+     * Returns true if Connection type is undef or daap and 
+     * timeout is exceeded.
+     */
+    boolean timeout() {
+        return (isUndef() && System.currentTimeMillis()-timer >= TIMEOUT)
+                || (isDaapConnection() && System.currentTimeMillis()-timer >= LIBRARY_TIMEOUT);
+    }
+    
+    public void clearLibraryQueue() {
+        super.clearLibraryQueue();
+        timer = System.currentTimeMillis();
+    }
+    
+    /**
      *
      * @throws IOException
      */    
     public void update() throws IOException {
         
-        if (isDaapConnection()) {
+        if (isDaapConnection() && !isLocked()) {
             DaapSession session = getSession(false);
+            if (session != null) {
+                SessionId sessionId = session.getSessionId();
+                
+                // client's revision
+                //Integer delta = new Integer(getFirstInQueue().getRevision());
+                Integer delta = (Integer)session.getAttribute("CLIENT_REVISION");
+                
+                // to request
+                Integer revisionNumber = new Integer(getFirstInQueue().getRevision());
+                
+                DaapRequest request =
+                    new DaapRequest(this, sessionId,
+                        revisionNumber.intValue(), delta.intValue());
+                
+                DaapResponse response = PROCESSOR.process(request);
 
-            if (session != null && !session.hasAttribute("UPDATE_LOCK")) {
-
-                Integer sessionId = session.getSessionId();
-                Integer delta = (Integer)session.getAttribute("DELTA");
-                Integer revisionNumber = (Integer)session.getAttribute("REVISION-NUMBER");
-
-                if (delta != null && revisionNumber != null) {
-
-                    DaapRequest request =
-                        new DaapRequest(this, sessionId.intValue(),
-                            revisionNumber.intValue(), delta.intValue());
-
-                    DaapResponse response = PROCESSOR.process(request);
-
-                    if (response != null) {
-                        writer.add(response);
-                    }
+                if (response != null) {
+                    writer.add(response);
                 }
             }
         }
@@ -204,10 +227,6 @@ public class DaapConnectionNIO extends DaapConnection {
         reader = null;
     }
     
-    /**
-     *
-     * @return
-     */    
     public String toString() {
         return channel.toString();
     }

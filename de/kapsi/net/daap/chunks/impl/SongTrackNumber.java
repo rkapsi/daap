@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The number of the Track.
  *
  * @author  Roger Kapsi
  */
-public class SongTrackNumber extends ShortChunk {
+public class SongTrackNumber extends UShortChunk {
     
     /**
      * Creates a new SongTrackNumber with 0 as the track number.

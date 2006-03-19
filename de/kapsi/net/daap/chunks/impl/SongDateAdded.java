@@ -32,10 +32,10 @@ import de.kapsi.net.daap.chunks.DateChunk;
 public class SongDateAdded extends DateChunk {
     
     public SongDateAdded() {
-        this(0);
+        this(0l);
     }
     
-    public SongDateAdded(int seconds) {
+    public SongDateAdded(long seconds) {
         super("asda", "daap.songdateadded", seconds);
     }
 }

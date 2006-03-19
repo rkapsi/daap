@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ByteChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
  * Unknown purpose.
  *
  * @author  Roger Kapsi
  */
-public class BasePlaylist extends ByteChunk {
+public class BasePlaylist extends UByteChunk {
     
     public BasePlaylist() {
         this(0);

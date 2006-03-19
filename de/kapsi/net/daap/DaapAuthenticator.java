@@ -19,6 +19,7 @@
 
 package de.kapsi.net.daap;
 
+
 /**
  * This interfce enables us to implement a custom authenticator.
  *
@@ -27,14 +28,17 @@ package de.kapsi.net.daap;
 public interface DaapAuthenticator {
     
     /**
-     * Return <tt>true</tt> if authentication is required
+     * Return true if username and password are correct. URI and nonce
+     * are null if BASIC authentication is selected and DIGEST if they
+     * are not null. If DIGEST is selected is the password field equal
+     * to the so called result.
+     * 
+     * DIGEST:
+     * 
+     * String ha1 = (String)map.get(username);
+     * String ha2 = DaapUtil.calculateHA2(uri);
+     * String digest = DaapUtil.digest(ha1, ha2, nonce);
+     * return digest.equals(password); 
      */
-    public boolean requiresAuthentication();
-    
-    /**
-     * Return <tt>true</tt> if username and password are
-     * correct. Note: iTunes doesn't support usernames
-     * currently!
-     */
-    public boolean authenticate(String username, String password);
+    public boolean authenticate(String username, String password, String uri, String nonce);
 }

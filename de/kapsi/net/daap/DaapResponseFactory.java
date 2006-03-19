@@ -19,8 +19,9 @@
 
 package de.kapsi.net.daap;
 
-import java.io.IOException;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * This Factory interface is used to create either NIO
@@ -29,6 +30,14 @@ import java.io.FileInputStream;
  * @author  Roger Kapsi
  */
 public interface DaapResponseFactory {
+    
+    /**
+     * 
+     * @param request
+     * @return
+     */    
+    public DaapResponse createNoContentResponse(DaapRequest request);
+    
     
     /**
      * Creates an returns a DaapAuthResponse for the passed request.
@@ -59,5 +68,18 @@ public interface DaapResponseFactory {
      * @return
      * @throws IOException
      */ 
-    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException;
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, File file, long pos, long end) throws IOException;
+    
+    /**
+     * Creates and returns a DaapAudioResponse for the passed parameters.
+     * 
+     * @param request
+     * @param song
+     * @param in
+     * @param pos
+     * @param end
+     * @return
+     * @throws IOException
+     */ 
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException;
 }

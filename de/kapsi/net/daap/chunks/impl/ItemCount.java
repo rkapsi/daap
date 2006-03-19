@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The number of items a container (Playlist, Database whatever) has.
  * 
  * @author  Roger Kapsi
  */
-public class ItemCount extends IntChunk {
+public class ItemCount extends UIntChunk {
     
     public ItemCount() {
         this(0);
     }
     
-    public ItemCount(int count) {
+    public ItemCount(long count) {
         super("mimc", "dmap.itemcount", count);
     }
 }

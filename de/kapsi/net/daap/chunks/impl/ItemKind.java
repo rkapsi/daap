@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ByteChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
- * Unknown purpose. This chunk seems to be always 2
+ * The kind of an item. Seems to be always '2'.
  *
  * @author  Roger Kapsi
  */
-public class ItemKind extends ByteChunk {
+public class ItemKind extends UByteChunk {
     
     /** Default Kind (always 2) */
-    public static final int KIND_2 = 2;
+    public static final int AUDIO = 2;
     
     public ItemKind() {
-        this(KIND_2);
+        this(AUDIO);
     }
     
     public ItemKind(int kind) {

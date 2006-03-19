@@ -19,8 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.LongChunk;
-import java.math.BigInteger;
+import de.kapsi.net.daap.chunks.ULongChunk;
 
 /**
  * In theory used for global unique IDs and afaik only required
@@ -28,21 +27,13 @@ import java.math.BigInteger;
  *
  * @author  Roger Kapsi
  */
-public class PersistentId extends LongChunk {
+public class PersistentId extends ULongChunk {
     
     public PersistentId() {
-        this(0L);
+        this(0l);
     }
     
     public PersistentId(long id) {
-        super("mper", "dmap.persistentid", id);
-    }
-    
-    public PersistentId(String id) {
-        super("mper", "dmap.persistentid", id);
-    }
-    
-    public PersistentId(BigInteger id) {
         super("mper", "dmap.persistentid", id);
     }
 }

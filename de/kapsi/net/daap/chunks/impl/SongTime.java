@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The length of the Song in milliseconds.
  *
  * @author  Roger Kapsi
  */
-public class SongTime extends IntChunk {
+public class SongTime extends UIntChunk {
     
     /**
      * Creates a new SongTime with 0 length.
@@ -41,7 +41,7 @@ public class SongTime extends IntChunk {
      * You can change this value with {@see #setValue(int)}.
      * @param <tt>time</tt> the length of this song in milliseconds.
      */
-    public SongTime(int time) {
+    public SongTime(long time) {
         super("astm", "daap.songtime", time);
     }
 }

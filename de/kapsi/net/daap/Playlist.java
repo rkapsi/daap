@@ -1,6 +1,6 @@
 /* 
  * Digital Audio Access Protocol (DAAP)
- * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
+ * Copyright (C) 2004, 2005 Roger Kapsi, info at kapsi dot de
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,25 @@
 
 package de.kapsi.net.daap;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.kapsi.net.daap.chunks.AbstractChunk;
+import de.kapsi.net.daap.chunks.BooleanChunk;
 import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.chunks.DummyChunk;
+import de.kapsi.net.daap.chunks.StringChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
 import de.kapsi.net.daap.chunks.impl.ItemCount;
 import de.kapsi.net.daap.chunks.impl.ItemId;
@@ -40,7 +45,10 @@ import de.kapsi.net.daap.chunks.impl.ItemName;
 import de.kapsi.net.daap.chunks.impl.Listing;
 import de.kapsi.net.daap.chunks.impl.ListingItem;
 import de.kapsi.net.daap.chunks.impl.PersistentId;
+import de.kapsi.net.daap.chunks.impl.PlaylistRepeatMode;
+import de.kapsi.net.daap.chunks.impl.PlaylistShuffleMode;
 import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
+import de.kapsi.net.daap.chunks.impl.PodcastPlaylist;
 import de.kapsi.net.daap.chunks.impl.ReturnedCount;
 import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
 import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
@@ -52,37 +60,68 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
  *
  * @author  Roger Kapsi
  */
-public class Playlist implements Cloneable {
+public class Playlist {
     
     private static final Log LOG = LogFactory.getLog(Playlist.class);
     
-    private static int PLAYLIST_ID = 0;
+    /** playlistId is an 32bit unsigned value! */
+    private static int playlistId = 1;
     
-    // Note: a playlist is "smart" when aeSP is in the serialized 
-    // chunklist regardless of its value (i.e. true or false doesn't matter)
-    private static final SmartPlaylist IS_SMART_PLAYLIST = new SmartPlaylist(!true);
-    private static final DummyChunk IS_NOT_SMART_PLAYLIST = new DummyChunk(IS_SMART_PLAYLIST);
+    /** unique id */
+    private final ItemId itemId = new ItemId();
     
-    private ItemId itemId;
-    private ItemName itemName;
-    private PersistentId persistentId;
-    private ItemCount itemCount;
+    /** unique persistent id */
+    private final PersistentId persistentId = new PersistentId();
     
-    private HashSet items;
-    private HashSet newItems;
-    private HashSet deletedItems;
+    /** The name of playlist */
+    private final ItemName itemName = new ItemName();
     
-    private HashMap properties;
+    /** the total number of songs in this playlist */
+    private final ItemCount itemCount = new ItemCount();
     
-    private byte[] playlistSongs;
-    private byte[] playlistSongsUpdate;
+    private SmartPlaylist smartPlaylist;
     
-    private Playlist masterPlaylist;
-    private boolean isSmartPlaylist = false;
+    // @since iTunes 5.0
+    private PlaylistRepeatMode repeatMode;
+    private PlaylistShuffleMode shuffleMode;
+    private PodcastPlaylist podcastPlaylist;
+    //private HasChildContainers hasChildContainers;
     
-    private boolean notifyMasterPlaylistOnAdd = true;
-    private boolean notifyMasterPlaylistOnRemove = false;
-    private boolean notifyMasterPlaylistOnUpdate = true;
+    /** */
+    private final HashMap chunks = new HashMap();
+    
+    /** Set of Songs */
+    private final List songs = new ArrayList();
+    
+    /** Set of deleted Songs */
+    private HashSet deletedSongs = null;
+    
+    protected Playlist(Playlist playlist, Transaction txn) {
+        this.itemId.setValue(playlist.itemId.getValue());
+        this.itemName.setValue(playlist.itemName.getValue());
+        this.persistentId.setValue(playlist.persistentId.getValue());
+        this.itemCount.setValue(playlist.itemCount.getValue());
+        
+        if (playlist.deletedSongs != null) {
+            this.deletedSongs = playlist.deletedSongs;
+            playlist.deletedSongs = null;
+        }
+        
+        Iterator it = playlist.songs.iterator();
+        while(it.hasNext()) {
+            Song song = (Song)it.next();
+            
+            if (txn.modified(song)) {
+                if (deletedSongs == null || !deletedSongs.contains(song)) {
+                    // cloning is not necessary
+                    // songs.add(new Song(song));
+                    songs.add(song);
+                }
+            }
+        }
+        
+        init();
+    }
     
     /**
      * Creates a new Playlist
@@ -90,101 +129,26 @@ public class Playlist implements Cloneable {
      * @param name the Name of the Playlist
      */
     public Playlist(String name) {
-        this(name, true);
-    }
-    
-    /**
-     * Creates a new Playlist with the name and preloads the
-     * Playlist with an empty Playlist data strcture if emptyPlaylist
-     * is true.
-     * 
-     * @param name the Name of the Playlist
-     * @param emptyPlaylist if <code>true</code> the Playlist
-     *  will be preloaded with an empty Playlist data structure
-     */
-    public Playlist(String name, boolean emptyPlaylist) {
-        
         synchronized(Playlist.class) {
-            itemId = new ItemId(++PLAYLIST_ID);
+            this.itemId.setValue(playlistId++);
         }
         
-        items = new HashSet();
-        newItems = new HashSet();
-        deletedItems = new HashSet();
-        properties = new HashMap();
+        this.itemName.setValue(name);
+        this.persistentId.setValue(Library.nextPersistentId());
         
-        itemName = new ItemName(name);
-        persistentId = new PersistentId(Library.nextPersistentId());
-        itemCount = new ItemCount();
-        
-        add(itemId);
-        add(itemName);
-        add(persistentId);
-        add(IS_NOT_SMART_PLAYLIST);
-        add(itemCount);
-        
-        if (emptyPlaylist) {
-            playlistSongs = new PlaylistSongsImpl(this, false).getBytes();
-            playlistSongsUpdate = new PlaylistSongsImpl(this, true).getBytes();
-        }
+        init();
     }
     
-    /**
-     * Clone constructor
-     * 
-     * @param orig the original Playlist that shall be cloned
-     */
-    private Playlist(Playlist orig) {
-        
-        properties = new HashMap();
-        
-        this.itemId = new ItemId(orig.getId());
-        this.itemName = new ItemName(orig.getName());
-        
-        persistentId = new PersistentId(itemId.getValue());
-        itemCount = new ItemCount(orig.itemCount.getValue());
-        
-        add(itemId);
-        add(itemName);
-        add(persistentId);
-        
-        if (orig.isSmartPlaylist()) {
-            add(IS_SMART_PLAYLIST);
-        } else {
-            add(IS_NOT_SMART_PLAYLIST);
-        }
-        
-        add(itemCount);
-        
-        playlistSongs = orig.playlistSongs;
-        playlistSongsUpdate = orig.playlistSongsUpdate;
-        
-        notifyMasterPlaylistOnAdd = orig.notifyMasterPlaylistOnAdd;
-        notifyMasterPlaylistOnRemove = orig.notifyMasterPlaylistOnRemove;
-        notifyMasterPlaylistOnUpdate = orig.notifyMasterPlaylistOnUpdate;
-    }
-    
-    Txn openTxn(Transaction txn) throws DaapException {
-        if (!txn.isOpen()) {
-            throw new DaapException("Transaction is not open");
-        }
-        
-        PlaylistTxn obj = (PlaylistTxn)txn.getAttribute(this);
-        if (obj == null) {
-            obj = new PlaylistTxn(this);
-            txn.setAttribute(this, obj);
-        }
-        return obj;
-    }
-    
-    /**
-     * Sets the master Playlist. This value is only valid
-     * during a commit!
-     * 
-     * @param masterPlaylist a master Playlist
-     */
-    void setMasterPlaylist(Playlist masterPlaylist) {
-        this.masterPlaylist = masterPlaylist;
+    private void init() {
+        addChunk(itemId);
+        addChunk(itemName);
+        addChunk(persistentId);
+        /*addChunk(smartPlaylist);
+        addChunk(repeatMode);
+        addChunk(shuffleMode);
+        addChunk(podcastPlaylist);
+        addChunk(hasChildContainers);*/
+        addChunk(itemCount);
     }
     
     /**
@@ -192,26 +156,24 @@ public class Playlist implements Cloneable {
      * 
      * @return unique ID of this Playlist
      */
-    public int getId() {
-        return itemId.getValue();
+    protected long getItemId() {
+        return itemId.getUnsignedValue();
     }
     
     /**
      * 
      * @param chunk
      */
-    private void add(AbstractChunk chunk) {
-        properties.put(chunk.getName(), chunk);
+    protected void addChunk(Chunk chunk) {
+        chunks.put(chunk.getName(), chunk);
     }
     
-    /**
-     * <b>This method does not exist! Ignore it! I'm serious! :)</b>
-     * 
-     * @param property a key (secret, only accessible for API developers)
-     * @return a Chunk or <code>null</code>
-     */
-    public Chunk getProperty(String property) {
-        return (Chunk)properties.get(property);
+    protected void removeChunk(Chunk chunk) {
+        chunks.remove(chunk.getName());
+    }
+    
+    protected Chunk getChunk(String name) {
+        return (Chunk)chunks.get(name);
     }
     
     /**
@@ -221,9 +183,12 @@ public class Playlist implements Cloneable {
      * @param name a new name
      * @throws DaapException
      */
-    public void setName(Transaction txn, String name) throws DaapException {
-        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
-        obj.setName(name);
+    public void setName(Transaction txn, String name) {
+        if (txn != null) {
+            txn.addTxn(this, createNewTxn("itemName", name));
+        } else {
+            setValue("itemName", name);
+        }
     }
     
     /**
@@ -232,127 +197,107 @@ public class Playlist implements Cloneable {
      * @return the name of this Playlist
      */
     public String getName() {
-        return itemName.getValue();
+        return getStringValue(itemName);
     }
-    
-    /**
-     * If <code>true</code> (default) then add songs also to the 
-     * master playlist
-     * 
-     * @param notify
-     */
-    public void setNotifyMasterPlaylistOnAdd(boolean notify) {
-        notifyMasterPlaylistOnAdd = notify;
-    }
-    
-    /**
-     * If <code>false</code> (default) then remove songs also from 
-     * the master playlist
-     * 
-     * @param notify
-     */
-    public void setNotifyMasterPlaylistOnRemove(boolean notify) {
-        notifyMasterPlaylistOnRemove = notify;
-    }
-    
-    /**
-     * If <code>true</code> (default) then update songs also on the 
-     * master playlist
-     * 
-     * @param notify
-     */
-    public void setNotifyMasterPlaylistOnUpdate(boolean notify) {
-        notifyMasterPlaylistOnUpdate = notify;
-    }
-    
+     
     /**
      * Sets whether or not this Playlist is a smart playlist.
      * The difference between smart and common playlists is that
      * smart playlists have a star as an icon and they appear
      * as first in the list.
      */
-    public void setSmartPlaylist(Transaction txn, boolean smart) throws DaapException {
-        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
-        obj.setSmartPlaylist(smart);
+    public void setSmartPlaylist(Transaction txn, boolean smartPlaylist) {
+        if (txn != null) {
+            txn.addTxn(this, createNewTxn("smartPlaylist", smartPlaylist));
+        } else {
+            setValue("smartPlaylist", smartPlaylist);
+        }
     }
-    
+
     /**
      * Returns <code>true</code> if this Playlist is a smart
      * playlist.
      */
     public boolean isSmartPlaylist() {
-        return isSmartPlaylist;
+        return getBooleanValue(smartPlaylist);
     }
     
     /**
-     * Returns a Song for the provided songId or
-     * <code>null</code> if this id is unknown for
-     * this Playlist
+     * 
      */
-    Song getSong(int songId) {
-        Iterator it = items.iterator();
-        while(it.hasNext()) {
-            Song song = (Song)it.next();
-            if (song.getId() == songId) {
-                return song;
-            }
+    public void setPodcastPlaylist(Transaction txn, final boolean podcastPlaylist) {
+        if (txn != null) {
+            txn.addTxn(this, createNewTxn("podcastPlaylist", podcastPlaylist));
+        } else {
+            setValue("podcastPlaylist", podcastPlaylist);
         }
-        
-        return null;
+    }
+
+    /**
+     * 
+     */
+    public boolean isPodcastPlaylist() {
+        return getBooleanValue(podcastPlaylist);
     }
     
     /**
-     * Returns true if playlist is empty
-     * @return
+     * 
      */
-    public boolean isEmpty() {
-        return items.isEmpty();
+    public void setRepeatMode(Transaction txn, int repeatMode) {
+        UByteChunk.checkUByteRange(repeatMode);
+        if (txn != null) {
+            txn.addTxn(this, createNewTxn("repeatMode", repeatMode));
+        } else {
+            setValue("repeatMode", repeatMode);
+        }
+    }
+
+    /**
+     * 
+     */
+    public int getRepeatMode() {
+        return getUByteValue(repeatMode);
+    }
+    
+    /**
+     * 
+     */
+    public void setShuffleMode(Transaction txn, int shuffleMode) {
+        UByteChunk.checkUByteRange(shuffleMode);
+        if (txn != null) {
+            txn.addTxn(this, createNewTxn("shuffleMode", shuffleMode));
+        } else {
+            setValue("shuffleMode", shuffleMode);
+        }
+    }
+
+    /**
+     * 
+     */
+    public int getShuffleMode() {
+        return getUByteValue(shuffleMode);
     }
     
     /**
      * Returns the number of Songs in this Playlist
      */
-    public int size() {
-        return items.size();
+    public int getSongCount() {
+        return songs.size();
     }
     
     /**
      * Retuns an unmodifiable set of all songs
      */
-    public Set getSongs() {
-        return Collections.unmodifiableSet(items);
+    public List getSongs() {
+        return Collections.unmodifiableList(songs);
     }
     
     /**
-     * Returns an unmodifiable set of newly added songs.
-     * Note: the contents of this Set is only valid during
-     * a commit() and in the meantime it is empty.
+     * Returns a set of deleted Songs or null if 
+     * no Songs were removed from this Playlist
      */
-    public Set getNewSongs() {
-        return Collections.unmodifiableSet(newItems);
-    }
-    
-    /**
-     * Retuens an unmodifiable set of newly deleted songs.
-     * Note: the contents of this Set is only valid during
-     * a commit() and in the meantime it is empty.
-     */
-    public Set getDeletedSongs() {
-        return Collections.unmodifiableSet(deletedItems);
-    }
-    
-    /**
-     * Apply the new song attributes
-     * 
-     * @param song
-     * @throws DaapTransactionException
-     */
-    public void update(Transaction txn, Song song) throws DaapException {
-        if (!items.contains(song))
-            return;
-        
-        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
-        obj.update(song);
+    protected Set getDeletedSongs() {
+        return deletedSongs;
     }
     
     /**
@@ -361,9 +306,27 @@ public class Playlist implements Cloneable {
      * @param song
      * @throws DaapTransactionException
      */
-    public void add(Transaction txn, Song song) throws DaapException {
-        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
-        obj.add(song);
+    public void addSong(Transaction txn, final Song song) {
+        if (txn != null) {
+            txn.addTxn(this, new Txn() {
+                public void commit(Transaction txn) {
+                    addSongP(txn, song);
+                }
+            });
+            txn.attach(song); // 
+        } else {
+            addSongP(txn, song);
+        }
+    }
+    
+    private void addSongP(Transaction txn, Song song) {
+        if (!containsSong(song) && songs.add(song)) {
+            itemCount.setValue(songs.size());
+            if (deletedSongs != null && deletedSongs.remove(song) 
+                    && deletedSongs.isEmpty()) {
+                deletedSongs = null;
+            }
+        }
     }
     
     /**
@@ -372,9 +335,44 @@ public class Playlist implements Cloneable {
      * @param song
      * @throws DaapTransactionException
      */
-    public void remove(Transaction txn, Song song) throws DaapException {
-        PlaylistTxn obj = (PlaylistTxn)openTxn(txn);
-        obj.remove(song);
+    public void removeSong(Transaction txn, final Song song) {
+        if (txn != null) {
+            txn.addTxn(this, new Txn() {
+                public void commit(Transaction txn) {
+                    removeSongP(txn, song);
+                }
+            });
+        } else {
+            removeSongP(txn, song);
+        }
+    }
+    
+    private void removeSongP(Transaction txn, Song song) {
+        if (songs.remove(song)) {
+            itemCount.setValue(songs.size());
+            if (deletedSongs == null) {
+                deletedSongs = new HashSet();
+            }
+            deletedSongs.add(song);
+        }
+    }
+    
+    /**
+     * Gets and returns a Song by its ID
+     * 
+     * @param songId
+     * @return
+     */
+    protected Song getSong(DaapRequest request) {
+        long songId = request.getItemId();
+        Iterator it = songs.iterator();
+        while(it.hasNext()) {
+            Song song = (Song)it.next();
+            if (song.getItemId() == songId) {
+                return song;
+            }
+        }
+        return null;
     }
     
     /**
@@ -384,17 +382,11 @@ public class Playlist implements Cloneable {
      * @param request a DaapRequest
      * @return a response for the DaapRequest
      */
-    public synchronized Object select(DaapRequest request) {
+    protected Object select(DaapRequest request) {
         
         if (request.isPlaylistSongsRequest()) {
-            if (request.isUpdateType()) {
-                return playlistSongsUpdate;
-            } else {
-                return playlistSongs;   
-            }
-        }
-        
-        if (LOG.isInfoEnabled()) {
+            return getPlaylistSongs(request);
+        } else  if (LOG.isInfoEnabled()) {
             LOG.info("Unknown request: " + request);
         }
         
@@ -405,257 +397,161 @@ public class Playlist implements Cloneable {
      * Returns <code>true</code> if the provided
      * <code>song</code> is in this Playlist.
      */
-    public boolean contains(Song song) {
-        return items.contains(song);
+    public boolean containsSong(Song song) {
+        return songs.contains(song);
     }
     
-    public Object clone() throws CloneNotSupportedException {
-        return new Playlist(this);
+    public int hashCode() {
+        return itemId.getValue();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof Playlist)) {
+            return false;
+        }
+        
+        return ((Playlist)o).getItemId() == getItemId();
     }
     
     public String toString() {
-        return getName();
+        return getName() + " (" + getItemId() + ")";
     }
     
-    /**
-     * A Playlist specific implementation of Txn
-     */
-    private static class PlaylistTxn implements Txn {
+    private PlaylistSongs getPlaylistSongs(DaapRequest request) {
+        PlaylistSongs playlistSongs = new PlaylistSongs();
         
-        private Playlist playlist;
+        playlistSongs.add(new Status(200));
+        playlistSongs.add(new UpdateType(request.isUpdateType() ? 1 : 0));
         
-        private String name;
-        private boolean isSmartPlaylist;
-        
-        private HashSet newItems = new HashSet();
-        private HashSet deletedItems = new HashSet();
-        private HashSet updateItems = new HashSet();
-        
-        private PlaylistTxn(Playlist playlist) {
-            this.playlist = playlist;
-            this.name = playlist.getName();
-            this.isSmartPlaylist = playlist.isSmartPlaylist();
-        }
-        
-        private void setName(String name) {
-            this.name = name;
-        }
-        
-        private void setSmartPlaylist(boolean smart) {
-            isSmartPlaylist = smart;
-        }
-        
-        private void add(Song song) {
-            if (!newItems.contains(song)) {
-                newItems.add(song);
-                deletedItems.remove(song);
-                updateItems.remove(song);
-            }
-        }
-        
-        private void remove(Song song) {
-            if (!deletedItems.contains(song)) {
-                deletedItems.add(song);
-                newItems.remove(song);
-                updateItems.remove(song);
-            }
-        }
-        
-        private void update(Song song) {
-            if (!updateItems.contains(song) && !newItems.contains(song) && !deletedItems.contains(song)) {
-                updateItems.add(song);
-            }
-        }
-        
-        public void commit(Transaction txn) {
-            synchronized(playlist) {
-                if (playlist.getName() != name) {
-                    playlist.itemName.setValue(name);
+        playlistSongs.add(new SpecifiedTotalCount(itemCount.getValue()));
+        playlistSongs.add(new ReturnedCount(getSongCount()));
+
+        Listing listing = new Listing();
+
+        Iterator it = songs.iterator();
+        while(it.hasNext()) {
+            Song song = (Song)it.next();
+
+            ListingItem listingItem = new ListingItem();
+            
+            Iterator meta = request.getMeta().iterator();
+            while(meta.hasNext()) {
+                String key = (String)meta.next();
+                Chunk chunk = song.getChunk(key);
+
+                if (chunk != null) {
+                    listingItem.add(chunk);
+
+                } else if (LOG.isInfoEnabled()) {
+                    LOG.info("Unknown chunk type: " + key);
                 }
-                
-                if (playlist.isSmartPlaylist()  != isSmartPlaylist) {
-                    playlist.isSmartPlaylist = isSmartPlaylist;
-                    
-                    if (isSmartPlaylist) {
-                        playlist.add(IS_SMART_PLAYLIST);
-                    } else {
-                        playlist.add(IS_NOT_SMART_PLAYLIST);
-                    }
-                }
-                
-                Playlist masterPlaylist = playlist.masterPlaylist;
-                
-                Iterator it = newItems.iterator();
-                while(it.hasNext()) {
-                    Song song = (Song)it.next();
-                    if (!playlist.items.contains(song)) {
-                        playlist.items.add(song);
-                        playlist.newItems.add(song);
-                        playlist.deletedItems.remove(song);
-                        
-                        if (playlist.notifyMasterPlaylistOnAdd && playlist.masterPlaylist != null) {
-                            playlist.masterPlaylist.add(txn, song);
-                        }
-                    }
-                }
-                
-                it = updateItems.iterator();
-                while(it.hasNext()) {
-                    Song song = (Song)it.next();
-                    if (playlist.items.contains(song) && !playlist.newItems.contains(song)) {
-                        playlist.newItems.add(song);
-                        
-                        if (playlist.notifyMasterPlaylistOnUpdate && playlist.masterPlaylist != null) {
-                            playlist.masterPlaylist.update(txn, song);
-                        }
-                    }
-                }
-                
-                it = deletedItems.iterator();
-                while(it.hasNext()) {
-                    Song song = (Song)it.next();
-                    if (playlist.items.remove(song)) {
-                        playlist.newItems.remove(song);
-                        playlist.deletedItems.add(song);
-                        
-                        if (playlist.notifyMasterPlaylistOnRemove && playlist.masterPlaylist != null) {
-                            playlist.masterPlaylist.remove(txn, song);
-                        }
-                    }
-                }
-                
-                // commit
-                playlist.itemCount.setValue(playlist.items.size());
-                
-                playlist.playlistSongs = new PlaylistSongsImpl(playlist, false).getBytes();
-                playlist.playlistSongsUpdate = new PlaylistSongsImpl(playlist, true).getBytes();
             }
             
-            newItems.clear();
-            deletedItems.clear();
-            updateItems.clear();
+            listing.add(listingItem);
         }
-        
-        public void rollback(Transaction txn) {
-            newItems.clear();
-            deletedItems.clear();
-            updateItems.clear();
-        }
-        
-        public void cleanup(Transaction txn) {
-            synchronized(playlist) {
-                playlist.newItems.clear();
-                playlist.deletedItems.clear();
-            }
+
+        playlistSongs.add(listing);
+
+        if (request.isUpdateType() && deletedSongs != null) {
+            DeletedIdListing deletedListing = new DeletedIdListing();
             
-            newItems.clear();
-            deletedItems.clear();
-            updateItems.clear();
-        }
-        
-        public void join(Txn value) {
-            PlaylistTxn obj = (PlaylistTxn)value;
-            
-            if (name != obj.name)
-                name = obj.name;
-            
-            isSmartPlaylist = obj.isSmartPlaylist;
-            
-            Iterator it = obj.newItems.iterator();
+            it = deletedSongs.iterator();
             while(it.hasNext()) {
-                add((Song)it.next());
-            }
-            
-            it = obj.updateItems.iterator();
-            while(it.hasNext()) {
-                update((Song)it.next());
-            }
-            
-            it = obj.deletedItems.iterator();
-            while(it.hasNext()) {
-                remove((Song)it.next());
-            }
-        }
-        
-        public String toString() {
-            return "PlaylistTxn for " + playlist;
-        }
-    }
-    
-    /**
-    * This class implements the PlaylistSongs
-    */
-    private static final class PlaylistSongsImpl extends PlaylistSongs {
-    
-        private PlaylistSongsImpl(Playlist playlist, boolean updateType) {
-            super();
-
-            add(new Status(200));
-            add(new UpdateType(updateType));
-
-            int secifiedTotalCount = playlist.items.size()-playlist.deletedItems.size();
-            int returnedCount = playlist.newItems.size();
-
-            add(new SpecifiedTotalCount(secifiedTotalCount));
-            add(new ReturnedCount(returnedCount));
-
-            Listing listing = new Listing();
-
-            Iterator it = ((updateType) ? playlist.newItems : playlist.items).iterator();
-
-            while(it.hasNext()) {
-                ListingItem listingItem = new ListingItem();
                 Song song = (Song)it.next();
-
-                Iterator properties = Arrays.asList(
-                        DaapUtil.PLAYLIST_SONGS_META).iterator();
-                while(properties.hasNext()) {
-                    String key = (String)properties.next();
-
-                    Chunk chunk = song.getProperty(key);
-
-                    if (chunk != null) {
-                        listingItem.add(chunk);
-
-                    } else if (LOG.isInfoEnabled()) {
-                        LOG.info("Unknown chunk type: " + key);
-                    }
-                }
-
-                listing.add(listingItem);
+                deletedListing.add(song.getChunk("dmap.itemid"));
             }
 
-            add(listing);
-
-            if (updateType) {
-
-                it = playlist.deletedItems.iterator();
-
-                if (it.hasNext()) {
-
-                    DeletedIdListing deletedListing = new DeletedIdListing();
-
-                    while(it.hasNext()) {
-                        Song song = (Song)it.next();
-                        deletedListing.add(new ItemId(song.getId()));
-                    }
-
-                    add(deletedListing);
-                }
-            }
+            playlistSongs.add(deletedListing);
         }
         
-        public byte[] getBytes() {
-            return getBytes(DaapUtil.COMPRESS);
-        }
-        
-        public byte[] getBytes(boolean compress) {
-            try {
-                return DaapUtil.serialize(this, compress);
-            } catch (IOException err) {
-                LOG.error(err);
-                return null;
+        return playlistSongs;
+    }
+    
+    protected boolean getBooleanValue(BooleanChunk chunk) {
+        return (chunk != null) ? chunk.getBooleanValue() : false;
+    }
+    
+    protected int getUByteValue(UByteChunk chunk) {
+        return (chunk != null) ? chunk.getValue() : 0;
+    }
+    
+    protected String getStringValue(StringChunk chunk) {
+        return (chunk != null) ? chunk.getValue() : null;
+    }
+    
+    protected Txn createNewTxn(final String name, boolean value) {
+        return createNewTxn(name, boolean.class, new Boolean(value));
+    }
+    
+    protected Txn createNewTxn(final String name, int value) {
+        return createNewTxn(name, int.class, new Integer(value));
+    }
+    
+    protected Txn createNewTxn(final String name, long value) {
+        return createNewTxn(name, long.class, new Long(value));
+    }
+
+    protected Txn createNewTxn(final String name, String value) {
+        return createNewTxn(name, String.class, value);
+    }
+    
+    protected Txn createNewTxn(final String fieldName, final Class valueClass, final Object value) {
+        Txn txn = new Txn() {
+            public void commit(Transaction txn) {
+                setValue(fieldName, valueClass, value);
             }
+        };
+        
+        return txn;
+    }
+    
+    protected void setValue(String fieldName, boolean value) {
+        setValue(fieldName, boolean.class, new Boolean(value));
+    }
+    
+    protected void setValue(String fieldName, int value) {
+        setValue(fieldName, int.class, new Integer(value));
+    }
+    
+    protected void setValue(String fieldName, long value) {
+        setValue(fieldName, long.class, new Long(value));
+    }
+
+    protected void setValue(String fieldName, String value) {
+        setValue(fieldName, String.class, value);
+    }
+    
+    protected void setValue(String fieldName, Class valueClass, Object value) {
+        try {
+
+            Field field = Playlist.class.getDeclaredField(fieldName);
+            field.setAccessible(true);
+
+            Chunk chunk = (Chunk)field.get(this);
+            if (chunk == null) {
+                Constructor con = field.getType().getConstructor(new Class[] { valueClass });
+                chunk = (Chunk)con.newInstance(new Object[]{value});
+                field.set(this, chunk);
+                addChunk(chunk);
+            } else {
+                Method method = field.getType().getMethod("setValue", new Class[]{ valueClass });
+                method.invoke(chunk, new Object[]{value});
+            }
+            
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
         }
     }
 }

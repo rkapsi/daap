@@ -24,10 +24,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 /**
- * This class reads a single CR LF terminated string
- * from a SocketChannel (main purpose is to read DAAP
- * headers).
- *
+ * Reads a CR LF terminated string line.
+ * 
  * @author  Roger Kapsi
  */
 public class DaapLineReaderNIO {
@@ -38,7 +36,6 @@ public class DaapLineReaderNIO {
     private SocketChannel channel;
     
     private StringBuffer lineBuf;
-    private int capacity;
     private boolean complete;
    
     /** Creates a new instance of DaapLineReader */

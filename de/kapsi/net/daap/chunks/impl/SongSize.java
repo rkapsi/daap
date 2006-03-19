@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The size of the Song in bytes.
  *
  * @author  Roger Kapsi
  */
-public class SongSize extends IntChunk {
+public class SongSize extends UIntChunk {
     
     /**
      * Creates a new SongSize with 0-length
@@ -41,7 +41,7 @@ public class SongSize extends IntChunk {
      * You can change this value with {@see #setValue(int)}.
      * @param <tt>size</tt> the size of this song in bytes.
      */
-    public SongSize(int size) {
+    public SongSize(long size) {
         super("assz", "daap.songsize", size);
     }
 }

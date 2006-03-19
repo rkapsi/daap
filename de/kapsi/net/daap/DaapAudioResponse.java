@@ -19,8 +19,8 @@
 
 package de.kapsi.net.daap;
 
-import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * An abstract base class for DaapAudioResponses aka Streams (derived 
@@ -33,13 +33,13 @@ public abstract class DaapAudioResponse implements DaapResponse {
     protected final DaapRequest request;
     protected final Song song;
     protected final FileInputStream in;
-    protected final int end;
+    protected final long end;
     protected final byte[] header;
     
-    protected int pos;
-    
+    protected long pos;
+        
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+    public DaapAudioResponse(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
         this.request = request;
         this.song = song;
         this.in = in;
@@ -51,5 +51,13 @@ public abstract class DaapAudioResponse implements DaapResponse {
     
     public String toString() {
         return (new String(header));
+    }
+    
+    protected void close() throws IOException {
+        pos = end;
+        
+        if (in != null) {
+            in.close();
+        }
     }
 }

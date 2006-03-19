@@ -19,22 +19,24 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
- * Unknown purpose.
+ * ITMS Genre ID
  * 
  * @author  Roger Kapsi
  * @since iTunes 4.5
  */
-public class ITMSGenreId extends IntChunk {
+public class ITMSGenreId extends UIntChunk {
+    
+    public static final int ROCK = 0x15;
     
     /** Creates a new instance of ITMSGenreId */
     public ITMSGenreId() {
         this(0);
     }
     
-    public ITMSGenreId(int genreId) {
+    public ITMSGenreId(long genreId) {
         super("aeGI", "com.apple.itunes.itms-genreid", genreId);
     }
 }

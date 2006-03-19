@@ -31,6 +31,8 @@ import java.io.IOException;
  */
 public class DaapStreamException extends IOException {
     
+    private static final long serialVersionUID = 1L;
+
     public DaapStreamException(IOException err) {
         super(err.getMessage());
     }

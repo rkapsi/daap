@@ -19,21 +19,23 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The sample rate of the Song in kHz.
  *
  * @author  Roger Kapsi
  */
-public class SongSampleRate extends IntChunk {
+public class SongSampleRate extends UIntChunk {
+    
+    public static final int KHZ_44100 = 44100;
     
     /**
      * Creates a new SongSampleRate with 0 kHz
      * You can change this value with {@see #setValue(int)}.
      */
     public SongSampleRate() {
-        this(0);
+        this(KHZ_44100);
     }
     
     /**
@@ -41,7 +43,7 @@ public class SongSampleRate extends IntChunk {
      * You can change this value with {@see #setValue(int)}.
      * @param <tt>rate</tt> the rate of this song in kHz.
      */
-    public SongSampleRate(int rate) {
+    public SongSampleRate(long rate) {
         super("assr", "daap.songsamplerate", rate);
     }
 }

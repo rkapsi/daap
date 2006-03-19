@@ -19,10 +19,7 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
-
-import de.kapsi.net.daap.ByteUtil;
+import de.kapsi.net.daap.DaapUtil;
 
 /**
  * An abstract base class for Chunks.
@@ -31,28 +28,38 @@ import de.kapsi.net.daap.ByteUtil;
  */
 public abstract class AbstractChunk implements Chunk {
     
-    // 4 bytes for the content code and 4 bytes for
-    // the size of the playload
-    private static final int HEADER_SIZE = 4+4;
+    protected final int contentCode;
+    protected final String name;
     
-    private String contentCode;
-    private String name;
-    
+    /**
+     * 
+     */
     protected AbstractChunk(String contentCode, String name) {
-        
         if (contentCode.length() != 4) {
-            throw new IndexOutOfBoundsException("Content Code must have 4 characters");
+            throw new IllegalArgumentException("Content Code must be 4 chars");
         }
         
+        this.contentCode = DaapUtil.toContentCodeNumber(contentCode);
+        this.name = name;
+    }
+    
+    /**
+     * 
+     */
+    protected AbstractChunk(int contentCode, String name) {
         this.contentCode = contentCode;
         this.name = name;
+    }
+    
+    public int getContentCode() {
+        return contentCode;
     }
     
     /**
      * Returns the 4 charecter content code of this Chunk as String
      */
-    public String getContentCode() {
-        return contentCode;
+    public String getContentCodeString() {
+        return DaapUtil.toContentCodeString(contentCode);
     }
     
     /**
@@ -63,33 +70,23 @@ public abstract class AbstractChunk implements Chunk {
     }
     
     /**
-     * Returns the size of this Chunk. The size is defined as
-     * header + payload in bytes.
-     */
-    public int getSize() {
-        return HEADER_SIZE + getLength();
-    }
-    
-    /**
-     * Returns the length of this Chunk's payload in bytes.
-     */
-    public abstract int getLength();
-    
-    /**
-     * Returns the type of this Chunk. For example {@see #BOOLEAN_TYPE}.
+     * Returns the type of this Chunk.
      */
     public abstract int getType();
     
-    public void serialize(OutputStream out) throws IOException {
-        byte[] buffer = new byte[HEADER_SIZE];
-        
-        ByteUtil.toFourCharBytes(contentCode, buffer, 0);
-        ByteUtil.toByteBE(getLength(), buffer, 4);
-        
-        out.write(buffer, 0, buffer.length);
+    public String toString() {
+        return toString(0);
     }
     
-    public String toString() {
-        return name + "('" + contentCode + "')";
+    public String toString(int indent) {
+        return indent(indent) + name + "('" + getContentCodeString() + "')";
+    }
+    
+    protected static String indent(int indent) {
+        StringBuffer buffer = new StringBuffer(indent);
+        for(int i = 0; i < indent; i++) {
+            buffer.append(' ');
+        }
+        return buffer.toString();
     }
 }

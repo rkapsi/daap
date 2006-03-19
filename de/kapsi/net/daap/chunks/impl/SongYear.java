@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The year when the Song was released.
  *
  * @author  Roger Kapsi
  */
-public class SongYear extends ShortChunk {
+public class SongYear extends UShortChunk {
     
     /**
      * Creates a new SongYear and initializes it with 0

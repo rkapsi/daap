@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * Beats per minute? One of those needless things...
  *
  * @author  Roger Kapsi
  */
-public class SongBeatsPerMinute extends ShortChunk {
+public class SongBeatsPerMinute extends UShortChunk {
     
     public SongBeatsPerMinute() {
         this(0);

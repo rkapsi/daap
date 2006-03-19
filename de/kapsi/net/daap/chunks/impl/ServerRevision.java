@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Used for the <tt>/update</tt> request and represents
@@ -27,13 +27,13 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class ServerRevision extends IntChunk {
+public class ServerRevision extends UIntChunk {
     
     public ServerRevision() {
         this(0);
     }
     
-    public ServerRevision(int count) {
+    public ServerRevision(long count) {
         super("musr", "dmap.serverrevision", count);
     }
 }

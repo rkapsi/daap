@@ -39,45 +39,45 @@ public class DatabaseTest extends TestCase {
         library = new Library("DatabaseTestLibrary");
         database = new Database("DatabaseTest");
         
-        assertTrue(library.size()==0 && library.getRevision()==0);
-        Transaction txn = library.open(false);
-        library.add(txn, database);
+        assertTrue(library.getDatabaseCount()==0 && library.getRevision()==1);
+        Transaction txn = library.beginTransaction();
+        library.addDatabase(txn, database);
         txn.commit();
-        assertTrue(library.size()==1 && library.getRevision()==1);
+        assertTrue(library.getDatabaseCount()==1 && library.getRevision()==2);
     }
     
     public void testAddPlaylist() {
         Playlist playlist = new Playlist("Playlist");
         
-        int size = database.size();
+        int size = database.getPlaylistCount();
         int revision = library.getRevision();
         
-        Transaction txn = library.open(false);
-        database.add(txn, playlist);
+        Transaction txn = library.beginTransaction();
+        database.addPlaylist(txn, playlist);
         txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
-        assertTrue(database.size() == (size+1));
-        assertTrue(database.contains(playlist));
+        assertTrue(database.getPlaylistCount() == (size+1));
+        assertTrue(database.containsPlaylist(playlist));
     }
     
     public void testRemovePlaylist() {
         Playlist playlist = new Playlist("Playlist");
         
-        Transaction txn = library.open(false);
-        database.add(txn, playlist);
+        Transaction txn = library.beginTransaction();
+        database.addPlaylist(txn, playlist);
         txn.commit();
         
-        int size = database.size();
+        int size = database.getPlaylistCount();
         int revision = library.getRevision();
         
-        txn = library.open(false);
-        database.remove(txn, playlist);
+        txn = library.beginTransaction();
+        database.removePlaylist(txn, playlist);
         txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
-        assertTrue(database.size() == (size-1));
-        assertFalse(database.contains(playlist));
+        assertTrue(database.getPlaylistCount() == (size-1));
+        assertFalse(database.containsPlaylist(playlist));
     }
     
     public void testSetName() {
@@ -85,13 +85,12 @@ public class DatabaseTest extends TestCase {
         int revision = library.getRevision();
         String name = database.getName();
        
-        Transaction txn = library.open(false);
+        Transaction txn = library.beginTransaction();
         database.setName(txn, "OK");
         txn.commit();
         
         assertTrue(library.getRevision() == (revision+1));
         assertTrue(database.getName().equals("OK"));
-        assertTrue(database.getMasterPlaylist().getName().equals("OK"));
     }
     
     public void testAddSong() {
@@ -101,17 +100,17 @@ public class DatabaseTest extends TestCase {
         Song song = new Song("Song");
         Playlist playlist = new Playlist("Playlist");
         
-        Transaction txn = library.open(false);
-        database.add(txn, song);
-        database.add(txn, playlist);
+        Transaction txn = library.beginTransaction();
+        database.addSong(txn, song);
+        database.addPlaylist(txn, playlist);
         txn.commit();
         
         assertTrue(library.getRevision()==(revision+1));
-        assertTrue(database.getMasterPlaylist().size()==1);
-        assertTrue(database.getMasterPlaylist().contains(song));
+        assertTrue(database.getMasterPlaylist().getSongCount()==1);
+        assertTrue(database.getMasterPlaylist().containsSong(song));
         
-        assertTrue(playlist.size()==1);
-        assertTrue(playlist.contains(song));
+        assertFalse(playlist.getSongCount()==1);
+        assertFalse(playlist.containsSong(song));
     }
     
     public void testRemoveSong() {
@@ -119,42 +118,41 @@ public class DatabaseTest extends TestCase {
         Song song = new Song("Song");
         Playlist playlist = new Playlist("Playlist");
         
-        Transaction txn = library.open(false);
-        database.add(txn, song);
-        database.add(txn, playlist);
+        Transaction txn = library.beginTransaction();
+        database.addSong(txn, song);
+        database.addPlaylist(txn, playlist);
         txn.commit();
         
         int revision = library.getRevision();
         
-        txn = library.open(false);
-        database.remove(txn, song);
+        txn = library.beginTransaction();
+        database.removeSong(txn, song);
         txn.commit();
         
         assertTrue(library.getRevision()==(revision+1));
-        assertTrue(database.getMasterPlaylist().size()==0);
-        assertFalse(database.getMasterPlaylist().contains(song));
+        assertTrue(database.getMasterPlaylist().getSongCount()==0);
+        assertFalse(database.getMasterPlaylist().containsSong(song));
         
-        assertTrue(playlist.size()==0);
-        assertFalse(playlist.contains(song));
+        assertTrue(playlist.getSongCount()==0);
+        assertFalse(playlist.containsSong(song));
     }
     
     public void testUpdateSong() {
         
         Song song = new Song("Song");
         
-        Transaction txn = library.open(false);
-        database.add(txn, song);
+        Transaction txn = library.beginTransaction();
+        database.addSong(txn, song);
         txn.commit();
         
-        song.setName("Hello World");
         int revision = library.getRevision();
         
-        txn = library.open(false);
-        database.update(txn, song);
+        txn = library.beginTransaction();
+        song.setName(txn, "Hello World");
         txn.commit();
-        
+      
         assertTrue(library.getRevision()==(revision+1));
-        assertTrue(database.getMasterPlaylist().size()==1);
-        assertTrue(database.getMasterPlaylist().contains(song));
+        assertTrue(database.getMasterPlaylist().getSongCount()==1);
+        assertTrue(database.getMasterPlaylist().containsSong(song));
     }
 }

@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * The ID of an item. This value must be unique for a certain set
@@ -27,13 +27,13 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class ItemId extends IntChunk {
+public class ItemId extends UIntChunk {
     
     public ItemId() {
         this(0);
     }
     
-    public ItemId(int itemId) {
+    public ItemId(long itemId) {
         super("miid", "dmap.itemid", itemId);
     }
 }

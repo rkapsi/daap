@@ -19,14 +19,14 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.ShortChunk;
+import de.kapsi.net.daap.chunks.UShortChunk;
 
 /**
  * The total number of disks.
  *
  * @author  Roger Kapsi
  */
-public class SongDiscCount extends ShortChunk {
+public class SongDiscCount extends UShortChunk {
     
     /**
      * Creates a new SongDiscCount where count is 0.

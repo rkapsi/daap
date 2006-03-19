@@ -1,6 +1,6 @@
 /* 
  * Digital Audio Access Protocol (DAAP)
- * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
+ * Copyright (C) 2005 Roger Kapsi, info at kapsi dot de
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package de.kapsi.net.daap.chunks.impl;
+
+import de.kapsi.net.daap.chunks.StringChunk;
 
 /**
- * Called by Transaction to notify its listeners that
- * it either commited or rolled back the transaction.
- * 
- * @author Roger Kapsi
+ * @since iTunes 5.0
  */
-public interface TransactionListener {
+public class SongContentDescription extends StringChunk {
     
-    /**
-     * Called by a Transaction at the end of a commit
-     * 
-     * @param txn the Transaction that commited
-     */
-    public void commit(Transaction txn);
     
-    /**
-     * Called by a Transaction at the end of a rollback
-     * 
-     * @param txn the Transaction that rolled back
-     */
-    public void rollback(Transaction txn);
+    public SongContentDescription() {
+        this(null);
+    }
+
+    public SongContentDescription(String desc) {
+        super("ascn", "daap.songcontentdescription", desc);
+    }
 }

@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Unknown purpose.
  *
  * @author  Roger Kapsi
  */
-public class TimeoutInterval extends IntChunk {
+public class TimeoutInterval extends UIntChunk {
     
     public TimeoutInterval() {
         this(0);
     }
     
-    public TimeoutInterval(int interval) {
+    public TimeoutInterval(long interval) {
         super("mstm", "dmap.timeoutinterval", interval);
     }
 }

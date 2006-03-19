@@ -20,6 +20,7 @@
 package de.kapsi.net.daap;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,10 @@ import org.apache.commons.logging.LogFactory;
  * @author  Roger Kapsi
  */
 public class DaapRequest {
+    
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String CLIENT_DAAP_VERSION = "Client-DAAP-Version";
+    public static final String USER_AGENT = "User-Agent";
     
     /** "/server-info" */
     public static final int SERVER_INFO = 1;
@@ -82,19 +87,19 @@ public class DaapRequest {
     
     private Map queryMap;
     
-    private int sessionId = DaapUtil.NULL;
+    private SessionId sessionId = SessionId.INVALID;
     private int revisionNumber = DaapUtil.NULL;
     private int delta = DaapUtil.NULL;
     
-    private ArrayList meta;
+    private List meta;
     private String metaString;
     
     private int requestType = DaapUtil.NULL;
-    private int databaseId = DaapUtil.NULL;
-    private int containerId = DaapUtil.NULL;
-    private int itemId = DaapUtil.NULL;
+    private long databaseId = DaapUtil.NULL;
+    private long containerId = DaapUtil.NULL;
+    private long itemId = DaapUtil.NULL;
     
-    private ArrayList headers;
+    private List headers;
     private boolean isServerSideRequest;
     private boolean isUpdateType;
    
@@ -115,7 +120,8 @@ public class DaapRequest {
      * @param revisionNumber
      * @param delta
      */
-    public DaapRequest(DaapConnection connection, int sessionId, int revisionNumber, int delta) {
+    public DaapRequest(DaapConnection connection, SessionId sessionId, 
+            int revisionNumber, int delta) {
         this(connection);
         
         this.sessionId = sessionId;
@@ -133,7 +139,8 @@ public class DaapRequest {
      * @param requestLine
      * @throw URIException
      */
-    public DaapRequest(DaapConnection connection, String requestLine) throws URIException {
+    public DaapRequest(DaapConnection connection, String requestLine) 
+            throws URIException {
         this(connection);
         
         String method = null;
@@ -175,7 +182,8 @@ public class DaapRequest {
      * @param protocol
      * @throw URIException
      */
-    public DaapRequest(DaapConnection connection, String method, URI uri, String protocol) throws URIException {
+    public DaapRequest(DaapConnection connection, String method, 
+            URI uri, String protocol) throws URIException {
         this(connection);
         
         this.isServerSideRequest = false;
@@ -234,12 +242,12 @@ public class DaapRequest {
             } else if (path.equals("/resolve")) {
                 requestType = RESOLVE;
             }
-
+            
             if (queryMap.containsKey("session-id")) {
-                sessionId = Integer.parseInt((String)queryMap.get("session-id"));
+                sessionId = SessionId.parseSessionId((String)queryMap.get("session-id"));
             }
-
-            if (sessionId != DaapUtil.NULL) {
+            
+            if (!SessionId.INVALID.equals(sessionId)) {
 
                 if (queryMap.containsKey("revision-number")) {
                     revisionNumber = Integer.parseInt((String)queryMap.get("revision-number"));
@@ -248,7 +256,11 @@ public class DaapRequest {
                 if (queryMap.containsKey("delta")) {
                     delta = Integer.parseInt((String)queryMap.get("delta"));
                 }
-
+                
+                if (delta > revisionNumber) {
+                    throw new URIException("Delta must be less or equal to revision-number: " + delta + "/" + revisionNumber);
+                }
+                
                 if (queryMap.containsKey("meta")) {
                     metaString = (String)queryMap.get("meta");
                 }
@@ -275,7 +287,7 @@ public class DaapRequest {
                             throw new URIException("Unknown token in path: " + path + " [" + token + "]@1");
                         }
 
-                        databaseId = Integer.parseInt((String)tok.nextToken());
+                        databaseId = DaapUtil.parseUInt((String)tok.nextToken());
                         token = tok.nextToken();
 
                         if (token.equals("items")) {
@@ -296,7 +308,7 @@ public class DaapRequest {
                             StringTokenizer fileTokenizer = new StringTokenizer(token, ".");
 
                             if (fileTokenizer.countTokens()==2) {
-                                itemId = Integer.parseInt(fileTokenizer.nextToken());
+                                itemId = DaapUtil.parseUInt(fileTokenizer.nextToken());
                                 requestType = SONG;
 
                             } else {
@@ -304,7 +316,7 @@ public class DaapRequest {
                             }
 
                         } else if (count == 5) {
-                            containerId = Integer.parseInt((String)tok.nextToken());
+                            containerId = DaapUtil.parseUInt((String)tok.nextToken());
                             token = (String)tok.nextToken();
 
                             if (token.equals("items")) {
@@ -334,10 +346,14 @@ public class DaapRequest {
             containerId = DaapUtil.NULL;
             itemId = DaapUtil.NULL;
             
-            sessionId = DaapUtil.NULL;
+            sessionId = SessionId.INVALID;
             revisionNumber = DaapUtil.NULL;
             delta = DaapUtil.NULL;
         }
+    }
+    
+    public void setSessionId(SessionId sessionId) {
+        this.sessionId = sessionId;
     }
     
     /**
@@ -400,6 +416,13 @@ public class DaapRequest {
         }
         
         return null;
+    }
+    
+    /**
+     * Returns the Server reference
+     */
+    public DaapServer getServer() {
+        return getConnection().getServer();
     }
     
     /**
@@ -565,7 +588,7 @@ public class DaapRequest {
      *
      * @return
      */
-    public int getSessionId() {
+    public SessionId getSessionId() {
         return sessionId;
     }
     
@@ -606,7 +629,7 @@ public class DaapRequest {
             metaString = null;
         }
         
-        return meta;
+        return (meta != null) ? Collections.unmodifiableList(meta) : Collections.EMPTY_LIST;
     }
     
     /**
@@ -614,7 +637,7 @@ public class DaapRequest {
      *
      * @return
      */
-    public int getDatabaseId() {
+    public long getDatabaseId() {
         return databaseId;
     }
     
@@ -623,7 +646,7 @@ public class DaapRequest {
      *
      * @return
      */
-    public int getContainerId() {
+    public long getContainerId() {
         return containerId;
     }
     
@@ -632,7 +655,7 @@ public class DaapRequest {
      *
      * @return
      */
-    public int getItemId() {
+    public long getItemId() {
         return itemId;
     }
     
@@ -682,7 +705,7 @@ public class DaapRequest {
      * @return
      */
     public Map getQueryMap() {
-        return queryMap;
+        return (queryMap != null) ? Collections.unmodifiableMap(queryMap) : Collections.EMPTY_MAP;
     }
     
     /**
@@ -707,11 +730,52 @@ public class DaapRequest {
         return isUpdateType;
     }
     
+    /**
+     * Returns <code>true</code> if client accepts GZIP
+     * encoding.
+     * 
+     * @return
+     */
+    public boolean isGZIPSupported() {
+        Header header = getHeader("Accept-Encoding");
+        return header != null && header.getValue().equalsIgnoreCase("gzip");
+    }
+    
+    public boolean isKeepConnectionAlive() {
+        Header header = getHeader("Connection");
+        return header != null && header.getValue().equalsIgnoreCase("keep-alive");
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public Library getLibrary() {
+        return connection.getServer().getLibrary();
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public Library getHeadLibrary() {
+        return connection.getFirstInQueue();
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public Library nextLibrary() {
+        return connection.nextLibrary(this);
+    }
+    
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         
         if (isServerSideRequest)
-            buffer.append("ServerSideRequest").append("\n");
+            buffer.append("ServerSideRequest: ")
+                .append(getRevisionNumber()).append(", ").append(getDelta()).append("\n");
         
         if (uri != null)
             buffer.append(uri).append("\n");

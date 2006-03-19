@@ -19,51 +19,35 @@
 
 package de.kapsi.net.daap.chunks;
 
-import java.io.OutputStream;
-import java.io.IOException;
-
 /**
  * An implementation of a boolean chunk.
  *
  * @author  Roger Kapsi
  */
-public class BooleanChunk extends AbstractChunk {
+public abstract class BooleanChunk extends UByteChunk {
     
-    private boolean value;
-    
-    protected BooleanChunk(String type, String name, boolean value) {
-        super(type, name);
-        this.value = value;
+    public BooleanChunk(int type, String name, boolean value) {
+        super(type, name, (value ? 1 : 0));
     }
     
-    public boolean getValue() {
-        return value;
+    public BooleanChunk(String type, String name, boolean value) {
+        super(type, name, (value ? 1 : 0));
+    }
+    
+    public boolean getBooleanValue() {
+        return getValue() != 0;
     }
     
     public void setValue(boolean value) {
-        this.value = value;
+        super.setValue(value ? 1 : 0);
     }
     
-    /**
-     * Length is 1 byte
-     */
-    public int getLength() {
-        return 1;
+    public void setValue(int value) {
+        // normalize to 1 and 0 for easier debugging
+        super.setValue((value != 0) ? 1 : 0);
     }
     
-    /**
-     * Returns <tt>Chunk.BOOLEAN_TYPE</tt>
-     */
-    public int getType() {
-        return Chunk.BOOLEAN_TYPE;
-    }
-    
-    public void serialize(OutputStream out) throws IOException {
-        super.serialize(out);
-        out.write((getValue()) ? (byte)1 : (byte)0);
-    }
-    
-    public String toString() {
-        return super.toString() + "=" + value;
+    public String toString(int indent) {
+        return indent(indent) + name + "(" + contentCode + "; boolean)=" + getBooleanValue();
     }
 }

@@ -1,0 +1,59 @@
+Index: DaapSettings.java
+===================================================================
+RCS file: /cvs/core/com/limegroup/gnutella/settings/DaapSettings.java,v
+retrieving revision 1.7
+diff -u -r1.7 DaapSettings.java
+--- DaapSettings.java	23 Jan 2006 17:36:11 -0000	1.7
++++ DaapSettings.java	31 Jan 2006 18:06:07 -0000
+@@ -88,6 +88,12 @@
+         = FACTORY.createIntSetting("DAAP_PRIORITY", 0);
+ 	
+     /**
++     * Whether or not an username is required 
++     */
++    public static BooleanSetting DAAP_REQUIRES_USERNAME =
++        FACTORY.createBooleanSetting("DAAP_REQUIRES_USERNAME", false);
++    
++    /**
+      * Whether or not password protection is enabled
+      */
+     public static BooleanSetting DAAP_REQUIRES_PASSWORD =
+@@ -96,6 +102,12 @@
+     /**
+      * The DAAP password
+      */
++    public static StringSetting DAAP_USERNAME =
++        FACTORY.createStringSetting("DAAP_USERNAME", "");
++    
++    /**
++     * The DAAP password
++     */
+     public static PasswordSetting DAAP_PASSWORD =
+ 	    FACTORY.createPasswordSettingMD5("DAAP_PASSWORD", "");
+     
+@@ -113,24 +125,7 @@
+      */
+     public static IntSetting DAAP_MAX_LIBRARY_SIZE =
+         FACTORY.createIntSetting("DAAP_MAX_LIBRARY_SIZE", 10000);
+-    
+-    /**
+-     * The number of revisions the Library should keep in the history
+-     * (necessary for slowly updating clients and iTunes is quite
+-     * slow in that respect).
+-     */
+-    public static IntSetting DAAP_LIBRARY_REVISIONS =
+-        FACTORY.createIntSetting("DAAP_LIBRARY_REVISIONS", 100);
+-    
+-    /**
+-     * If <tt>true</tt> (default) then Library earses entries 
+-     * from the eldest to the latest entry automatically from
+-     * the revision history table. <b>IT IS A VERY BAD IDEA
+-     * TO DISABLE THIS CUZ YOU WOULD WASTE MEMORY!!!</b>
+-     */
+-    public static BooleanSetting DAAP_LIBRARY_GC =
+-        FACTORY.createBooleanSetting("DAAP_LIBRARY_GC", true);
+-        
++     
+     /**
+      * Gets the user's name, in possessive format.
+      */

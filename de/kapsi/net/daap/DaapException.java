@@ -26,6 +26,8 @@ package de.kapsi.net.daap;
  */
 public class DaapException extends RuntimeException {
     
+    private static final long serialVersionUID = 1L;
+
     public DaapException() {
         super();
     }

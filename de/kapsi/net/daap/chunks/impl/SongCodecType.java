@@ -20,7 +20,7 @@
 package de.kapsi.net.daap.chunks.impl;
 
 import de.kapsi.net.daap.ByteUtil;
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Unknown purpose.
@@ -28,7 +28,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * @author  Roger Kapsi
  * @since iTunes 4.5
  */
-public class SongCodecType extends IntChunk {
+public class SongCodecType extends UIntChunk {
     
     public static final int MPEG = ByteUtil.toFourCharCode("mpeg");
     public static final int MP4A = ByteUtil.toFourCharCode("mp4a");
@@ -38,7 +38,7 @@ public class SongCodecType extends IntChunk {
         this(0);
     }
     
-    public SongCodecType(int codec) {
+    public SongCodecType(long codec) {
         super("ascd", "daap.songcodectype", codec);
     }
 }

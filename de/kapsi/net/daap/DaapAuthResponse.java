@@ -34,7 +34,16 @@ public abstract class DaapAuthResponse implements DaapResponse {
     /** Creates a new instance of DaapAuthResponse */
     public DaapAuthResponse(DaapRequest request) {
         this.request = request;
-        header = DaapHeaderConstructor.createAuthHeader(request);
+        
+        DaapServer server = request.getServer();
+        DaapConfig config = server.getConfig();
+        Object scheme = config.getAuthenticationScheme();
+        
+        if (scheme.equals(DaapConfig.BASIC_SCHEME)) {
+            header = DaapHeaderConstructor.createBasicAuthHeader(request);
+        } else {
+            header = DaapHeaderConstructor.createDigestAuthHeader(request);
+        }
     }
     
     public String toString() {

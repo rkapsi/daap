@@ -1,6 +1,6 @@
 /* 
  * Digital Audio Access Protocol (DAAP)
- * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
+ * Copyright (C) 2005 Roger Kapsi, info at kapsi dot de
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +17,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks;
+package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.ServerRevision;
-import de.kapsi.net.daap.chunks.impl.UpdateResponse;
+import de.kapsi.net.daap.chunks.BooleanChunk;
 
 /**
- * This class implements the UpdateResponse
- *
- * @author  Roger Kapsi
+ * @since iTunes 5.0
  */
-public final class UpdateResponseImpl extends UpdateResponse {
+public class PodcastPlaylist extends BooleanChunk {
     
-    public UpdateResponseImpl(int revision) {
-        super();
-        
-        add(new Status(200));
-        add(new ServerRevision(revision));
+    public PodcastPlaylist() {
+        this(false);
+    }
+    
+    public PodcastPlaylist(boolean podcast) {
+        super("aePP", "com.apple.itunes.is-podcast-playlist", podcast);
     }
 }

@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Seems to be the equivalent to HTTP/1.1 200 OK but it's never
@@ -27,7 +27,7 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class Status extends IntChunk {
+public class Status extends UIntChunk {
     
     /**
      * The default status
@@ -38,7 +38,7 @@ public class Status extends IntChunk {
         this(STATUS_200);
     }
     
-    public Status(int status) {
+    public Status(long status) {
         super("mstt", "dmap.status", status);
     }
 }

@@ -24,73 +24,104 @@ import de.kapsi.net.daap.DaapUtil;
 /**
  * This class implements a Version chunk. A Version chunk is 
  * a 32bit int where the two upper 2 bytes are the major version,
- * the 3rd byte minor and the last byte is the patch level.
+ * the 3rd byte minor and the last byte is the micro version.
  * <code>0x00020000 = 2.0.0</code>
  *
  * @author  Roger Kapsi
  */
-public class VersionChunk extends IntChunk {
+public abstract class VersionChunk extends AbstractChunk {
     
-    private int majorVersion;
-    private int minorVersion;
-    private int patchLevel;
+    public static final long MIN_VALUE = 0l;
+    public static final long MAX_VALUE = 0xFFFFFFFFl;
     
-    protected VersionChunk(String type, String name, int value) {
-        super(type, name, value);
+    protected int version = 0;
+    
+    public VersionChunk(int type, String name, long value) {
+        super(type, name);
+        setValue(value);
+    }
+    
+    public VersionChunk(String type, String name, long value) {
+        super(type, name);
+        setValue(value);
     }
     
     protected VersionChunk(String type, String name, int majorVersion, 
-            int minorVersion, int patchLevel) {
-                
-        super(type, name, 0);
-        
-        this.majorVersion = majorVersion & 0xFFFF;
-        this.minorVersion = minorVersion & 0xFF;
-        this.patchLevel = patchLevel & 0xFF;
-        
-        setValue(createVersion());
+            int minorVersion, int microVersion) {
+        this(type, name, DaapUtil.toVersion(majorVersion, minorVersion, microVersion));
     }
     
-    private final int createVersion() {
-        return DaapUtil.toVersion(majorVersion, minorVersion, patchLevel);
+    public void setValue(long version) {
+        this.version = (int)checkVersionRange(version);
+    }
+    
+    public long getValue() {
+        return (long)(version & MAX_VALUE);
     }
     
     public void setMajorVersion(int majorVersion) {
-        this.majorVersion = majorVersion & 0xFFFF;
-        setValue(createVersion());
+        long version = getValue() & 0x0000FFFFl;
+        version |= (majorVersion & 0xFFFF) << 16;
+        setValue(version);
     }
     
     public void setMinorVersion(int minorVersion) {
-        this.minorVersion = minorVersion & 0xFF;
-        setValue(createVersion());
+        long version = getValue() & 0xFFFF00FFl;
+        version |= (minorVersion & 0xFF) << 8;
+        setValue(version);
     }
     
-    public void setPatchlevel(int patchLevel) {
-        this.patchLevel = patchLevel & 0xFF;
-        setValue(createVersion());
+    public void setMicroVersion(int microVersion) {
+        long version = getValue() & 0xFFFFFF00l;
+        version |= (microVersion & 0xFF);
+        setValue(version);
     }
     
     public int getMajorVersion() {
-        return majorVersion;
+        return (int)((getValue() >> 16) & 0xFFFF);
     }
     
     public int getMinorVersion() {
-        return minorVersion;
+        return (int)((getValue() >> 8) & 0xFF);
     }
     
-    public int getPatchLevel() {
-        return patchLevel;
+    public int getMicroVersion() {
+        return (int)(getValue() & 0xFF);
     }
     
     /**
-     * Returns {@see Chunk.VERSION_TYPE}
+     * Checks if #MIN_VALUE <= value <= #MAX_VALUE and if 
+     * not an IllegalArgumentException is thrown.
+     */
+    public static long checkVersionRange(long value) 
+            throws IllegalArgumentException {
+        if (value < MIN_VALUE || value > MAX_VALUE) {
+            throw new IllegalArgumentException("Value is outside of Version range: " + value);
+        }
+        return value;
+    }
+    
+    /**
+     * Returns {@see #VERSION_TYPE}
      */
     public int getType() {
         return Chunk.VERSION_TYPE;
     }
     
-    public String toString() {
-        return super.toString() + "=" + majorVersion + "." +
-        minorVersion + "." + patchLevel;
+    public String toString(int indent) {
+        return indent(indent) + name + "(" + getContentCodeString() + "; version)=" 
+                + getMajorVersion() + "." + getMinorVersion() + "." + getMicroVersion();
+    }
+    
+    public static final int getMajorVersion(int version) {
+        return (version & 0xFFFF0000) >> 16; 
+    }
+    
+    public static final int getMinorVersion(int version) {
+        return (version & 0xFF00) >> 8; 
+    }
+    
+    public static final int getMicroVersion(int version) {
+        return version & 0xFF; 
     }
 }

@@ -17,23 +17,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks;
-
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.SessionId;
-import de.kapsi.net.daap.chunks.impl.LoginResponse;
+package de.kapsi.net.daap;
 
 /**
- * This class implements the LoginResponse
- *
+ * 
  * @author  Roger Kapsi
  */
-public final class LoginResponseImpl extends LoginResponse {
+public abstract class DaapNoContentResponse implements DaapResponse {
     
-    public LoginResponseImpl(int sessionId) {
-        super();
-        
-        add(new Status(200));
-        add(new SessionId(sessionId));
+    protected final DaapRequest request;
+    protected final byte[] header;
+    
+    /** Creates a new instance of DaapNoContentResponse */
+    public DaapNoContentResponse(DaapRequest request) {
+        this.request = request;
+        header = DaapHeaderConstructor.createNoContentHeader(request);
+    }
+    
+    public String toString() {
+        return (new String(header));
     }
 }

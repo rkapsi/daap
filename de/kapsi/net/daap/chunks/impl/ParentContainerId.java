@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Unknown purpose.
  *
  * @author  Roger Kapsi
  */
-public class ParentContainerId extends IntChunk {
+public class ParentContainerId extends UIntChunk {
     
     public ParentContainerId() {
         this(0);
     }
     
-    public ParentContainerId(int id) {
+    public ParentContainerId(long id) {
         super("mpco", "dmap.parentcontainerid", id);
     }
 }

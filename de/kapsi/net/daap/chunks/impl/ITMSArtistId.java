@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Unknown purpose.
@@ -27,14 +27,14 @@ import de.kapsi.net.daap.chunks.IntChunk;
  * @author  Roger Kapsi
  * @since iTunes 4.5
  */
-public class ITMSArtistId extends IntChunk {
+public class ITMSArtistId extends UIntChunk {
     
     /** Creates a new instance of ITMSArtistId */
     public ITMSArtistId() {
         this(0);
     }
     
-    public ITMSArtistId(int artistId) {
+    public ITMSArtistId(long artistId) {
         super("aeAI", "com.apple.itunes.itms-artistid", artistId);
     }
 }

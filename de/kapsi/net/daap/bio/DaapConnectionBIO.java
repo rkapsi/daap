@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpParser;
@@ -39,6 +40,7 @@ import de.kapsi.net.daap.DaapResponseFactory;
 import de.kapsi.net.daap.DaapSession;
 import de.kapsi.net.daap.DaapStreamException;
 import de.kapsi.net.daap.DaapUtil;
+import de.kapsi.net.daap.SessionId;
 
 /**
  * This class is a cover for an incoming connection and is based 
@@ -54,27 +56,22 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryBIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
     
-    private DaapServerBIO server;
-    
     private Socket socket;
     
     private InputStream in;
     private OutputStream out;
     
-    private DaapSession session;
-    
-    private boolean connected = false;
+    private boolean running = false;
     
     public DaapConnectionBIO(DaapServerBIO server, Socket socket) throws IOException {
         super(server);
         
-        this.server = server;
         this.socket = socket;
         
         in = new BufferedInputStream(socket.getInputStream());
         out = socket.getOutputStream();
         
-        connected = true;
+        running = true;
     }
     
     private boolean read() throws IOException {
@@ -88,16 +85,25 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                 if (request.isSongRequest()) {
                     setConnectionType(DaapConnection.AUDIO);
                     
+                    // as it is an audio connection there's nothing more to read
+                    socket.shutdownInput();
+                    
                     // AudioStreams have a session-id and we must check the id
-                    Integer sid = new Integer(request.getSessionId());
-                    if (server.isSessionIdValid(sid) == false) {
+                    SessionId sid = request.getSessionId();
+                    if (((DaapServerBIO)server).isSessionIdValid(sid) == false) {
                         throw new IOException("Unknown Session-ID: " + sid);
                     }
                     
                     // Get the associated "normal" connection...
-                    DaapConnection connection = server.getConnection(sid);
+                    DaapConnection connection = ((DaapServerBIO)server).getDaapConnection(sid);
                     if (connection == null) {
                         throw new IOException("No connection associated with this Session-ID: " + sid);
+                    }
+                    
+                    // ... and check if there's already an audio connection
+                    DaapConnection audio = ((DaapServerBIO)server).getAudioConnection(sid);
+                    if (audio != null) {
+                        throw new IOException("Multiple audio connections not allowed: " + sid);
                     }
                     
                     // ...and use its protocolVersion for this Audio Stream
@@ -123,9 +129,12 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                 }
                 
                 // add connection to the connection pool
-                if ( ! server.addConnection(this) ) {
-                    throw new IOException("Server refused this connection");
+                if ( ! ((DaapServerBIO)server).updateConnection(this) ) {
+                    throw new IOException("Too many connections");
                 }
+                
+                // see run()
+                socket.setSoTimeout(LIBRARY_TIMEOUT);
             }
 
             DaapResponse response = PROCESSOR.process(request);
@@ -144,8 +153,18 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
         try {
             
             do {
-                read();
-            } while(connected && write());
+                try {
+                    read();
+                } catch (SocketTimeoutException err) {
+                    if (isDaapConnection() && err.bytesTransferred == 0) {
+                        // Some clients do not support live updates and
+                        // this will prevent us from running out of memory. 
+                        clearLibraryQueue();
+                    } else {
+                        throw err;
+                    }
+                }
+            } while(running && write());
            
         } catch (DaapStreamException err) {
             
@@ -162,7 +181,6 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
             
         } catch (IOException err) {
             LOG.error(err);
-            
         } finally {
             close();
         }
@@ -170,74 +188,79 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
     
     public synchronized void update() throws IOException {
         
-        if (isDaapConnection()) {
+        if (isDaapConnection() && !isLocked()) {
             DaapSession session = getSession(false);
+            if (session != null) {
+                SessionId sessionId = session.getSessionId();
+                
+                // client's revision
+                //Integer delta = new Integer(getFirstInQueue().getRevision());
+                Integer delta = (Integer)session.getAttribute("CLIENT_REVISION");
+                
+                // to request
+                Integer revisionNumber = new Integer(getFirstInQueue().getRevision());
+                
+                DaapRequest request =
+                    new DaapRequest(this, sessionId,
+                        revisionNumber.intValue(), delta.intValue());
 
-            // Do not trigger new updates if an update for this connection
-            // is already running, it will autumatically update to the
-            // lates revision of the library!
+                DaapResponse response = PROCESSOR.process(request);
 
-            if (session != null && !session.hasAttribute("UPDATE_LOCK")) {
-
-                Integer sessionId = session.getSessionId();
-                Integer delta = (Integer)session.getAttribute("DELTA");
-                Integer revisionNumber 
-                    = (Integer)session.getAttribute("REVISION-NUMBER");
-
-                if (delta != null && revisionNumber != null) {
-
-                    DaapRequest request =
-                        new DaapRequest(this, sessionId.intValue(),
-                            revisionNumber.intValue(), delta.intValue());
-                    
-                    DaapResponse response = PROCESSOR.process(request);
-
-                    if (response != null)
-                        response.write();
+                if (response != null) {
+                    response.write();
                 }
             }
         }
     }
     
-    void disconnect() {
-        connected = false;
+    protected synchronized void disconnect() {
+        running = false;
         close();
     }
     
-    public void close() {
-        
-        super.close();
-        
+    public synchronized void close() {
         try {
-            if (in != null)
-                in.close();
-        } catch (IOException err) {
-            LOG.error("Error while closing connection", err);
+            super.close();
+            
+            try {
+                if (in != null)
+                    in.close();
+            } catch (IOException err) {
+                LOG.error("Error while closing connection", err);
+            }
+            
+            try {
+                if (out != null)
+                    out.close();
+            } catch (IOException err) {
+                LOG.error("Error while closing connection", err);
+            }
+            
+            try {
+                if (socket != null)
+                    socket.close();
+            } catch (IOException err) {
+                LOG.error("Error while closing connection", err);
+            }
+        } finally {
+            
+            // running is true if thread died (e.g. due to an IOE)
+            // and it's false if disconnect() was called. The latter
+            // case would cause a ConcurrentModificationException in
+            // DaapServerBIO#disconnectAll() if we'd remove 'this'
+            // in both cases.
+            
+            if (running) {
+                ((DaapServerBIO)server).removeConnection(this);
+            }
         }
-        
-        try {
-            if (out != null)
-                out.close();
-        } catch (IOException err) {
-            LOG.error("Error while closing connection", err);
-        }
-        
-        try {
-            if (socket != null)
-                socket.close();
-        } catch (IOException err) {
-            LOG.error("Error while closing connection", err);
-        }
-        
-        if (connected)
-            server.removeConnection(this);
     }
     
-    public InputStream getInputStream() {
+    protected InputStream getInputStream() {
         return in;
     }
     
-    public OutputStream getOutputStream() {
+    protected OutputStream getOutputStream() {
         return out;
     }
     

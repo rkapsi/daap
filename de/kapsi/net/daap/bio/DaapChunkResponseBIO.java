@@ -26,7 +26,7 @@ import de.kapsi.net.daap.DaapChunkResponse;
 import de.kapsi.net.daap.DaapRequest;
 
 /**
- * BIO (Blocking I/O) based DaapChunkResponse.
+ * A Chunk Response.
  *
  * @author  Roger Kapsi
  */
@@ -45,7 +45,7 @@ public class DaapChunkResponseBIO extends DaapChunkResponse {
         out = connection.getOutputStream();
     }
     
-    public boolean hasRemainig() {
+    public boolean hasRemaining() {
         return !(headerWritten && dataWritten);
     }
     

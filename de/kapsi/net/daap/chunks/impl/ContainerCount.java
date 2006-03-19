@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Containers are Playlists and this class tells the client how
@@ -27,13 +27,13 @@ import de.kapsi.net.daap.chunks.IntChunk;
  *
  * @author  Roger Kapsi
  */
-public class ContainerCount extends IntChunk {
+public class ContainerCount extends UIntChunk {
     
     public ContainerCount() {
         this(0);
     }
     
-    public ContainerCount(int count) {
+    public ContainerCount(long count) {
         super("mctc", "dmap.containercount", count);
     }
 }

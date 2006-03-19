@@ -20,55 +20,98 @@
 package de.kapsi.net.daap;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * Interface of the DaapServer
+ * DaapServer
  *
  * @author  Roger Kapsi
  */
-public interface DaapServer extends Runnable {
+public abstract class DaapServer implements Runnable, LibraryListener {
+    
+    protected static final Log LOG = LogFactory.getLog(DaapServer.class);
+    
+    /** The Library */
+    protected final Library library;
+    
+    /** Queue of Library patches */
+    protected final ArrayList libraryQueue = new ArrayList();
+    
+    /** Set of currently active session ids */
+    protected final HashSet sessionIds = new HashSet();
+    
+    /** List of pending connections */
+    protected final LinkedList pending = new LinkedList();
+    
+    /** List of DAAP connections */
+    protected final LinkedList connections = new LinkedList();
+    
+    /** List of Audio connections */
+    protected final LinkedList streams = new LinkedList();
+    
+    /** A DaapConfig instance */
+    protected DaapConfig config;
+    
+    /** A DaapFilter instance */
+    protected DaapFilter filter;
+    
+    /** Source for Audio streams */
+    protected DaapStreamSource streamSource;
+    
+    /** The Authenticator */
+    protected DaapAuthenticator authenticator;
+    
+    /** Flag for wheather or not the server is running */
+    protected boolean running = false;
+    
+    public DaapServer(Library library, DaapConfig config) {
+        this.library = library;
+        this.config = config;
+        library.addLibraryListener(this);
+    }
     
     /**
      * Returns the Library of this server
      * 
      * @return Library
      */  
-    public Library getLibrary();
+    public Library getLibrary() {
+        return library;
+    }
 
-    /**
-     * Sets the DaapConfig for this server
-     * 
-     * @param config DaapConfig
-     */
-    public void setConfig(DaapConfig config);
+    public synchronized void libraryChanged(Library library, Library branch) {
+        if (isRunning() && getNumberOfDaapConnections() > 0) {
+            libraryQueue.add(branch);
+            update();
+        }
+    }    
     
     /**
      * Returns the DaapConfig of this server
      * 
      * @return DaapConfig of this server
      */    
-    public DaapConfig getConfig();
-    
-    /**
-     * Sets the DaapAuthenticator for this server
-     * 
-     * @param authenticator a DaapAuthenticator
-     */   
-    public void setAuthenticator(DaapAuthenticator authenticator);
-    
-    /**
-     * Retrieves the DaapAuthenticator of this server
-     * 
-     * @return DaapAuthenticator or <code>null</code>
-     */   
-    public DaapAuthenticator getAuthenticator();
+    public DaapConfig getConfig() {
+        return config;
+    }
     
     /**
      * Sets the DaapStreamSource for this server
      * 
      * @param streamSource a DaapStreamSource
      */  
-    public void setStreamSource(DaapStreamSource streamSource);
+    public synchronized void setStreamSource(DaapStreamSource streamSource) {
+        this.streamSource = streamSource;
+    }
     
     
     /**
@@ -76,84 +119,302 @@ public interface DaapServer extends Runnable {
      * 
      * @return DaapStreamSource or <code>null</code>
      */  
-    public DaapStreamSource getStreamSource();
+    public synchronized DaapStreamSource getStreamSource() {
+        return streamSource;
+    }
     
     /**
      * Sets a DaapFilter for this server
      * 
      * @param filter a DaapFilter
      */  
-    public void setFilter(DaapFilter filter);
+    public synchronized void setFilter(DaapFilter filter) {
+        this.filter = filter;
+    }
     
     /**
      * Returns a DaapFilter
      * 
      * @return a DaapFilter or <code>null</code>
      */   
-    public DaapFilter getFilter();
+    public synchronized DaapFilter getFilter() {
+        return filter;
+    }
+    
+    public synchronized void setAuthenticator(DaapAuthenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+    
+    /**
+     * Returns the DaapAuthenticator from Library
+     */
+    public synchronized DaapAuthenticator getAuthenticator() {
+        return authenticator;
+    }
     
     /**
      * Sets the factory for Threads. Servers (NIO) that do not 
-     * support a Threaded moddel throw an {@see java.lang.UnsupportedOperationException}
+     * support a Threaded moddel throw an 
+     * {@see java.lang.UnsupportedOperationException}
      * 
      * @param factory a DaapThreadFactory
      */
-    public void setThreadFactory(DaapThreadFactory factory);
+    public synchronized void setThreadFactory(DaapThreadFactory factory) {
+        throw new UnsupportedOperationException();
+    }
     
     /**
      * Binds this server to the SocketAddress supplied by DaapConfig
      * 
      * @throws IOException
      */ 
-    public void bind() throws IOException;
+    public abstract void bind() throws IOException;
     
     /**
      * Returns <code>true</code> if the server is running.
      * 
      * @return <code>true</code> if the server is running
      */
-    public boolean isRunning();
+    public synchronized boolean isRunning() {
+        return running;
+    }
     
     /**
      * Stops the DAAP Server
      */
-    public void stop();
+    public abstract void stop();
     
     /**
      * Disconnects all from the server
      */
-    public void disconnectAll();
+    public abstract void disconnectAll();
         
     /**
      * Call this to notify the server that Library has changed
      */
-    public void update();
+    protected abstract void update();
     
     /**
      * Returns the number of connections
      */
-    public int getNumberOfConnections();
+    public synchronized int getNumberOfDaapConnections() {
+        return connections.size();
+    }
     
     /**
      * Returns the number of streams
      */
-    public int getNumberOfStreams();
+    public synchronized int getNumberOfAudioConnections() {
+        return streams.size();
+    }
+    
+    /**
+     * Returns the number of pending connections
+     */
+    public synchronized int getNumberOfPendingConnections() {
+        return pending.size();
+    }
     
     /**
      * Returns <code>true</code> if sessionId is valid
      */
-    public boolean isSessionIdValid(Integer sessionId);
+    protected synchronized boolean isSessionIdValid(SessionId sessionId) {
+        return !SessionId.INVALID.equals(sessionId) && sessionIds.contains(sessionId);
+    }
     
     /**
      * Creates and returns an unique session-id
      */
-    public Integer createSessionId();
+    protected synchronized SessionId createSessionId() {
+        SessionId sid = SessionId.createSessionId(sessionIds);
+        sessionIds.add(sid);
+        return sid;
+    }
+    
+    protected synchronized void destroySessionId(SessionId sessionId) {
+        sessionIds.remove(sessionId);
+    }
     
     /**
-     * Returns a DAAP connection from the "normal" connections
-     * pool (i.e. a non audio stream) for the sessionId. The
-     * primary purpose for this method is that Audio Streams
-     * can determinate their "DAAP" connection
+     * Returns <code>true</code> if host with <code>addr</code> is
+     * allowed to connect to this DAAP server.
+     * 
+     * @return true host with <code>addr</code> is allowed to connect
      */
-    DaapConnection getConnection(Integer sessionId);
+    protected synchronized boolean accept(InetAddress addr) {
+        if (filter != null && filter.accept(addr) == false) {
+            
+            if (LOG.isInfoEnabled()) {
+                LOG.info("DaapFilter refused connection from " + addr);
+            }
+            
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /** Adds connection to pending connections pool */
+    protected synchronized void addPendingConnection(DaapConnection connection) 
+            throws IllegalArgumentException {
+        
+        if (!connection.isUndef()) {
+            throw new IllegalArgumentException();
+        }
+        
+        pending.add(connection);
+    }
+    
+    /** Returns an unmodifyable list of pending connections */
+    protected synchronized List getPendingConnections() {
+        List l = Collections.EMPTY_LIST;
+        if (!pending.isEmpty()) {
+            l = Collections.unmodifiableList(new ArrayList(pending));
+        }
+        return l;
+    }
+    
+    /** Adds connection to DAAP connection pool */
+    protected synchronized boolean addDaapConnection(DaapConnection connection) 
+            throws IllegalStateException, IllegalArgumentException {
+        
+        if (!pending.remove(connection)) {
+            throw new IllegalStateException();
+        }
+        
+        if (!connection.isDaapConnection()) {
+            throw new IllegalArgumentException();
+        }
+        
+        if (connections.size() < config.getMaxConnections()) {
+            connections.add(connection);
+            //connection.addLibrary(library);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /** Returns an unmodifyable list of DAAP connections */
+    protected synchronized List getDaapConnections() {
+        List l = Collections.EMPTY_LIST;
+        if (!connections.isEmpty()) {
+            l = Collections.unmodifiableList(new ArrayList(connections));
+        }
+        return l;
+    }
+
+    /** Adds connection to audio connection pool */
+    protected synchronized boolean addAudioConnection(DaapConnection connection) 
+            throws IllegalStateException, IllegalArgumentException {
+        
+        if (!pending.remove(connection)) {
+            throw new IllegalStateException();
+        }
+        
+        if (!connection.isAudioStream()) {
+            throw new IllegalArgumentException();
+        }
+        
+        if (streams.size() < config.getMaxConnections()) {
+            streams.add(connection);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /** Returns an unmodifyable List of Audio connections */
+    protected synchronized List getAudioConnections() {
+        List l = Collections.EMPTY_LIST;
+        if (!streams.isEmpty()) {
+            l = Collections.unmodifiableList(new ArrayList(streams));
+        }
+        return l;
+    }
+
+    /** Updates connection's state from pending to DAAP or Audio connection */
+    protected synchronized boolean updateConnection(DaapConnection connection) {
+        if (connection.isDaapConnection()) {
+            return addDaapConnection(connection);
+        } else if (connection.isAudioStream()) {
+            return addAudioConnection(connection);
+        } else {
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Unknown state of connection: " + connection);
+            }
+        }
+        
+        return false;
+    }
+    
+    /** Removes connection */
+    protected synchronized void removeConnection(DaapConnection connection) 
+            throws IllegalStateException {
+        
+        if (connection.isUndef()) {
+            if (!pending.remove(connection)) {
+                throw new IllegalStateException();
+            }
+        } else if (connection.isDaapConnection()) {
+            if (!connections.remove(connection)) {
+                throw new IllegalStateException();
+            }
+        } else if (connection.isAudioStream()) {
+            if (!streams.remove(connection)) {
+                throw new IllegalStateException();
+            }
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+    
+    /** Returns a DAAP connection for the provided sessionId */
+    protected synchronized DaapConnection getDaapConnection(SessionId sessionId) {
+        for(Iterator it = connections.iterator(); it.hasNext(); ) {
+            DaapConnection connection = (DaapConnection)it.next();
+            DaapSession session = connection.getSession(false);
+            if (session != null && sessionId.equals(session.getSessionId())) {
+                return connection;
+            }
+        }
+        return null;
+    }
+    
+    /** Returns an Audio connection for the provided sessionId */
+    protected synchronized DaapConnection getAudioConnection(SessionId sessionId) {
+        for(Iterator it = streams.iterator(); it.hasNext(); ) {
+            DaapConnection connection = (DaapConnection)it.next();
+            DaapSession session = connection.getSession(false);
+            if (session != null && sessionId.equals(session.getSessionId())) {
+                return connection;
+            }
+        }
+        return null;
+    }
+    
+    /** Clears internal lists */
+    protected synchronized void clear() {
+        pending.clear();
+        connections.clear();
+        streams.clear();
+        sessionIds.clear();
+        libraryQueue.clear();
+    }
+    
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Name: ").append(config.getServerName()).append("\n");
+        buffer.append("Address: ").append(config.getInetSocketAddress()).append("\n");
+        buffer.append("Backlog: ").append(config.getBacklog()).append("\n");
+        buffer.append("Max connections: ").append(config.getMaxConnections()).append("\n");
+        buffer.append("IsRunning: ").append(isRunning()).append("\n");
+        
+        if (isRunning()) {
+            buffer.append("Connections: ").append(getNumberOfDaapConnections()).append("\n");
+            buffer.append("Streams: ").append(getNumberOfAudioConnections()).append("\n");
+        }
+        
+        return buffer.toString();
+    }
 }

@@ -19,6 +19,7 @@
 
 package de.kapsi.net.daap.nio;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -31,29 +32,33 @@ import de.kapsi.net.daap.DaapStreamException;
 import de.kapsi.net.daap.Song;
 
 /**
- * NIO (New or Non-Blocking I/O) based DaapAudioResponse.
+ * DaapAudioResponse.
  *
  * @author  Roger Kapsi
  */
 public class DaapAudioResponseNIO extends DaapAudioResponse {
     
     private ByteBuffer headerBuffer;
-    private FileChannel chIn;
-    private SocketChannel channel;
+    private FileChannel fileChannel;
+    private SocketChannel socketChannel;
+    
+    public DaapAudioResponseNIO(DaapRequest request, Song song, File file, long pos, long end) throws IOException {
+        this(request, song, new FileInputStream(file), pos, end);
+    }
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponseNIO(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+    public DaapAudioResponseNIO(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
         super(request, song, in, pos, end);
         
         headerBuffer = ByteBuffer.wrap(header);
         
-        chIn = in.getChannel();
+        fileChannel = in.getChannel();
         
         DaapConnectionNIO connection = (DaapConnectionNIO)request.getConnection();
-        channel = connection.getChannel();
+        socketChannel = connection.getChannel();
     }
     
-    public boolean hasRemainig() {
+    public boolean hasRemaining() {
         if (headerBuffer.hasRemaining())
             return true;
         else return (pos < end);
@@ -65,7 +70,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
 
             try {
 
-                channel.write(headerBuffer);
+                socketChannel.write(headerBuffer);
 
                 if (headerBuffer.hasRemaining() == true) {
                     return false;
@@ -88,7 +93,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
         
         if (pos < end) {
             
-            if (!channel.isOpen()) {
+            if (!socketChannel.isOpen()) {
                 close();
                 return true;
                 
@@ -97,7 +102,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
                 // Stream...
                 try {
 
-                    pos += chIn.transferTo(pos, 512, channel);
+                    pos += fileChannel.transferTo(pos, 512, socketChannel);
 
                     if (pos >= end) {
                         close();
@@ -118,9 +123,8 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
         }
     }
     
-    private void close() throws IOException {
-        pos = end;
-        in.close();
-        chIn.close();
+    protected void close() throws IOException {
+        super.close();
+        fileChannel.close();
     }
 }

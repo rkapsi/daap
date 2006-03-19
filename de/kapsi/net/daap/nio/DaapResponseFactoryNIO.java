@@ -19,6 +19,7 @@
 
 package de.kapsi.net.daap.nio;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
@@ -26,7 +27,6 @@ import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapResponse;
 import de.kapsi.net.daap.DaapResponseFactory;
 import de.kapsi.net.daap.Song;
-
 
 /**
  * This class creates NIO based DaapRespones.
@@ -36,18 +36,26 @@ import de.kapsi.net.daap.Song;
 class DaapResponseFactoryNIO implements DaapResponseFactory {
     
     /** Creates a new instance of DaapResponseFactoryNIO */
-    DaapResponseFactoryNIO() {
+    protected DaapResponseFactoryNIO() {
     }
     
-    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, int pos, int end) throws IOException {
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, File file, long pos, long end) throws IOException {
+        return new DaapAudioResponseNIO(request, song, file, pos, end);
+    }
+    
+    public DaapResponse createAudioResponse(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
         return new DaapAudioResponseNIO(request, song, in, pos, end);
     }
     
     public DaapResponse createAuthResponse(DaapRequest request) {
         return new DaapAuthResponseNIO(request);
     }
-    
+   
     public DaapResponse createChunkResponse(DaapRequest request, byte[] data) {
         return new DaapChunkResponseNIO(request, data);
+    }
+    
+    public DaapResponse createNoContentResponse(DaapRequest request) {
+        return new DaapNoContentResponseNIO(request);
     }
 }

@@ -19,20 +19,20 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.IntChunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 
 /**
  * Unknown purpose.
  *
  * @author  Roger Kapsi
  */
-public class NormVolume extends IntChunk {
+public class NormVolume extends UIntChunk {
     
     public NormVolume() {
         this(0);
     }
     
-    public NormVolume(int volume) {
+    public NormVolume(long volume) {
         super("aeNV", "com.apple.itunes.norm-volume", volume);
     }
 }

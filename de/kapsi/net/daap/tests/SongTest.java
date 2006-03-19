@@ -40,98 +40,181 @@ public class SongTest extends TestCase {
     }
     
     public void testAttributes() {
+        performTest(null);
+    }
+    
+    public void testTxnAttributes() {
+        performTest(new DummyTransaction());
+    }
+    
+    private void performTest(Transaction txn) {
         Song song = new Song("Song");
         assertEquals(song.getName(), "Song");
         
-        song.setAlbum("Album");
+        song.setAlbum(txn, "Album");
+        System.out.println("TEST: " + song.getAlbum() + ": " + txn);
         assertEquals(song.getAlbum(), "Album");
         
-        song.setArtist("Artist");
+        song.setArtist(txn, "Artist");
         assertEquals(song.getArtist(), "Artist");
         
-        song.setBeatsPerMinute(123);
+        song.setBeatsPerMinute(txn, 123);
         assertEquals(song.getBeatsPerMinute(), 123);
         
-        song.setBitrate(192);
+        song.setBitrate(txn, 192);
         assertEquals(song.getBitrate(), 192);
         
-        song.setComment("Comment");
+        song.setComment(txn, "Comment");
         assertEquals(song.getComment(), "Comment");
         
-        song.setCompilation(true);
+        song.setCompilation(txn, true);
         assertEquals(song.isCompilation(), true);
-        song.setCompilation(false);
+        song.setCompilation(txn, false);
         assertEquals(song.isCompilation(), false);
         
-        song.setComposer("Composer");
+        song.setComposer(txn, "Composer");
         assertEquals(song.getComposer(), "Composer");
         
-        song.setDataKind(SongDataKind.DAAP_STREAM);
+        song.setDataKind(txn, SongDataKind.DAAP_STREAM);
         assertEquals(song.getDataKind(), SongDataKind.DAAP_STREAM);
         
-        song.setDataUrl("http://www.somewhere.ee");
+        song.setDataUrl(txn, "http://www.somewhere.ee");
         assertEquals(song.getDataUrl(), "http://www.somewhere.ee");
         
-        song.setDateAdded(9999999);
+        song.setDateAdded(txn, 9999999);
         assertEquals(song.getDateAdded(), 9999999);
         
-        song.setDateModified(6666666);
+        song.setDateModified(txn, 6666666);
         assertEquals(song.getDateModified(), 6666666);
         
-        song.setDescription("Description");
+        song.setDescription(txn, "Description");
         assertEquals(song.getDescription(), "Description");
         
-        song.setDisabled(true);
+        song.setDisabled(txn, true);
         assertEquals(song.isDisabled(), true);
-        song.setDisabled(false);
+        song.setDisabled(txn, false);
         assertEquals(song.isDisabled(), false);
         
-        song.setDiscCount(100);
+        song.setDiscCount(txn, 100);
         assertEquals(song.getDiscCount(), 100);
         
-        song.setDiscNumber(99);
+        song.setDiscNumber(txn, 99);
         assertEquals(song.getDiscNumber(), 99);
         
-        song.setEqPreset(SongEqPreset.LATIN);
+        song.setEqPreset(txn, SongEqPreset.LATIN);
         assertEquals(song.getEqPreset(), SongEqPreset.LATIN);
         
-        song.setFormat(SongFormat.M4A);
+        song.setFormat(txn, SongFormat.M4A);
         assertEquals(song.getFormat(), SongFormat.M4A);
         
-        song.setGenre(SongGenre.NEW_AGE);
+        song.setGenre(txn, SongGenre.NEW_AGE);
         assertEquals(song.getGenre(), SongGenre.NEW_AGE);
         
-        song.setGrouping("Grouping");
+        song.setGrouping(txn, "Grouping");
         assertEquals(song.getGrouping(), "Grouping");
         
-        song.setRelativeVolume(50);
+        song.setRelativeVolume(txn, 50);
         assertEquals(song.getRelativeVolume(), 50);
         
-        song.setSampleRate(44100);
+        song.setSampleRate(txn, 44100);
         assertEquals(song.getSampleRate(), 44100);
         
-        song.setSize(6*1024*1024);
+        song.setSize(txn, 6*1024*1024);
         assertEquals(song.getSize(), 6*1024*1024);
         
-        song.setStartTime(3333333);
+        song.setStartTime(txn, 3333333);
         assertEquals(song.getStartTime(), 3333333);
         
-        song.setStopTime(4444444);
+        song.setStopTime(txn, 4444444);
         assertEquals(song.getStopTime(), 4444444);
         
-        song.setTime(5555555);
+        song.setTime(txn, 5555555);
         assertEquals(song.getTime(), 5555555);
         
-        song.setTrackCount(88);
+        song.setTrackCount(txn, 88);
         assertEquals(song.getTrackCount(), 88);
         
-        song.setTrackNumber(87);
+        song.setTrackNumber(txn, 87);
         assertEquals(song.getTrackNumber(), 87);
         
-        song.setUserRating(SongUserRating.FOUR);
+        song.setUserRating(txn, SongUserRating.FOUR);
         assertEquals(song.getUserRating(), SongUserRating.FOUR);
         
-        song.setYear(2004);
+        song.setYear(txn, 2004);
         assertEquals(song.getYear(), 2004);
+        
+        song.setITMSArtistId(txn, 123);
+        assertEquals(song.getITMSArtistId(), 123);
+        
+        song.setITMSComposerId(txn, 333);
+        assertEquals(song.getITMSComposerId(), 333);
+        
+        song.setITMSGenreId(txn, 444);
+        assertEquals(song.getITMSGenreId(), 444);
+        
+        song.setITMSPlaylistId(txn, 888);
+        assertEquals(song.getITMSPlaylistId(), 888);
+        
+        song.setITMSSongId(txn, 666);
+        assertEquals(song.getITMSSongId(), 666);
+        
+        song.setITMSStorefrontId(txn, 111);
+        assertEquals(song.getITMSStrorefrontId(), 111);
+        
+        song.setCodecType(txn, 741);
+        assertEquals(song.getCodecType(), 741);
+        
+        song.setCodecSubtype(txn, 369);
+        assertEquals(song.getCodecSubtype(), 369);
+        
+        song.setNormVolume(txn, 58442);
+        assertEquals(song.getNormVolume(), 58442);
+        
+        song.setPodcast(txn, true);
+        assertEquals(song.isPodcast(), true);
+        
+        song.setDescription(txn, "Description");
+        assertEquals(song.getDescription(), "Description");
+        
+        song.setContentRating(txn, 210);
+        assertEquals(song.getContentRating(), 210);
+        
+        song.setContentDescription(txn, "ContentDescription");
+        assertEquals(song.getContentDescription(), "ContentDescription");
+        
+        song.setKeywords(txn, "Keywords");
+        assertEquals(song.getKeywords(), "Keywords");
+        
+        song.setLongDescription(txn, "LongDescription");
+        assertEquals(song.getLongDescription(), "LongDescription");
+        
+        song.setHasVideo(txn, true);
+        assertEquals(song.hasVideo(), true);
+        song.setHasVideo(txn, false);
+        assertEquals(song.hasVideo(), false);
     }
+    
+    private class DummyTransaction extends Transaction {
+        
+        public DummyTransaction() {
+            super(null);
+        }
+        
+        protected synchronized void addTxn(Object obj, Txn txn) {
+            txn.commit(this);
+        }
+        
+        protected void close() {
+        }
+        
+        public synchronized void commit() {
+        }
+        
+        public synchronized boolean isOpen() {
+            return true;
+        }
+        
+        public synchronized void rollback() {
+        }
+    }   
 }

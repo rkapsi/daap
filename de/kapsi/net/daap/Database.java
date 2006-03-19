@@ -1,6 +1,6 @@
 /* 
  * Digital Audio Access Protocol (DAAP)
- * Copyright (C) 2004 Roger Kapsi, info at kapsi dot de
+ * Copyright (C) 2004, 2005 Roger Kapsi, info at kapsi dot de
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,18 @@
 
 package de.kapsi.net.daap;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import de.kapsi.net.daap.chunks.Chunk;
+import de.kapsi.net.daap.chunks.UIntChunk;
 import de.kapsi.net.daap.chunks.impl.DatabasePlaylists;
 import de.kapsi.net.daap.chunks.impl.DatabaseSongs;
 import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
@@ -49,108 +50,160 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
  *  
  * @author Roger Kapsi
  */
-public class Database implements Cloneable {
+public class Database {
 
     private static final Log LOG = LogFactory.getLog(Database.class);
-
-    private static int ID = 0;
-    private int id;
-
-    private long persistentId;
-    private byte[] databaseSongs;
-    private byte[] databaseSongsUpdate;
-    private byte[] databasePlaylists;
-    private byte[] databasePlaylistsUpdate;
-
-    /** List of playlists */
-    private HashSet containers;
     
-    /** List of deleted playlists */
-    private HashSet deletedContainers;
+    /** databaseId is an 32bit unsigned value! */
+    private static long databaseId = 1;
+    
+    /** unique id */
+    private final long itemId;
+    
+    /** unique persistent id */
+    private final long persistentId;
 
+    /** Name of this Database */
+    private String name;
+    
+    /** 
+     * The total number of Playlists in this Database
+     */
+    private int totalPlaylistCount = 0;
+    
+    /**
+     * The total number of Songs in this Database
+     */
+    private int totalSongCount = 0;
+    
+    /** A List of Playlists */
+    private final List playlists = new ArrayList();
+    
+    /** Set of deleted playlists */
+    private HashSet deletedPlaylists = null;
+    
+    /** Set of deleted Songs */
+    private HashSet deletedSongs = null;
+    
     /** master playlist */
-    private Playlist masterPlaylist;
+    private Playlist masterPlaylist = null;
+    
+    protected Database(Database database, Transaction txn) {
+        this.itemId = database.itemId;
+        this.persistentId = database.persistentId;
+        this.name = database.name;
 
+        if (database.deletedPlaylists != null) {
+            this.deletedPlaylists = database.deletedPlaylists;
+            database.deletedPlaylists = null;
+        }
+        
+        Set songs = database.getSongs();
+        
+        Iterator it = database.playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            
+            if (txn.modified(playlist)) {
+                if (deletedPlaylists == null || !deletedPlaylists.contains(playlist)) {
+                    Playlist clone = new Playlist(playlist, txn);
+                    playlists.add(clone);
+                    
+                    if (playlist == database.masterPlaylist) {
+                        this.masterPlaylist = clone;
+                    }
+                }
+                
+                Set deletedSongs = playlist.getDeletedSongs();
+                if (deletedSongs != null && !deletedSongs.isEmpty()) {
+                    if (this.deletedSongs == null) {
+                        this.deletedSongs = new HashSet(deletedSongs);
+                    } else {
+                        this.deletedSongs.addAll(deletedSongs);
+                    }
+                }
+            }
+        }
+        
+        if (deletedSongs != null) {
+            deletedSongs.removeAll(songs);
+        }
+        
+        this.totalPlaylistCount = database.playlists.size();
+        this.totalSongCount = songs.size();
+    }
+    
+    public Database(String name) {
+        this(name, new Playlist(name));
+    }
+    
     /**
      * Create a new Database with the name
      * 
      * @param name a name for this Database
      */
-    public Database(String name) {
-
-        synchronized (Database.class) {
-            this.id = ++ID;
+    public Database(String name, Playlist masterPlaylist) {
+        synchronized(Database.class) {
+            this.itemId = UIntChunk.checkUIntRange(databaseId++);
         }
-
+        
         this.persistentId = Library.nextPersistentId();
-
-        containers = new HashSet();
-        deletedContainers = new HashSet();
-
-        masterPlaylist = new Playlist(name);
-        containers.add(masterPlaylist);
+        this.name = name;
+        this.totalPlaylistCount = 0;
+        this.totalSongCount = 0;
+        
+        this.masterPlaylist = masterPlaylist;
+        addPlaylistP(null, masterPlaylist);
     }
-
-    private Database(Database orig) throws CloneNotSupportedException {
-
-        id = orig.id;
-        persistentId = orig.persistentId;
-
-        databaseSongs = orig.databaseSongs;
-        databaseSongsUpdate = orig.databaseSongsUpdate;
-        databasePlaylists = orig.databasePlaylists;
-        databasePlaylistsUpdate = orig.databasePlaylistsUpdate;
-
-        containers = new HashSet();
-
-        Iterator it = orig.containers.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
-            Playlist clone = (Playlist) playlist.clone();
-
-            if (playlist == orig.masterPlaylist)
-                masterPlaylist = clone;
-
-            containers.add(clone);
-        }
-    }
-
+    
     /**
      * Returns the unique id of this Database
      * 
      * @return unique id of this Database
      */
-    public int getId() {
-        return id;
+    protected long getItemId() {
+        return itemId;
     }
 
     /**
-     * Returns the name of this Database. Same as
-     * Database.getMasterPlaylist().getName()
+     * Returns the name of this Database.
      * 
      * @return name of this Database
      */
     public String getName() {
-        return masterPlaylist.getName();
+        return name;
     }
 
     /**
-     * Sets the name of this Database. Same as
-     * Database.getMasterPlaylist().setName(String)
+     * Sets the name of this Database.
      * 
-     * @param name the new name of the master Playlist
+     * @param new name
      */
-    public void setName(Transaction txn, String name) {
+    public void setName(Transaction txn, final String name) {
+        if (txn != null) {
+            txn.addTxn(this, new Txn() {
+                public void commit(Transaction txn) {
+                    setNameP(txn, name);
+                }
+            });
+        } else {
+            setNameP(txn, name);
+        }
+        
         masterPlaylist.setName(txn, name);
     }
 
+    private void setNameP(Transaction txn, String name) {
+        this.name = name;
+    }
+    
     /**
      * The persistent id of this Database. Unused at the
      * moment!
      * 
      * @return the persistent id of this Database
      */
-    long getPersistentId() {
+    protected long getPersistentId() {
         return persistentId;
     }
 
@@ -173,38 +226,8 @@ public class Database implements Cloneable {
      * 
      * @return unmodifiable Set of Playlists
      */
-    public Set getPlaylists() {
-        return Collections.unmodifiableSet(containers);
-    }
-
-    /**
-     * Returns an unmodifiable Set with all deleted Playlists.
-     * <p>NOTE: only valid during a {@see Transaction.commit()}
-     * and always empty in the meantime.</p>
-     * 
-     * @return unmodifiable Set of deleted Playlists
-     */
-    public Set getDeletedPlaylists() {
-        return Collections.unmodifiableSet(deletedContainers);
-    }
-
-    /**
-     * 
-     * @param txn
-     * @return
-     * @throws DaapException
-     */
-    Txn openTxn(Transaction txn) throws DaapException {
-        if (!txn.isOpen()) {
-            throw new DaapException("Transaction is not open");
-        }
-        
-        DatabaseTxn obj = (DatabaseTxn)txn.getAttribute(this);
-        if (obj == null) {
-            obj = new DatabaseTxn(this);
-            txn.setAttribute(this, obj);
-        }
-        return obj;
+    public List getPlaylists() {
+        return Collections.unmodifiableList(playlists);
     }
 
     /**
@@ -212,84 +235,72 @@ public class Database implements Cloneable {
      * 
      * @param txn a Transaction
      * @param playlist the Playliost to add
-     * @throws DaapException
      */
-    public void add(Transaction txn, Playlist playlist) throws DaapException {
-        if (playlist == masterPlaylist)
+    public void addPlaylist(Transaction txn, final Playlist playlist) {
+        if (masterPlaylist.equals(playlist)) {
             throw new DaapException("You cannot add the master playlist.");
-
-        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
-        obj.add(playlist);
+        }
+        
+        if (txn != null) {
+            txn.addTxn(this, new Txn() {
+                public void commit(Transaction txn) {
+                    addPlaylistP(txn, playlist);
+                }
+            });
+            txn.attach(playlist);
+        } else {
+            addPlaylistP(txn, playlist);
+        }
     }
-
+    
+    private void addPlaylistP(Transaction txn, Playlist playlist) {
+        if (!containsPlaylist(playlist) && playlists.add(playlist)) {
+            totalPlaylistCount = playlists.size();
+            if (deletedPlaylists != null && deletedPlaylists.remove(playlist) 
+                    && deletedPlaylists.isEmpty()) {
+                deletedPlaylists = null;
+            }
+        }
+    }
+    
     /**
      * Removes playlist from this Database
      * 
      * @param txn a Transaction
      * @param playlist the Playlist to remove
-     * @throws DaapException
      */
-    public void remove(Transaction txn, Playlist playlist) throws DaapException {
-        if (playlist == masterPlaylist)
+    public void removePlaylist(Transaction txn, final Playlist playlist) {
+        if (masterPlaylist.equals(playlist)) {
             throw new DaapException("You cannot remove the master playlist.");
-
-        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
-        obj.remove(playlist);
+        }
+        
+        if (txn != null) {
+            txn.addTxn(this, new Txn() {
+                public void commit(Transaction txn) {
+                    removePlaylistP(txn, playlist);
+                }
+            });
+        } else {
+            removePlaylistP(txn, playlist);
+        }
     }
 
-    /**
-     * Performs an update operation on all playlists which contain
-     * this song
-     * 
-     * @param txn a Transaction
-     * @param song the Song to be updated in all Playlists
-     * @throws DaapException
-     */
-    public void update(Transaction txn, Song song) throws DaapException {
-        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
-        obj.update(song);
-    }
-    
-    /**
-     * Adds Song to all Playlists of this Database
-     * 
-     * @param txn a Transaction
-     * @param song the Song to be added
-     * @throws DaapException
-     */
-    public void add(Transaction txn, Song song) throws DaapException {
-        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
-        obj.add(song);
-    }
-
-    /**
-     * Removes song from all playlists of this Database
-     * 
-     * @param txn a Transaction
-     * @param song the Song to be removed from all Playlists
-     * @throws DaapException
-     */
-    public void remove(Transaction txn, Song song) throws DaapException {
-        DatabaseTxn obj = (DatabaseTxn)openTxn(txn);
-        obj.remove(song);
-    }
-
-    /**
-     * Returns true if Database contains no Playlists
-     * 
-     * @return true if Database contains no Playlists
-     */
-    public boolean isEmpty() {
-        return containers.isEmpty();
+    private void removePlaylistP(Transaction txn, Playlist playlist) {
+        if (playlists.remove(playlist)) {
+            totalPlaylistCount = playlists.size();
+            
+            if (deletedPlaylists == null) {
+                deletedPlaylists = new HashSet();
+            }
+            deletedPlaylists.add(playlist);
+        }
     }
     
     /**
      * Returns the number of Playlists in this Database
-     * 
-     * @return the number of Playlists in this Database
      */
-    public int size() {
-        return containers.size();
+    public int getPlaylistCount() {
+        return playlists.size();
     }
     
     /**
@@ -298,43 +309,8 @@ public class Database implements Cloneable {
      * @param playlist
      * @return true if Database contains playlist
      */
-    public boolean contains(Playlist playlist) {
-        return containers.contains(playlist);
-    }
-    
-    /**
-     * Gets and returns a Playlist by its ID
-     * 
-     * @param playlistId
-     * @return
-     */
-    private Playlist getPlaylist(int playlistId) {
-        Iterator it = containers.iterator();
-        while (it.hasNext()) {
-            Playlist pl = (Playlist) it.next();
-            if (pl.getId() == playlistId) {
-                return pl;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets and returns a Song by its ID
-     * 
-     * @param songId
-     * @return
-     */
-    private Song getSong(int songId) {
-        Iterator it = containers.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
-            Song song = playlist.getSong(songId);
-            if (song != null)
-                return song;
-        }
-        return null;
+    public boolean containsPlaylist(Playlist playlist) {
+        return playlists.contains(playlist);
     }
 
     /**
@@ -344,34 +320,24 @@ public class Database implements Cloneable {
      * @param request a DaapRequest
      * @return a response for the DaapRequest
      */
-    public synchronized Object select(DaapRequest request) {
+    protected Object select(DaapRequest request) {
 
         if (request.isSongRequest()) {
-            return getSong(request.getItemId());
+            return getSong(request);
 
         } else if (request.isDatabaseSongsRequest()) {
-
-            if (request.isUpdateType()) {
-                return databaseSongsUpdate;
-            } else {
-                return databaseSongs;
-            }
+            return getDatabaseSongs(request);
 
         } else if (request.isDatabasePlaylistsRequest()) {
-
-            if (request.isUpdateType()) {
-                return databasePlaylistsUpdate;
-            } else {
-                return databasePlaylists;
-            }
+            return getDatabasePlaylist(request);
 
         } else if (request.isPlaylistSongsRequest()) {
 
-            Playlist playlist = getPlaylist(request.getContainerId());
+            Playlist playlist = getPlaylist(request);
             if (playlist == null) {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("No playlist " + request.getContainerId()
-                            + " known in Database " + id);
+                            + " known in Database " + itemId);
                 }
                 return null;
             }
@@ -386,285 +352,224 @@ public class Database implements Cloneable {
         return null;
     }
 
-    public Object clone() throws CloneNotSupportedException {
-        return new Database(this);
-    }
-
     public String toString() {
-        return "Database(" + getId() + ", " + getName() + ")";
+        return "Database(" + getItemId() + ", " + getName() + ")";
     }
-
+    
+    public int hashCode() {
+        return (int)(getItemId() & Integer.MAX_VALUE);
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof Database)) {
+            return false;
+        }
+        return ((Database)o).getItemId() == getItemId();
+    }
+    
     /**
-     * A Txn implementation for Databases
+     * Returns all Songs in this Database
      */
-    private static class DatabaseTxn implements Txn {
-
-        private Database database;
-        
-        private HashSet newItems = new HashSet();
-        private HashSet deletedItems = new HashSet();
-        private HashSet updateItems = new HashSet();
-        
-        private HashSet containers = new HashSet();
-        private HashSet deletedContainers = new HashSet();
-
-        private DatabaseTxn(Database database) {
-            this.database = database;
-        }
-
-        private void add(Playlist playlist) {
-            if (!containers.contains(playlist)) {
-                containers.add(playlist);
-                deletedContainers.remove(playlist);
-            }
-        }
-
-        private void remove(Playlist playlist) {
-            if (!deletedContainers.contains(playlist)) {
-                deletedContainers.add(playlist);
-                containers.remove(playlist);
-            }
-        }
-        
-        private void add(Song song) {
-            if (!newItems.contains(song)) {
-                newItems.add(song);
-                deletedItems.remove(song);
-                updateItems.remove(song);
-            }
-        }
-        
-        private void remove(Song song) {
-            if (!deletedItems.contains(song)) {
-                deletedItems.add(song);
-                newItems.remove(song);
-                updateItems.remove(song);
-            }
-        }
-        
-        private void update(Song song) {
-            if (!updateItems.contains(song) 
-                    && !newItems.contains(song) 
-                    && !deletedItems.contains(song)) {
-                updateItems.add(song);
-            }
-        }
-
-        public void commit(Transaction txn) {
-            synchronized(database) {
-                Iterator it = null;
-    
-                it = containers.iterator();
-                while (it.hasNext()) {
-                    Playlist playlist = (Playlist) it.next();
-                    if (!database.containers.contains(playlist)) {
-                        database.containers.add(playlist);
-                        database.deletedContainers.remove(playlist);
-                    }
+    public Set getSongs() {
+        HashSet songs = null;
+        Iterator it = playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            if (!(playlist instanceof Folder)) {
+                if (songs == null) {
+                    songs = new HashSet(playlist.getSongs());
+                } else {
+                    songs.addAll(playlist.getSongs());
                 }
-    
-                it = deletedContainers.iterator();
-                while (it.hasNext()) {
-                    Playlist playlist = (Playlist) it.next();
-                    if (database.containers.remove(playlist)) {
-                        database.deletedContainers.add(playlist);
-                        playlist.setMasterPlaylist(null);
-                    }
-                }
-    
-                it = database.containers.iterator();
-                while (it.hasNext()) {
-                    Playlist playlist = (Playlist) it.next();
-                    
-                    Iterator add = newItems.iterator();
-                    while (add.hasNext()) {
-                        Song song = (Song) add.next();
-                        playlist.add(txn, song);
-                    }
-                    
-                    Iterator update = updateItems.iterator();
-                    while (update.hasNext()) {
-                        Song song = (Song) update.next();
-                        playlist.update(txn, song);
-                    }
-                    
-                    Iterator remove = deletedItems.iterator();
-                    while (remove.hasNext()) {
-                        Song song = (Song) remove.next();
-                        playlist.remove(txn, song);
-                    }
-                }
-                
-                // commit
-                it = database.containers.iterator();
-                while (it.hasNext()) {
-                    Playlist playlist = (Playlist) it.next();
-                    if (playlist != database.masterPlaylist) {
-                        Txn obj = txn.getAttribute(playlist);
-                        if (obj != null) {
-                            playlist.setMasterPlaylist(database.masterPlaylist);
-                            obj.commit(txn);
-                        }
-                    }
-                }
-                
-                Txn obj = txn.getAttribute(database.masterPlaylist);
-                if (obj != null)
-                    obj.commit(txn);
-
-                database.databaseSongs = new DatabaseSongsImpl(database.masterPlaylist, false).getBytes();
-                database.databaseSongsUpdate = new DatabaseSongsImpl(database.masterPlaylist, true)
-                        .getBytes();
-
-                database.databasePlaylists = new DatabasePlaylistsImpl(database, false).getBytes();
-                database.databasePlaylistsUpdate = new DatabasePlaylistsImpl(database, true)
-                        .getBytes();
-            }
-            
-            containers.clear();
-            deletedContainers.clear();
-            updateItems.clear();
-        }
-
-        public void rollback(Transaction txn) {
-            synchronized(database) {
-                Iterator it = containers.iterator();
-                while (it.hasNext()) {
-                    Playlist playlist = (Playlist) it.next();
-                    if (playlist != database.masterPlaylist) {
-                        Txn obj = txn.getAttribute(playlist);
-                        if (obj != null)
-                            obj.rollback(txn);
-                    }
-                }
-                
-                Txn obj = txn.getAttribute(database.masterPlaylist);
-                if (obj != null)
-                    obj.rollback(txn);
-            }
-            
-            containers.clear();
-            deletedContainers.clear();
-            updateItems.clear();
-        }
-        
-        public void cleanup(Transaction txn) {
-            synchronized(database) {
-                Iterator it = containers.iterator();
-                while (it.hasNext()) {
-                    Playlist playlist = (Playlist) it.next();
-                    Txn obj = txn.getAttribute(playlist);
-                    if (obj != null)
-                        obj.cleanup(txn);
-                }
-                
-                database.deletedContainers.clear();
-            }
-            
-            containers.clear();
-            deletedContainers.clear();
-            updateItems.clear();
-        }
-        
-        public void join(Txn value) {
-            DatabaseTxn obj = (DatabaseTxn)value;
-            
-            // Songs
-            Iterator it = obj.newItems.iterator();
-            while(it.hasNext()) {
-                add((Song)it.next());
-            }
-            
-            it = obj.updateItems.iterator();
-            while(it.hasNext()) {
-                update((Song)it.next());
-            }
-            
-            it = obj.deletedItems.iterator();
-            while(it.hasNext()) {
-                remove((Song)it.next());
-            }
-            
-            // Playlists
-            it = obj.containers.iterator();
-            while(it.hasNext()) {
-                add((Playlist)it.next());
-            }
-            
-            it = obj.deletedContainers.iterator();
-            while(it.hasNext()) {
-                remove((Playlist)it.next());
             }
         }
         
-        public String toString() {
-            return "DatabaseTxn for " + database;
+        if (songs == null) {
+            return Collections.EMPTY_SET;
+        } else {
+            return Collections.unmodifiableSet(songs);
         }
     }
-
+    
     /**
-     * This class is an implementation of DatabasePlaylists
+     * Returns the number of Songs in this Database
      */
-    private static final class DatabasePlaylistsImpl extends DatabasePlaylists {
+    public int getSongCount() {
+        return getSongs().size();
+    }
+    
+    /**
+     * Returns true if song is in this Database
+     */
+    public boolean containsSong(Song song) {
+        Iterator it = playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            if (playlist.containsSong(song)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Adds Song to all Playlists
+     * 
+     * @param txn
+     * @param song
+     */
+    public void addSong(Transaction txn, Song song) {
+        Iterator it = playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            if (!(playlist instanceof Folder)) {
+                playlist.addSong(txn, song);
+            }
+        }
+    }
+    
+    /**
+     * Removes Song from all Playlists
+     * 
+     * @param txn
+     * @param song
+     */
+    public void removeSong(Transaction txn, Song song) {
+        Iterator it = playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            if (!(playlist instanceof Folder)) {
+                playlist.removeSong(txn, song);
+            }
+        }
+    }    
+    
+    public Set getSongPlaylists(Song song) {
+        Set ret = null;
+        Iterator it = playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            if (playlist.containsSong(song)) {
+                if (ret == null) {
+                    ret = new HashSet();
+                }
+                ret.add(playlist);
+            }
+        }
+        
+        return (ret != null) ? Collections.unmodifiableSet(ret) : Collections.EMPTY_SET;
+    }
+    
+    /**
+     * Gets and returns a Song by its ID
+     * 
+     * @param songId
+     * @return
+     */
+    protected Song getSong(DaapRequest request) {
+        Iterator it = playlists.iterator();
+        while(it.hasNext()) {
+            Playlist playlist = (Playlist)it.next();
+            if (!(playlist instanceof Folder)) {
+                Song song = playlist.getSong(request);
+                if (song != null) {
+                    return song;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Gets and returns a Playlist by its ID
+     * 
+     * @param playlistId
+     * @return
+     */
+    protected Playlist getPlaylist(DaapRequest request) {
+        long playlistId = request.getContainerId();
+        Iterator it = playlists.iterator();
+        while (it.hasNext()) {
+            Playlist playlist = (Playlist) it.next();
+            if (playlist.getItemId() == playlistId) {
+                return playlist;
+            }
+        }
 
-        private DatabasePlaylistsImpl(Database database, boolean updateType) {
-            super();
+        return null;
+    }
+    
+    private DatabasePlaylists getDatabasePlaylist(DaapRequest request) {
+        DatabasePlaylists databasePlaylists = new DatabasePlaylists();
+        
+        databasePlaylists.add(new Status(200));
+        databasePlaylists.add(new UpdateType(request.isUpdateType() ? 1 : 0));
+        
+        databasePlaylists.add(new SpecifiedTotalCount(totalPlaylistCount));
+        databasePlaylists.add(new ReturnedCount(playlists.size()));
 
-            add(new Status(200));
-            add(new UpdateType(updateType));
+        Listing listing = new Listing();
 
-            int specifiedTotalCount = database.containers.size()
-                    - database.deletedContainers.size();
-            int returnedCount = specifiedTotalCount;
+        Iterator it = playlists.iterator();
+        while (it.hasNext()) {
+            Playlist playlist = (Playlist) it.next();
+            
+            ListingItem listingItem = new ListingItem();
+            
+            Iterator meta = request.getMeta().iterator();
+            while(meta.hasNext()) {
+                String key = (String)meta.next();
+                Chunk chunk = playlist.getChunk(key);
+                
+                if (chunk != null) {
+                    listingItem.add(chunk);
 
-            add(new SpecifiedTotalCount(specifiedTotalCount));
-            add(new ReturnedCount(returnedCount));
+                } else if (LOG.isInfoEnabled()) {
+                    LOG.info("Unknown chunk type: " + key);
+                }
+            }
+            
+            listing.add(listingItem);
+        }
 
-            Listing listing = new Listing();
+        databasePlaylists.add(listing);
 
-            Playlist masterPlaylist = database.getMasterPlaylist();
-
-            // The only difference between master and general playlists
-            // is that the master playlist is the 1st in the serialized
-            // list!
-            listing.add(toListingItem(masterPlaylist));
-
-            Iterator it = database.containers.iterator();
+        if (request.isUpdateType() && deletedPlaylists != null) {
+            DeletedIdListing deletedListing = new DeletedIdListing();
+            
+            it = deletedPlaylists.iterator();
             while (it.hasNext()) {
                 Playlist playlist = (Playlist) it.next();
-                if (playlist != masterPlaylist) {
-                    listing.add(toListingItem(playlist));
-                }
+                deletedListing.add(new ItemId(playlist.getItemId()));
             }
 
-            add(listing);
-
-            if (updateType) {
-
-                it = database.deletedContainers.iterator();
-
-                if (it.hasNext()) {
-
-                    DeletedIdListing deletedListing = new DeletedIdListing();
-
-                    while (it.hasNext()) {
-                        Playlist playlist = (Playlist) it.next();
-                        deletedListing.add(new ItemId(playlist.getId()));
-                    }
-
-                    add(deletedListing);
-                }
-            }
+            databasePlaylists.add(deletedListing);
         }
+        
+        return databasePlaylists;
+    }
+    
+    private DatabaseSongs getDatabaseSongs(DaapRequest request) {
+        DatabaseSongs databaseSongs = new DatabaseSongs();
+        
+        databaseSongs.add(new Status(200));
+        databaseSongs.add(new UpdateType(request.isUpdateType() ? 1 : 0));
+        databaseSongs.add(new SpecifiedTotalCount(totalSongCount));
+        
+        Set songs = getSongs();
+        databaseSongs.add(new ReturnedCount(songs.size()));
 
-        private ListingItem toListingItem(Playlist playlist) {
+        Listing listing = new Listing();
+        
+        Iterator it = songs.iterator();
+        while (it.hasNext()) {
             ListingItem listingItem = new ListingItem();
+            Song song = (Song)it.next();
 
-            Iterator properties = Arrays.asList(
-                    DaapUtil.DATABASE_PLAYLISTS_META).iterator();
-            while (properties.hasNext()) {
-                String key = (String) properties.next();
-                Chunk chunk = playlist.getProperty(key);
+            Iterator meta = request.getMeta().iterator();
+            while (meta.hasNext()) {
+                String key = (String)meta.next();
+                Chunk chunk = song.getChunk(key);
 
                 if (chunk != null) {
                     listingItem.add(chunk);
@@ -674,115 +579,23 @@ public class Database implements Cloneable {
                 }
             }
 
-            return listingItem;
+            listing.add(listingItem);
         }
 
-        private byte[] getBytes() {
-            return getBytes(DaapUtil.COMPRESS);
-        }
-
-        private byte[] getBytes(boolean compress) {
-            try {
-                return DaapUtil.serialize(this, compress);
-            } catch (IOException err) {
-                LOG.error(err);
-                return null;
-            }
-        }
-    }
-
-    /**
-     * This class is an implementation of DatabaseSongs
-     */
-    private static final class DatabaseSongsImpl extends DatabaseSongs {
-
-        /**
-         * 
-         * @param playlist
-         * @param updateType
-         */
-        private DatabaseSongsImpl(Playlist playlist, boolean updateType) {
-            super();
-
-            Set items = playlist.getSongs();
-            Set newItems = playlist.getNewSongs();
-            Set deletedItems = playlist.getDeletedSongs();
-
-            add(new Status(200));
-            add(new UpdateType(updateType));
-
-            int secifiedTotalCount = items.size() - deletedItems.size();
-            int returnedCount = newItems.size();
-
-            add(new SpecifiedTotalCount(secifiedTotalCount));
-            add(new ReturnedCount(returnedCount));
-
-            Listing listing = new Listing();
-
-            Iterator it = ((updateType) ? newItems : items).iterator();
-
+        databaseSongs.add(listing);
+        
+        if (request.isUpdateType() && deletedSongs != null) {
+            DeletedIdListing deletedListing = new DeletedIdListing();
+            
+            it = deletedSongs.iterator();
             while (it.hasNext()) {
-                ListingItem listingItem = new ListingItem();
                 Song song = (Song) it.next();
-
-                Iterator properties = Arrays.asList(
-                        DaapUtil.DATABASE_SONGS_META).iterator();
-                while (properties.hasNext()) {
-
-                    String key = (String) properties.next();
-                    Chunk chunk = song.getProperty(key);
-
-                    if (chunk != null) {
-                        listingItem.add(chunk);
-
-                    } else if (LOG.isInfoEnabled()) {
-                        LOG.info("Unknown chunk type: " + key);
-                    }
-                }
-
-                listing.add(listingItem);
+                deletedListing.add(song.getChunk("dmap.itemid"));
             }
 
-            add(listing);
-
-            if (updateType) {
-
-                it = deletedItems.iterator();
-
-                if (it.hasNext()) {
-
-                    DeletedIdListing deletedListing = new DeletedIdListing();
-
-                    while (it.hasNext()) {
-                        Song song = (Song) it.next();
-                        deletedListing.add(new ItemId(song.getId()));
-                    }
-
-                    add(deletedListing);
-                }
-            }
+            databaseSongs.add(deletedListing);
         }
-
-        /**
-         * 
-         * @return
-         */
-        public byte[] getBytes() {
-            return getBytes(DaapUtil.COMPRESS);
-        }
-
-        /**
-         * 
-         * @param compress
-         * @return
-         */
-        public byte[] getBytes(boolean compress) {
-            try {
-                return DaapUtil.serialize(this, compress);
-            } catch (IOException err) {
-                LOG.error(err);
-                return null;
-            }
-        }
+        
+        return databaseSongs;
     }
 }

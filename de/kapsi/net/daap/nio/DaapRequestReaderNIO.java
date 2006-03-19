@@ -34,7 +34,10 @@ import de.kapsi.net.daap.DaapRequest;
  *
  * @author  Roger Kapsi
  */
-public class DaapRequestReaderNIO {
+class DaapRequestReaderNIO {
+    
+    // The max size of a header row in bytes
+    private static final int MAX_HEADER_SIZE = 4096;
     
     private long bytesRead = 0;
     
@@ -49,11 +52,11 @@ public class DaapRequestReaderNIO {
     private LinkedList pending;
     
     /** Creates a new instance of DaapRequestReader */
-    public DaapRequestReaderNIO(DaapConnectionNIO connection) {
+    DaapRequestReaderNIO(DaapConnectionNIO connection) {
         
         this.connection = connection;
         
-        in = ByteBuffer.allocate(1024);
+        in = ByteBuffer.allocate(MAX_HEADER_SIZE);
         in.clear();
         in.flip();
         
@@ -115,6 +118,10 @@ public class DaapRequestReaderNIO {
             } else {
                 pending.addLast(request);
             }
+        } else if (headers.size() >= 64) {
+            requestLine = null;
+            headers.clear();
+            throw new IOException("Header too large");
         }
         
         return ret;

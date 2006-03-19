@@ -27,7 +27,7 @@ import de.kapsi.net.daap.DaapChunkResponse;
 import de.kapsi.net.daap.DaapRequest;
 
 /**
- * NIO (New or Non-Blocking I/O) based DaapChunkResponse.
+ * DaapChunkResponse.
  *
  * @author  Roger Kapsi
  */
@@ -49,15 +49,10 @@ public class DaapChunkResponseNIO extends DaapChunkResponse {
         dataBuffer = ByteBuffer.wrap(data);
     }
     
-    public boolean hasRemainig() {
+    public boolean hasRemaining() {
         return headerBuffer.hasRemaining() || dataBuffer.hasRemaining();
     }
-    
-    /**
-     *
-     * @throws IOException
-     * @return
-     */    
+     
     public boolean write() throws IOException {
         
         if (headerBuffer.hasRemaining()) {

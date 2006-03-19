@@ -19,7 +19,7 @@
 
 package de.kapsi.net.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.BooleanChunk;
+import de.kapsi.net.daap.chunks.UByteChunk;
 
 /**
  * This Chunk is used to indicate if a response is
@@ -30,22 +30,16 @@ import de.kapsi.net.daap.chunks.BooleanChunk;
  *
  * @author  Roger Kapsi
  */
-public class UpdateType extends BooleanChunk {
+public class UpdateType extends UByteChunk {
     
     /**
-     * Creates a new UpdateType which is initialized with <code>false</code>.
-     * You can change this value with {@see #setValue(boolean)}.
+     * Creates a new UpdateType
      */
     public UpdateType() {
-        this(false);
+        this(0);
     }
     
-    /**
-     * Creates a new UpdateType with the assigned rating.
-     * You can change this value with {@see #setValue(boolean)}.
-     * @param <code>updatetype</code> either false or true
-     */
-    public UpdateType(boolean updatetype) {
+    public UpdateType(int updatetype) {
         super("muty", "dmap.updatetype", updatetype);
     }
 }
