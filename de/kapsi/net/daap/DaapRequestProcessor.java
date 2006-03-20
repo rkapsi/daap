@@ -143,7 +143,11 @@ public class DaapRequestProcessor {
         if (authenticator == null) {
             return true;
         }
-            
+        
+        if (config.getAuthenticationMethod().equals(DaapConfig.NO_PASSWORD)) {
+            return true;
+        }
+        
         Header authHeader = request.getHeader(DaapRequest.AUTHORIZATION);
         if (authHeader == null) {
             if (LOG.isInfoEnabled()) {
