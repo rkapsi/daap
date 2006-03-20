@@ -108,6 +108,7 @@
         <jar destfile="daap.jar" 
                         basedir="${basedir}" 
                         includes="**/*.class"
+            				compress="false"
                         excludes="**/Main.* 
                             de/kapsi/net/daap/tools/**/*.*
                             de/kapsi/net/daap/tests/**/*.*"/>
