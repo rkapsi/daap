@@ -4,7 +4,7 @@ RCS file: /cvs/gui/com/limegroup/gnutella/gui/DaapManager.java,v
 retrieving revision 1.21
 diff -u -r1.21 DaapManager.java
 --- DaapManager.java	23 Jan 2006 17:36:10 -0000	1.21
-+++ DaapManager.java	31 Jan 2006 18:04:11 -0000
++++ DaapManager.java	21 Mar 2006 15:30:12 -0000
 @@ -4,11 +4,8 @@
  import java.io.FileInputStream;
  import java.io.IOException;
@@ -17,15 +17,7 @@ diff -u -r1.21 DaapManager.java
  import java.util.HashMap;
  import java.util.Iterator;
  import java.util.Locale;
-@@ -26,6 +23,7 @@
- import com.limegroup.gnutella.URN;
- import com.limegroup.gnutella.filters.IPFilter;
- import com.limegroup.gnutella.settings.DaapSettings;
-+import com.limegroup.gnutella.settings.PasswordSetting;
- import com.limegroup.gnutella.util.CommonUtils;
- import com.limegroup.gnutella.util.FileUtils;
- import com.limegroup.gnutella.util.ManagedThread;
-@@ -35,6 +33,7 @@
+@@ -35,6 +32,7 @@
  import com.limegroup.gnutella.xml.LimeXMLReplyCollection;
  import com.limegroup.gnutella.xml.SchemaReplyCollectionMapper;
  
@@ -33,7 +25,7 @@ diff -u -r1.21 DaapManager.java
  import de.kapsi.net.daap.DaapAuthenticator;
  import de.kapsi.net.daap.DaapConfig;
  import de.kapsi.net.daap.DaapFilter;
-@@ -48,7 +47,6 @@
+@@ -48,7 +46,6 @@
  import de.kapsi.net.daap.Playlist;
  import de.kapsi.net.daap.Song;
  import de.kapsi.net.daap.Transaction;
@@ -41,7 +33,7 @@ diff -u -r1.21 DaapManager.java
  
  /**
   * This class handles the mDNS registration and acts as an
-@@ -57,26 +55,33 @@
+@@ -57,26 +54,33 @@
  public final class DaapManager implements FinalizeListener {
      
      private static final Log LOG = LogFactory.getLog(DaapManager.class);
@@ -81,7 +73,7 @@ diff -u -r1.21 DaapManager.java
      private DaapManager() {
          GUIMediator.addFinalizeListener(this);
      }
-@@ -100,63 +105,40 @@
+@@ -100,63 +104,42 @@
              
              try {
                  
@@ -155,18 +147,20 @@ diff -u -r1.21 DaapManager.java
 +
                  LimeConfig config = new LimeConfig(addr);
                  
-+                if (DaapSettings.DAAP_REQUIRES_USERNAME.getValue()) {
-+                    config.setAuthenticationMethod(DaapConfig.USERNAME_AND_PASSWORD);
-+                    config.setAuthenticationScheme(DaapConfig.DIGEST_SCHEME);
-+                } else {
-+                    config.setAuthenticationMethod(DaapConfig.PASSWORD);
-+                    config.setAuthenticationScheme(DaapConfig.BASIC_SCHEME);
++                if (DaapSettings.DAAP_REQUIRES_PASSWORD.getValue()) {
++                    if (DaapSettings.DAAP_REQUIRES_USERNAME.getValue()) {
++                        config.setAuthenticationMethod(DaapConfig.USERNAME_AND_PASSWORD);
++                        config.setAuthenticationScheme(DaapConfig.DIGEST_SCHEME);
++                    } else {
++                        config.setAuthenticationMethod(DaapConfig.PASSWORD);
++                        config.setAuthenticationScheme(DaapConfig.BASIC_SCHEME);
++                    }
 +                }
 +                
                  final boolean NIO = DaapSettings.DAAP_USE_NIO.getValue();
  
                  server = DaapServerFactory.createServer(library, config, NIO);
-@@ -184,65 +166,66 @@
+@@ -184,65 +167,66 @@
                          }
                      }
                  }
@@ -261,7 +255,7 @@ diff -u -r1.21 DaapManager.java
       * <code>
       * stop();
       * start();
-@@ -252,38 +235,37 @@
+@@ -252,38 +236,37 @@
      public synchronized void restart() throws IOException {
          if (isServerRunning())
              stop();
@@ -312,7 +306,7 @@ diff -u -r1.21 DaapManager.java
      /**
       * Disconnects all clients
       */
-@@ -292,7 +274,7 @@
+@@ -292,7 +275,7 @@
              server.disconnectAll();
          }
      }
@@ -321,7 +315,7 @@ diff -u -r1.21 DaapManager.java
      /**
       * Returns <tt>true</tt> if server is running
       */
-@@ -302,43 +284,46 @@
+@@ -302,43 +285,46 @@
          }
          return false;
      }
@@ -390,7 +384,7 @@ diff -u -r1.21 DaapManager.java
      /**
       * Returns true if the extension of name is a supported file type.
       */
-@@ -358,39 +343,44 @@
+@@ -358,39 +344,44 @@
          }
          return false;
      }
@@ -452,7 +446,7 @@ diff -u -r1.21 DaapManager.java
              Song song = null;
              
              if (isSupportedAudioFormat(name)) {
-@@ -400,60 +390,60 @@
+@@ -400,60 +391,60 @@
              }
              
              if (song != null) {
@@ -535,7 +529,7 @@ diff -u -r1.21 DaapManager.java
          if (evt.isChangeEvent())
              handleChangeEvent(evt);
          else if (evt.isAddEvent())
-@@ -463,7 +453,7 @@
+@@ -463,7 +454,7 @@
          else if (evt.isRemoveEvent())
              handleRemoveEvent(evt);
      }
@@ -544,7 +538,7 @@ diff -u -r1.21 DaapManager.java
      /**
       * Called by VisualConnectionCallback/MetaFileManager.
       */
-@@ -490,9 +480,11 @@
+@@ -490,9 +481,11 @@
          if (!enabled || !isServerRunning())
              return;
          
@@ -559,7 +553,7 @@ diff -u -r1.21 DaapManager.java
          FileDesc[] files = RouterService.getFileManager().getAllSharedFileDescriptors();
          
          for(int i = 0; i < files.length; i++) {
-@@ -512,12 +504,12 @@
+@@ -512,12 +505,12 @@
              
              // 1)
              // _Remove_ URN from the current 'map'...
@@ -574,7 +568,7 @@ diff -u -r1.21 DaapManager.java
                  continue;
              }
              
-@@ -525,27 +517,26 @@
+@@ -525,27 +518,26 @@
              // Save the Song (again) and update the meta
              // data if necessary
              if (song != null) {
@@ -614,7 +608,7 @@ diff -u -r1.21 DaapManager.java
                  }
                  
                  size++;
-@@ -556,16 +547,15 @@
+@@ -556,16 +548,15 @@
          // As all known URNs were removed from 'map' only
          // deleted FileDesc URNs can be leftover! We must 
          // remove the associated Songs from the Library now
@@ -638,7 +632,7 @@ diff -u -r1.21 DaapManager.java
          txn.commit();
      }
      
-@@ -576,33 +566,44 @@
+@@ -576,33 +567,44 @@
      private Song createSong(FileDesc desc, boolean audio) {
          
          Song song = new Song(desc.getFileName());
@@ -693,7 +687,7 @@ diff -u -r1.21 DaapManager.java
          SchemaReplyCollectionMapper map = SchemaReplyCollectionMapper.instance();
          LimeXMLReplyCollection collection = map.getReplyCollection(LimeXMLNames.VIDEO_SCHEMA);
          
-@@ -642,7 +643,7 @@
+@@ -642,7 +644,7 @@
              String currentTitle = song.getName();
              if (currentTitle == null || !title.equals(currentTitle)) {
                  update = true;
@@ -702,7 +696,7 @@ diff -u -r1.21 DaapManager.java
              }
          }
          
-@@ -652,27 +653,27 @@
+@@ -652,27 +654,27 @@
                  int num = Integer.parseInt(bitrate);
                  if (num > 0 && num != currentBitrate) {
                      update = true;
@@ -736,7 +730,7 @@ diff -u -r1.21 DaapManager.java
          }
          
          int currentYear = song.getYear();
-@@ -681,12 +682,12 @@
+@@ -681,12 +683,12 @@
                  int num = Integer.parseInt(year);
                  if (num > 0 && num != currentYear) {
                      update = true;
@@ -751,7 +745,7 @@ diff -u -r1.21 DaapManager.java
          }
          
          // Genre = License
-@@ -694,11 +695,11 @@
+@@ -694,11 +696,11 @@
          if (license != null) {
              if (currentGenre == null || !license.equals(currentGenre)) {
                  update = true;
@@ -765,7 +759,7 @@ diff -u -r1.21 DaapManager.java
          }
          
          // Artist = Director
-@@ -706,11 +707,11 @@
+@@ -706,11 +708,11 @@
          if (director != null) {
              if (currentArtist == null || !director.equals(currentArtist)) {
                  update = true;
@@ -779,7 +773,7 @@ diff -u -r1.21 DaapManager.java
          }
          
          // Rating = Album
-@@ -718,11 +719,11 @@
+@@ -718,11 +720,11 @@
          if (rating != null) {
              if (currentAlbum == null || !rating.equals(currentAlbum)) {
                  update = true;
@@ -793,7 +787,7 @@ diff -u -r1.21 DaapManager.java
          }
          
          return update;
-@@ -731,10 +732,13 @@
+@@ -731,10 +733,13 @@
      /**
       * Sets the audio meta data
       */
@@ -808,7 +802,7 @@ diff -u -r1.21 DaapManager.java
          
          if (collection == null) {
              LOG.error("LimeXMLReplyCollection is null");
-@@ -762,7 +766,7 @@
+@@ -762,7 +767,7 @@
              String currentTitle = song.getName();
              if (currentTitle == null || !title.equals(currentTitle)) {
                  update = true;
@@ -817,7 +811,7 @@ diff -u -r1.21 DaapManager.java
              }
          }
          
-@@ -772,56 +776,56 @@
+@@ -772,56 +777,56 @@
                  int num = Integer.parseInt(track);
                  if (num > 0 && num != currentTrack) {
                      update = true;
@@ -884,7 +878,7 @@ diff -u -r1.21 DaapManager.java
          }*/
          
          int currentBitrate = song.getBitrate();
-@@ -830,27 +834,27 @@
+@@ -830,27 +835,27 @@
                  int num = Integer.parseInt(bitrate);
                  if (num > 0 && num != currentBitrate) {
                      update = true;
@@ -918,7 +912,7 @@ diff -u -r1.21 DaapManager.java
          }
          
          int currentYear = song.getYear();
-@@ -859,19 +863,19 @@
+@@ -859,19 +864,19 @@
                  int num = Integer.parseInt(year);
                  if (num > 0 && num != currentYear) {
                      update = true;
@@ -941,7 +935,7 @@ diff -u -r1.21 DaapManager.java
          }
  
          return update;
-@@ -894,14 +898,11 @@
+@@ -894,14 +899,11 @@
       */
      private final class LimeStreamSource implements DaapStreamSource {
          
@@ -961,7 +955,7 @@ diff -u -r1.21 DaapManager.java
              
              return null;
          }
-@@ -912,17 +913,40 @@
+@@ -912,17 +914,40 @@
       */
      private final class LimeAuthenticator implements DaapAuthenticator {
          
@@ -1008,7 +1002,7 @@ diff -u -r1.21 DaapManager.java
          }
      }
      
-@@ -939,111 +963,113 @@
+@@ -939,111 +964,113 @@
           * Returns true if <tt>address</tt> is a private address
           */
          public boolean accept(InetAddress address) {
@@ -1161,7 +1155,7 @@ diff -u -r1.21 DaapManager.java
              // This isn't really required but as iTunes
              // does it in this way I'm doing it too...
              if (password) {
-@@ -1051,133 +1077,47 @@
+@@ -1051,133 +1078,47 @@
              } else {
                  qualifiedName = name + "." + type;
              }
