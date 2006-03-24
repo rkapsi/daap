@@ -267,14 +267,14 @@ public class Song {
     /**
      * Sets the name of this Song
      */
-    public void setName(Transaction txn, final String itemName) {
+    public void setName(Transaction txn, String itemName) {
         setStringValue(txn, "itemName", itemName);
     }
     
     /**
      * Sets the album of this Song
      */
-    public void setAlbum(Transaction txn, final String album) {
+    public void setAlbum(Transaction txn, String album) {
         setStringValue(txn, "album", album);
     }
     
@@ -288,7 +288,7 @@ public class Song {
     /**
      * Sets the artist of this Song
      */
-    public void setArtist(Transaction txn, final String artist) {
+    public void setArtist(Transaction txn, String artist) {
         setStringValue(txn, "artist", artist);
     }
     
@@ -302,7 +302,7 @@ public class Song {
     /**
      * Sets the beats per minute of this Song
      */
-    public void setBeatsPerMinute(Transaction txn, final int bpm) {
+    public void setBeatsPerMinute(Transaction txn, int bpm) {
         setUShortValue(txn, "bpm", bpm);
     }
     
@@ -316,7 +316,7 @@ public class Song {
     /**
      * Sets the bitrate of this Song
      */
-    public void setBitrate(Transaction txn, final int bitrate) {
+    public void setBitrate(Transaction txn, int bitrate) {
         setUShortValue(txn, "bitrate", bitrate);
     }
     
@@ -330,7 +330,7 @@ public class Song {
     /**
      * Sets the comment of this Song
      */
-    public void setComment(Transaction txn, final String comment) {
+    public void setComment(Transaction txn, String comment) {
         setStringValue(txn, "comment", comment);
     }
     
@@ -344,7 +344,7 @@ public class Song {
     /**
      * Sets if this Song is a compilation
      */
-    public void setCompilation(Transaction txn, final boolean compilation) {
+    public void setCompilation(Transaction txn, boolean compilation) {
         setBooleanValue(txn, "compilation", compilation);
     }
     
@@ -359,7 +359,7 @@ public class Song {
     /**
      * Sets the composer of this Song
      **/
-    public void setComposer(Transaction txn, final String composer) {
+    public void setComposer(Transaction txn, String composer) {
         setStringValue(txn, "composer", composer);
     }
     
@@ -376,7 +376,7 @@ public class Song {
      * Note: you must set the DataUrl with setDataUrl()
      * if dataKind is Radio!
      */
-    public void setDataKind(Transaction txn, final int dataKind) {
+    public void setDataKind(Transaction txn, int dataKind) {
         setUByteValue(txn, "dataKind", dataKind);
     }
     
@@ -390,7 +390,7 @@ public class Song {
     /**
      * Sets the URL of this Song
      */
-    public void setDataUrl(Transaction txn, final String dataUrl) {
+    public void setDataUrl(Transaction txn, String dataUrl) {
         setStringValue(txn, "dataUrl", dataUrl);
     }
     
@@ -407,7 +407,7 @@ public class Song {
      * 1970.
      * <code>(int)(System.currentTimeMillis()/1000)</code>
      */
-    public void setDateAdded(Transaction txn, final long dateAdded) {
+    public void setDateAdded(Transaction txn, long dateAdded) {
         setDateValue(txn, "dateAdded", dateAdded);
     }
     
@@ -424,7 +424,7 @@ public class Song {
      * Note: the date is in seconds since 1970.
      * <code>(int)(System.currentTimeMillis()/1000)</code>
      */
-    public void setDateModified(Transaction txn, final long dateModified) {
+    public void setDateModified(Transaction txn, long dateModified) {
         setDateValue(txn, "dateModified", dateModified);
     }
     
@@ -442,7 +442,7 @@ public class Song {
      * file is for example 'MPEG Audio file'. 
      * See SongDescription for more information.
      */
-    public void setDescription(Transaction txn, final String description) {
+    public void setDescription(Transaction txn, String description) {
         setStringValue(txn, "description", description);
     }
     
@@ -458,7 +458,7 @@ public class Song {
      * This is indicated in iTunes by the small checkbox
      * next to the Song name.
      */
-    public void setDisabled(Transaction txn, final boolean disabled) {
+    public void setDisabled(Transaction txn, boolean disabled) {
         setBooleanValue(txn, "disabled", disabled);
     }
     
@@ -472,7 +472,7 @@ public class Song {
     /**
      * Sets the number of discs of this Song
      */
-    public void setDiscCount(Transaction txn, final int discCount) {
+    public void setDiscCount(Transaction txn, int discCount) {
         setUShortValue(txn, "discCount", discCount);
     }
     
@@ -486,7 +486,7 @@ public class Song {
     /**
      * Sets the disc number of this Song
      */
-    public void setDiscNumber(Transaction txn, final int discNumber) {
+    public void setDiscNumber(Transaction txn, int discNumber) {
         setUShortValue(txn, "discNumber", discNumber);
     }
     
@@ -501,7 +501,7 @@ public class Song {
      * Sets the equalizer of this Song.
      * Note: See SongEqPreset for more information
      */
-    public void setEqPreset(Transaction txn, final String eqPreset) {
+    public void setEqPreset(Transaction txn, String eqPreset) {
         setStringValue(txn, "eqPreset", eqPreset);
     }
     
@@ -516,7 +516,7 @@ public class Song {
      * Sets the format of this Song.
      * Note: See SongFormat for more information
      */
-    public void setFormat(Transaction txn, final String format) {
+    public void setFormat(Transaction txn, String format) {
         setStringValue(txn, "format", format);
     }
     
@@ -531,7 +531,7 @@ public class Song {
      * Sets the genre of this Song.
      * Note: See SongGenre for more information
      */
-    public void setGenre(Transaction txn, final String genre) {
+    public void setGenre(Transaction txn, String genre) {
         setStringValue(txn, "genre", genre);
     }
     
@@ -545,7 +545,7 @@ public class Song {
     /**
      * Unknown purpose
      */
-    public void setRelativeVolume(Transaction txn, final int relativeVolume) {
+    public void setRelativeVolume(Transaction txn, int relativeVolume) {
         setSByteValue(txn, "relativeVolume", relativeVolume);
     }
     
@@ -559,7 +559,7 @@ public class Song {
     /**
      * Sets the sample rate of this Song in kHz
      */
-    public void setSampleRate(Transaction txn, final long sampleRate) {
+    public void setSampleRate(Transaction txn, long sampleRate) {
         setUIntValue(txn, "sampleRate", sampleRate);
     }
     
@@ -573,7 +573,7 @@ public class Song {
     /**
      * Sets the file size of this Song
      */
-    public void setSize(Transaction txn, final long size) {
+    public void setSize(Transaction txn, long size) {
         setUIntValue(txn, "size", size);
     }
     
@@ -588,7 +588,7 @@ public class Song {
      * Sets the start time of this Song in 
      * <tt>milliseconds</tt>.
      */
-    public void setStartTime(Transaction txn, final long startTime) {
+    public void setStartTime(Transaction txn, long startTime) {
         setUIntValue(txn, "startTime", startTime);
     }
     
@@ -603,7 +603,7 @@ public class Song {
      * Sets the stop time of this Song in 
      * <tt>milliseconds</tt>.
      */
-    public void setStopTime(Transaction txn, final long stopTime) {
+    public void setStopTime(Transaction txn, long stopTime) {
         setUIntValue(txn, "stopTime", stopTime);
     }
     
@@ -618,7 +618,7 @@ public class Song {
      * Sets the time (length) of this Song in
      * <tt>milliseconds</tt>.
      */
-    public void setTime(Transaction txn, final long time) {
+    public void setTime(Transaction txn, long time) {
         setUIntValue(txn, "time", time);
     }
     
@@ -632,7 +632,7 @@ public class Song {
     /**
      * Sets the track count of this Song
      */
-    public void setTrackCount(Transaction txn, final int trackCount) {
+    public void setTrackCount(Transaction txn, int trackCount) {
         setUShortValue(txn, "trackCount", trackCount);
     }
     
@@ -646,7 +646,7 @@ public class Song {
     /**
      * Sets the track number of this Song
      */
-    public void setTrackNumber(Transaction txn, final int trackNumber) {
+    public void setTrackNumber(Transaction txn, int trackNumber) {
         setUShortValue(txn, "trackNumber", trackNumber);
     }
     
@@ -661,7 +661,7 @@ public class Song {
      * Sets the user rating of this Song.
      * Note: See SongUserRating for more informations
      */
-    public void setUserRating(Transaction txn, final int userRating) {
+    public void setUserRating(Transaction txn, int userRating) {
         setUByteValue(txn, "userRating", userRating);
     }
     
@@ -675,7 +675,7 @@ public class Song {
     /**
      * Sets the year of this Song
      */
-    public void setYear(Transaction txn, final int year) {
+    public void setYear(Transaction txn, int year) {
         setUShortValue(txn, "year", year);
     }
     
@@ -689,7 +689,7 @@ public class Song {
     /**
      * Sets the grouping of this Song
      */
-    public void setGrouping(Transaction txn, final String grouping) {
+    public void setGrouping(Transaction txn, String grouping) {
         setStringValue(txn, "grouping", grouping);
     }
     
@@ -703,7 +703,7 @@ public class Song {
     /**
      * Sets the ITMS Artist Id
      */
-    public void setITMSArtistId(Transaction txn, final long itmsArtistId) {
+    public void setITMSArtistId(Transaction txn, long itmsArtistId) {
         setUIntValue(txn, "itmsArtistId", itmsArtistId);
     }
     
@@ -717,7 +717,7 @@ public class Song {
     /**
      * Sets the ITMS Composer Id
      */
-    public void setITMSComposerId(Transaction txn, final long itmsComposerId) {
+    public void setITMSComposerId(Transaction txn, long itmsComposerId) {
         setUIntValue(txn, "itmsComposerId", itmsComposerId);
     }
     
@@ -731,7 +731,7 @@ public class Song {
     /**
      * Sets the ITMS Genre Id
      */
-    public void setITMSGenreId(Transaction txn, final long itmsGenreId) {
+    public void setITMSGenreId(Transaction txn, long itmsGenreId) {
         setUIntValue(txn, "itmsGenreId", itmsGenreId);
     }
     
@@ -745,7 +745,7 @@ public class Song {
     /**
      * Sets the ITMS Playlist (=Album) Id
      */
-    public void setITMSPlaylistId(Transaction txn, final long itmsPlaylistId) {
+    public void setITMSPlaylistId(Transaction txn, long itmsPlaylistId) {
         setUIntValue(txn, "itmsPlaylistId", itmsPlaylistId);
     }
     
@@ -759,7 +759,7 @@ public class Song {
     /**
      * Sets the ITMS Storefront Id
      */
-    public void setITMSStorefrontId(Transaction txn, final long itmsStorefrontId) {
+    public void setITMSStorefrontId(Transaction txn, long itmsStorefrontId) {
         setUIntValue(txn, "itmsStorefrontId", itmsStorefrontId);
     }
     
@@ -773,7 +773,7 @@ public class Song {
     /**
      * Sets the ITMS Song Id
      */
-    public void setITMSSongId(Transaction txn, final long itmsSongId) {
+    public void setITMSSongId(Transaction txn, long itmsSongId) {
         setUIntValue(txn, "itmsSongId", itmsSongId);
     }
     
@@ -787,7 +787,7 @@ public class Song {
     /**
      * Sets the codec type
      */
-    public void setCodecType(Transaction txn, final long codecType) {
+    public void setCodecType(Transaction txn, long codecType) {
         setUIntValue(txn, "codecType", codecType);
     }
     
@@ -801,7 +801,7 @@ public class Song {
     /**
      * Sets the codec subtype
      */
-    public void setCodecSubtype(Transaction txn, final long codecSubtype) {
+    public void setCodecSubtype(Transaction txn, long codecSubtype) {
         setUIntValue(txn, "codecSubtype", codecSubtype);
     }
     
@@ -815,7 +815,7 @@ public class Song {
     /**
      * Sets the norm volume
      */
-    public void setNormVolume(Transaction txn, final long normVolume) {
+    public void setNormVolume(Transaction txn, long normVolume) {
         setUIntValue(txn, "normVolume", normVolume);
     }
     
