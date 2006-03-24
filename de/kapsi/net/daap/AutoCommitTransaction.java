@@ -108,6 +108,31 @@ public class AutoCommitTransaction extends Transaction {
         }
     }
     
+    protected synchronized void attach(Object obj) {
+        createTransactionIfNecessary();
+        transaction.attach(obj);
+    }
+
+    protected synchronized boolean modified(Database database) {
+        createTransactionIfNecessary();
+        return transaction.modified(database);
+    }
+
+    protected synchronized boolean modified(Library library) {
+        createTransactionIfNecessary();
+        return transaction.modified(library);
+    }
+
+    protected synchronized boolean modified(Playlist playlist) {
+        createTransactionIfNecessary();
+        return transaction.modified(playlist);
+    }
+
+    protected synchronized boolean modified(Song song) {
+        createTransactionIfNecessary();
+        return transaction.modified(song);
+    }
+
     public synchronized void commit() {
         if (transaction != null) {
             
