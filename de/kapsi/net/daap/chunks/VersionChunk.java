@@ -19,6 +19,9 @@
 
 package de.kapsi.net.daap.chunks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import de.kapsi.net.daap.DaapUtil;
 
 /**
@@ -30,6 +33,8 @@ import de.kapsi.net.daap.DaapUtil;
  * @author  Roger Kapsi
  */
 public abstract class VersionChunk extends AbstractChunk {
+    
+    private static final Log LOG = LogFactory.getLog(VersionChunk.class);
     
     public static final long MIN_VALUE = 0l;
     public static final long MAX_VALUE = 0xFFFFFFFFl;
@@ -96,7 +101,9 @@ public abstract class VersionChunk extends AbstractChunk {
     public static long checkVersionRange(long value) 
             throws IllegalArgumentException {
         if (value < MIN_VALUE || value > MAX_VALUE) {
-            throw new IllegalArgumentException("Value is outside of Version range: " + value);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Value is outside of Version range: " + value);
+            }
         }
         return value;
     }

@@ -19,11 +19,16 @@
 
 package de.kapsi.net.daap.chunks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * An unsigned int
  */
 public abstract class UIntChunk extends AbstractChunk implements IntChunk {
 
+    private static final Log LOG = LogFactory.getLog(UIntChunk.class);
+    
     public static final long MIN_VALUE = 0l;
     public static final long MAX_VALUE = 0xFFFFFFFFl;
     
@@ -62,7 +67,9 @@ public abstract class UIntChunk extends AbstractChunk implements IntChunk {
     public static long checkUIntRange(long value) 
             throws IllegalArgumentException {
         if (value < MIN_VALUE || value > MAX_VALUE) {
-            throw new IllegalArgumentException("Value is outside of unsigned int range: " + value);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Value is outside of unsigned int range: " + value);
+            }
         }
         return value;
     }

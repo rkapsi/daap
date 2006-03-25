@@ -19,11 +19,16 @@
 
 package de.kapsi.net.daap.chunks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A signed short
  */
 public abstract class SShortChunk extends AbstractChunk implements ShortChunk {
     
+    private static final Log LOG = LogFactory.getLog(SShortChunk.class);
+  
     public static final int MIN_VALUE = Short.MIN_VALUE;
     public static final int MAX_VALUE = Short.MAX_VALUE;
     
@@ -54,7 +59,9 @@ public abstract class SShortChunk extends AbstractChunk implements ShortChunk {
     public static int checkSShortRange(int value)
             throws IllegalArgumentException {
         if (value < MIN_VALUE || value > MAX_VALUE) {
-            throw new IllegalArgumentException("Value is outside of signed short range: " + value);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Value is outside of signed short range: " + value);
+            }
         }
         return value;
     }

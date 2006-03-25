@@ -19,10 +19,15 @@
 
 package de.kapsi.net.daap.chunks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A signed byte
  */
 public abstract class SByteChunk extends AbstractChunk implements ByteChunk {
+    
+    private static final Log LOG = LogFactory.getLog(SByteChunk.class);
     
     public static final int MIN_VALUE = Byte.MIN_VALUE;
     public static final int MAX_VALUE = Byte.MAX_VALUE;
@@ -54,7 +59,9 @@ public abstract class SByteChunk extends AbstractChunk implements ByteChunk {
     public static int checkSByteRange(int value) 
             throws IllegalArgumentException {
         if (value < MIN_VALUE || value > MAX_VALUE) {
-            throw new IllegalArgumentException("Value is outside of signed byte range: " + value);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Value is outside of signed byte range: " + value);
+            }
         }
         return value;
     }

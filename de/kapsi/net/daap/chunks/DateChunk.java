@@ -19,6 +19,9 @@
 
 package de.kapsi.net.daap.chunks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * This class is an implementation of a date chunk.
  * The date is an integer int seconds since 1.1.1970.
@@ -26,6 +29,8 @@ package de.kapsi.net.daap.chunks;
  * @author  Roger Kapsi
  */
 public abstract class DateChunk extends AbstractChunk {
+    
+    private static final Log LOG = LogFactory.getLog(DateChunk.class);
     
     public static final long MIN_VALUE = 0l;
     public static final long MAX_VALUE = 0xFFFFFFFFl;
@@ -57,7 +62,9 @@ public abstract class DateChunk extends AbstractChunk {
     public static long checkDateRange(long value) 
             throws IllegalArgumentException {
         if (value < MIN_VALUE || value > MAX_VALUE) {
-            throw new IllegalArgumentException("Value is outside of Date range: " + value);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Value is outside of Date range: " + value);
+            }
         }
         return value;
     }

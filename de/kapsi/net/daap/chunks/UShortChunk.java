@@ -19,10 +19,15 @@
 
 package de.kapsi.net.daap.chunks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * An unsigned short
  */
 public abstract class UShortChunk extends AbstractChunk implements ShortChunk {
+    
+    private static final Log LOG = LogFactory.getLog(UShortChunk.class);
     
     public static final int MIN_VALUE = 0;
     public static final int MAX_VALUE = 0xFFFF;
@@ -54,7 +59,9 @@ public abstract class UShortChunk extends AbstractChunk implements ShortChunk {
     public static int checkUShortRange(int value)
             throws IllegalArgumentException {
         if (value < MIN_VALUE || value > MAX_VALUE) {
-            throw new IllegalArgumentException("Value is outside of unsigned short range: " + value);
+            if (LOG.isErrorEnabled()) {
+                LOG.error("Value is outside of unsigned short range: " + value);
+            }
         }
         return value;
     }
