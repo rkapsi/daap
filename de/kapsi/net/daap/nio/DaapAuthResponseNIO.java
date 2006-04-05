@@ -21,7 +21,6 @@ package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapAuthResponse;
 import de.kapsi.net.daap.DaapRequest;
@@ -34,15 +33,13 @@ import de.kapsi.net.daap.DaapRequest;
 public class DaapAuthResponseNIO extends DaapAuthResponse {
     
     private ByteBuffer headerBuffer;
-    private SocketChannel channel;
+    private DaapConnectionNIO connection;
     
     /** Creates a new instance of DaapAuthResponse */
     public DaapAuthResponseNIO(DaapRequest request) {
         super(request);
-        
-        DaapConnectionNIO connection = (DaapConnectionNIO)request.getConnection();
-        channel = connection.getChannel();
-        
+                
+        this.connection = (DaapConnectionNIO)request.getConnection();
         headerBuffer = ByteBuffer.wrap(header);
     }
     
@@ -52,7 +49,7 @@ public class DaapAuthResponseNIO extends DaapAuthResponse {
        
     public boolean write() throws IOException {
         if (hasRemaining()) {
-            channel.write(headerBuffer);
+            connection.getWriteChannel().write(headerBuffer);
             return !hasRemaining();
         }
         

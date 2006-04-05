@@ -207,20 +207,23 @@ public class DaapServerNIO extends DaapServer {
         DaapConnection connection = (DaapConnection)sk.attachment();
         
         if (connection != null) {
-            
-            DaapSession session = connection.getSession(false);
-            if (session != null) {
-                destroySessionId(session.getSessionId());
-            }
-            
-            connection.close();
-            
-            try {
-                removeConnection(connection);
-            } catch (IllegalStateException err) {
-                // Shouldn't happen
-                LOG.error(err);
-            }
+            closeConnection(connection);
+        }
+    }
+    
+    protected void closeConnection(DaapConnection connection) {
+        DaapSession session = connection.getSession(false);
+        if (session != null) {
+            destroySessionId(session.getSessionId());
+        }
+
+        connection.close();
+
+        try {
+            removeConnection(connection);
+        } catch (IllegalStateException err) {
+            // Shouldn't happen
+            LOG.error(err);
         }
     }
     
@@ -380,25 +383,27 @@ public class DaapServerNIO extends DaapServer {
      * and this will prevent us from running out of memory if the client 
      * doesn't fetch its updates).
      */
-    private void processTimeout() throws IOException {
-        for(Iterator it = getPendingConnections().iterator(); it.hasNext(); ) {
-            DaapConnectionNIO connection 
-                = (DaapConnectionNIO)it.next();
-            
+    protected void processTimeout() throws IOException {
+        for (Iterator it = getPendingConnections().iterator(); it.hasNext();) {
+            DaapConnectionNIO connection = (DaapConnectionNIO) it.next();
+
             if (connection.timeout()) {
-                SelectionKey sk = connection.getChannel().keyFor(selector);
-                cancel(sk);
+                cancelConnection(connection);
             }
         }
-        
-        for(Iterator it = getDaapConnections().iterator(); it.hasNext(); ) {
-            DaapConnectionNIO connection 
-                = (DaapConnectionNIO)it.next();
-            
+
+        for (Iterator it = getDaapConnections().iterator(); it.hasNext();) {
+            DaapConnectionNIO connection = (DaapConnectionNIO) it.next();
+
             if (connection.timeout()) {
                 connection.clearLibraryQueue();
             }
         }
+    }
+
+    protected void cancelConnection(DaapConnectionNIO connection) {
+        SelectionKey sk = connection.getChannel().keyFor(selector);
+        cancel(sk);
     }
     
     /**
@@ -463,7 +468,9 @@ public class DaapServerNIO extends DaapServer {
                                         cancel(sk);
                                         LOG.error("An exception occured in processRead()", err);
                                     }
-                                } else if (sk.isWritable()) {
+                                } 
+                                
+                                if (sk.isWritable()) {
                                     try {
                                         processWrite(sk);
                                     } catch (IOException err) {

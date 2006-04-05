@@ -20,8 +20,10 @@
 package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +49,11 @@ public class DaapConnectionNIO extends DaapConnection {
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
      
-    private SocketChannel channel;
+    private SocketChannel socketChannel;
     private DaapRequestReaderNIO reader;
+    
+    private ReadableByteChannel readChannel;
+    private WritableByteChannel writeChannel;
     
     private long timer = System.currentTimeMillis();
     
@@ -56,7 +61,9 @@ public class DaapConnectionNIO extends DaapConnection {
     public DaapConnectionNIO(DaapServerNIO server, SocketChannel channel) {
         super(server);
         
-        this.channel = channel;
+        this.socketChannel = channel;
+        this.readChannel = channel;
+        this.writeChannel = channel;
         reader = new DaapRequestReaderNIO(this);
     }
     
@@ -65,7 +72,7 @@ public class DaapConnectionNIO extends DaapConnection {
      *
      * @return
      */    
-    int interrestOps() {
+    public int interrestOps() {
         
         if (isUndef()) {
             return SelectionKey.OP_READ;
@@ -89,8 +96,8 @@ public class DaapConnectionNIO extends DaapConnection {
      *
      * @return
      */    
-    SocketChannel getChannel() {
-        return channel;
+    public SocketChannel getChannel() {
+        return socketChannel;
     }
     
     /**
@@ -99,87 +106,94 @@ public class DaapConnectionNIO extends DaapConnection {
      * @return
      */    
     public boolean read() throws IOException {
-        
         if (!isAudioStream()) {
-            
-            timer = System.currentTimeMillis();
-            DaapRequest request = reader.read();
-            
-            if (request != null) {
-                
-                if (isUndef()) {
-                    
-                    if (request.isSongRequest()) {
-                        setConnectionType(DaapConnection.AUDIO);
-                        
-                        // AudioStreams have a session-id and we must check the id
-                        SessionId sid = request.getSessionId();
-                        if (((DaapServerNIO)server).isSessionIdValid(sid) == false) {
-                            throw new IOException("Unknown Session-ID: " + sid);
-                        }
-                        
-                        // Get the associated "normal" connection...
-                        DaapConnection connection = ((DaapServerNIO)server).getDaapConnection(sid);
-                        if (connection == null) {
-                            throw new IOException("No connection associated with this Session-ID: " + sid);
-                        }
-                        
-                        // ... and check if there's already an audio connection
-                        DaapConnection audio = ((DaapServerNIO)server).getAudioConnection(sid);
-                        if (audio != null) {
-                            throw new IOException("Multiple audio connections not allowed: " + sid);
-                        }
-                        
-                        // ...and use its protocolVersion for this Audio Stream
-                        // because Audio Streams do not provide the version in 
-                        // the request header (we could use the User-Agent header
-                        // but that breaks compatibility to non iTunes hosts and
-                        // they would have to fake their request header.
-                        setProtocolVersion(connection.getProtocolVersion());
-                        
-                    } else if (request.isServerInfoRequest()) {
-                        
-                        setConnectionType(DaapConnection.DAAP);
-                        setProtocolVersion(DaapUtil.getProtocolVersion(request));
-                        
-                    } else {
-                        
-                        // disconnect as the first request must be
-                        // either a song or server-info request!
-                        throw new IOException("Illegal first request: " + request);
-                    }
-                    
-                    if (!DaapUtil.isSupportedProtocolVersion(getProtocolVersion())) {
-                        throw new IOException("Unsupported Protocol Version: " + getProtocolVersion());
-                    }
-                    
-                    // All checks passed successfully...
-                    if (! ((DaapServerNIO)server).updateConnection(this)) {
-                        throw new IOException("Too may connections");
-                    }
+            while(true) {
+                if(!processRead()) {
+                    break;
                 }
-                
-                DaapResponse response = PROCESSOR.process(request);
-                
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace(request);
-                    LOG.trace(response);
-                }
-                
-                if (response != null) {
-                    writer.add(response);
-                }
-                
-                return true;
             }
+            return true;
         }
-        
         return false;
     }
     
+    private boolean processRead() throws IOException {
+        timer = System.currentTimeMillis();
+        DaapRequest request = reader.read();
+        if (request == null)
+            return false;
+
+        if (isUndef()) {
+            defineConnection(request);
+        }
+        
+        DaapResponse response = PROCESSOR.process(request);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(request);
+            LOG.trace(response);
+        }
+
+        if (response != null) {
+            writer.add(response);
+        }
+        
+        return true;
+    }
+    
+    private void defineConnection(DaapRequest request) throws IOException {
+        if (request.isSongRequest()) {
+            setConnectionType(DaapConnection.AUDIO);
+
+            // AudioStreams have a session-id and we must check the id
+            SessionId sid = request.getSessionId();
+            if (((DaapServerNIO) server).isSessionIdValid(sid) == false) {
+                throw new IOException("Unknown Session-ID: " + sid);
+            }
+
+            // Get the associated "normal" connection...
+            DaapConnection connection = ((DaapServerNIO) server).getDaapConnection(sid);
+            if (connection == null) {
+                throw new IOException("No connection associated with this Session-ID: " + sid);
+            }
+
+            // ... and check if there's already an audio connection
+            DaapConnection audio = ((DaapServerNIO) server).getAudioConnection(sid);
+            if (audio != null) {
+                throw new IOException("Multiple audio connections not allowed: " + sid);
+            }
+
+            // ...and use its protocolVersion for this Audio Stream
+            // because Audio Streams do not provide the version in
+            // the request header (we could use the User-Agent header
+            // but that breaks compatibility to non iTunes hosts and
+            // they would have to fake their request header.
+            setProtocolVersion(connection.getProtocolVersion());
+
+        } else if (request.isServerInfoRequest()) {
+
+            setConnectionType(DaapConnection.DAAP);
+            setProtocolVersion(DaapUtil.getProtocolVersion(request));
+
+        } else {
+
+            // disconnect as the first request must be
+            // either a song or server-info request!
+            throw new IOException("Illegal first request: " + request);
+        }
+
+        if (!DaapUtil.isSupportedProtocolVersion(getProtocolVersion())) {
+            throw new IOException("Unsupported Protocol Version: " + getProtocolVersion());
+        }
+
+        // All checks passed successfully...
+        if (!((DaapServerNIO) server).updateConnection(this)) {
+            throw new IOException("Too may connections");
+        }
+    }
+        
     /**
-     * Returns true if Connection type is undef or daap and 
-     * timeout is exceeded.
+     * Returns true if Connection type is undef or daap and timeout is exceeded.
      */
     boolean timeout() {
         return (isUndef() && System.currentTimeMillis()-timer >= TIMEOUT)
@@ -192,11 +206,10 @@ public class DaapConnectionNIO extends DaapConnection {
     }
     
     /**
-     *
+     * 
      * @throws IOException
      */    
     public void update() throws IOException {
-        
         if (isDaapConnection() && !isLocked()) {
             DaapSession session = getSession(false);
             if (session != null) {
@@ -214,7 +227,6 @@ public class DaapConnectionNIO extends DaapConnection {
                         revisionNumber.intValue(), delta.intValue());
                 
                 DaapResponse response = PROCESSOR.process(request);
-
                 if (response != null) {
                     writer.add(response);
                 }
@@ -228,6 +240,22 @@ public class DaapConnectionNIO extends DaapConnection {
     }
     
     public String toString() {
-        return channel.toString();
+        return socketChannel.toString();
+    }
+
+    public ReadableByteChannel getReadChannel() {
+        return readChannel;
+    }
+
+    public void setReadChannel(ReadableByteChannel readChannel) {
+        this.readChannel = readChannel;
+    }
+
+    public WritableByteChannel getWriteChannel() {
+        return writeChannel;
+    }
+
+    public void setWriteChannel(WritableByteChannel writeChannel) {
+        this.writeChannel = writeChannel;
     }
 }

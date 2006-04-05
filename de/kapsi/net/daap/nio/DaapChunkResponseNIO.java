@@ -21,7 +21,6 @@ package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapChunkResponse;
 import de.kapsi.net.daap.DaapRequest;
@@ -33,18 +32,15 @@ import de.kapsi.net.daap.DaapRequest;
  */
 public class DaapChunkResponseNIO extends DaapChunkResponse {
     
-    private SocketChannel channel;
-    
+    private DaapConnectionNIO connection;
     private ByteBuffer headerBuffer;
     private ByteBuffer dataBuffer;
     
     /** Creates a new instance of DaapChunkResponse */
     public DaapChunkResponseNIO(DaapRequest request, byte[] data) {
         super(request, data);
-        
-        DaapConnectionNIO connection = (DaapConnectionNIO)request.getConnection();
-        channel = connection.getChannel();
-        
+                
+        this.connection = (DaapConnectionNIO)request.getConnection();
         headerBuffer = ByteBuffer.wrap(header);
         dataBuffer = ByteBuffer.wrap(data);
     }
@@ -56,7 +52,7 @@ public class DaapChunkResponseNIO extends DaapChunkResponse {
     public boolean write() throws IOException {
         
         if (headerBuffer.hasRemaining()) {
-            channel.write(headerBuffer);
+            connection.getWriteChannel().write(headerBuffer);
             
             if (headerBuffer.hasRemaining())
                 return false;
@@ -64,7 +60,7 @@ public class DaapChunkResponseNIO extends DaapChunkResponse {
         }
         
         if (dataBuffer.hasRemaining()) {
-            channel.write(dataBuffer);
+            connection.getWriteChannel().write(dataBuffer);
             return !dataBuffer.hasRemaining();
         }
         

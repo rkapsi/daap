@@ -25,7 +25,7 @@ package de.kapsi.net.daap;
  * 
  * @author Roger Kapsi
  */
-/*public*/ class Txn {
+/* public */ class Txn {
     
     /**
      * Called by Transaction with a reference to

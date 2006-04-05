@@ -60,7 +60,7 @@ class DaapRequestReaderNIO {
         in.clear();
         in.flip();
         
-        lineReader = new DaapLineReaderNIO(connection.getChannel());
+        lineReader = new DaapLineReaderNIO();
         headers = new ArrayList();
         pending = new LinkedList();
     }
@@ -78,7 +78,7 @@ class DaapRequestReaderNIO {
         
         String line = null;
         
-        while((line = lineReader.read(in)) != null) {
+        while((line = lineReader.read(in, connection.getReadChannel())) != null) {
             
             bytesRead += in.position();
             

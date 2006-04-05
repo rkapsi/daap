@@ -21,7 +21,7 @@ package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * Reads a CR LF terminated string line.
@@ -33,14 +33,11 @@ public class DaapLineReaderNIO {
     private static final char CR = '\r';
     private static final char LF = '\n';
     
-    private SocketChannel channel;
-    
     private StringBuffer lineBuf;
     private boolean complete;
    
     /** Creates a new instance of DaapLineReader */
-    public DaapLineReaderNIO(SocketChannel channel) {
-        this.channel = channel;
+    public DaapLineReaderNIO() {
         lineBuf = new StringBuffer();
     }
     
@@ -58,8 +55,7 @@ public class DaapLineReaderNIO {
      * @throws IOException
      * @return
      */    
-    public String read(ByteBuffer in) throws IOException {
-        
+    public String read(ByteBuffer in, ReadableByteChannel channel) throws IOException {
         complete = false;
         
         if (in.remaining() > 0) {

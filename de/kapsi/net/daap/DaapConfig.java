@@ -58,10 +58,14 @@ public class DaapConfig {
      */
     public static final int DEFAULT_MAX_CONNECTIONS = 5;
     
+    /** Default buffer size. */
+    public static final int DEFAULT_BUFFER_SIZE = 2048;
+    
     protected String name;
     protected InetSocketAddress address;
     protected int backlog;
     protected int maxConnections;
+    protected int bufferSize;
     
     protected Object authenticationMethod;
     protected Object authenticationScheme;
@@ -71,6 +75,7 @@ public class DaapConfig {
         address = new InetSocketAddress(DEFAULT_PORT);
         backlog = DEFAULT_BACKLOG;
         maxConnections = DEFAULT_MAX_CONNECTIONS;
+        bufferSize = DEFAULT_BUFFER_SIZE;
         
         authenticationMethod = NO_PASSWORD;
         authenticationScheme = BASIC_SCHEME;
@@ -183,5 +188,19 @@ public class DaapConfig {
      */    
     public int getMaxConnections() {
         return maxConnections;
+    }
+
+    /**
+     * Gets the ideal buffer size that should be used for streaming
+     * DAAP connections.
+     * @return
+     */
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    /** Sets the buffer size. */
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
     }
 }

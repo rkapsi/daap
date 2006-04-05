@@ -24,9 +24,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.SocketChannel;
 
 import de.kapsi.net.daap.DaapAudioResponse;
+import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapRequest;
 import de.kapsi.net.daap.DaapStreamException;
 import de.kapsi.net.daap.Song;
@@ -40,7 +40,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
     
     private ByteBuffer headerBuffer;
     private FileChannel fileChannel;
-    private SocketChannel socketChannel;
+    private DaapConnectionNIO connection;
     
     public DaapAudioResponseNIO(DaapRequest request, Song song, File file, long pos, long end) throws IOException {
         this(request, song, new FileInputStream(file), pos, end);
@@ -51,11 +51,9 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
         super(request, song, in, pos, end);
         
         headerBuffer = ByteBuffer.wrap(header);
+        this.connection = (DaapConnectionNIO)request.getConnection();
         
         fileChannel = in.getChannel();
-        
-        DaapConnectionNIO connection = (DaapConnectionNIO)request.getConnection();
-        socketChannel = connection.getChannel();
     }
     
     public boolean hasRemaining() {
@@ -70,7 +68,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
 
             try {
 
-                socketChannel.write(headerBuffer);
+                connection.getWriteChannel().write(headerBuffer);
 
                 if (headerBuffer.hasRemaining() == true) {
                     return false;
@@ -93,7 +91,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
         
         if (pos < end) {
             
-            if (!socketChannel.isOpen()) {
+            if (!connection.getWriteChannel().isOpen()) {
                 close();
                 return true;
                 
@@ -101,8 +99,9 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
             
                 // Stream...
                 try {
-
-                    pos += fileChannel.transferTo(pos, 512, socketChannel);
+                    DaapConfig config = request.getServer().getConfig();
+                    pos += fileChannel.transferTo(pos, config.getBufferSize(),
+                                                  connection.getWriteChannel());
 
                     if (pos >= end) {
                         close();
