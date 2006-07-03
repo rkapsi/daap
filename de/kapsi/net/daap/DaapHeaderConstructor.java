@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.httpclient.Header;
 
@@ -62,7 +63,7 @@ public class DaapHeaderConstructor {
             DaapConnection connection = request.getConnection();
             String serverName = connection.getServer().getConfig().getServerName();
             
-            ArrayList headers = new ArrayList();
+            List<Header> headers = new ArrayList<Header>();
             headers.add(new Header("Date", DaapUtil.now()));
             headers.add(new Header("DAAP-Server", serverName));
             headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
@@ -102,8 +103,7 @@ public class DaapHeaderConstructor {
             
             String statusLine = null;
             
-            ArrayList headers = new ArrayList();
-            
+            List<Header> headers = new ArrayList<Header>();
             headers.add(new Header("Date", DaapUtil.now()));
             headers.add(new Header("DAAP-Server", serverName));
             headers.add(new Header("Content-Type", "application/x-dmap-tagged"));

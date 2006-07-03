@@ -55,14 +55,14 @@ public abstract class DaapConnection {
     protected int protocolVersion = UNDEF;
     protected String nonce;
     
-    protected LinkedList libraryQueue;
+    protected LinkedList<Library> libraryQueue;
     
     protected boolean locked = false;
     
     public DaapConnection(DaapServer server) {
         this.server = server;
         writer = new DaapResponseWriter();
-        libraryQueue = new LinkedList();
+        libraryQueue = new LinkedList<Library>();
     }
     
     /**

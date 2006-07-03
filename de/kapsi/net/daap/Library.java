@@ -82,10 +82,10 @@ public class Library {
     private int totalDatabaseCount = 0;
     
     /** Set of Databases */
-    private final HashSet databases = new HashSet();
+    private final Set<Database> databases = new HashSet<Database>();
     
     /** Set of deleted Databases */
-    private HashSet deletedDatabases = null;
+    private Set<Database> deletedDatabases = null;
     
     /** List of listener */
     private final ArrayList listener = new ArrayList();
@@ -168,7 +168,7 @@ public class Library {
      * 
      * @return
      */
-    public Set getDatabases() {
+    public Set<Database> getDatabases() {
         return Collections.unmodifiableSet(databases);
     }
     
@@ -228,7 +228,7 @@ public class Library {
         if (databases.remove(database)) {
             totalDatabaseCount = databases.size();
             if (deletedDatabases == null) {
-                deletedDatabases = new HashSet();
+                deletedDatabases = new HashSet<Database>();
             }
             deletedDatabases.add(database);
         }

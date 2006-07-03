@@ -41,7 +41,7 @@ public class Folder extends Playlist {
     private HasChildContainers hasChildContainers = new HasChildContainers(true);
     
     /** */
-    private List playlists = null;
+    private List<Playlist> playlists = null;
     
     protected Folder(Playlist playlist, Transaction txn) {
         super(playlist, txn);
@@ -76,8 +76,8 @@ public class Folder extends Playlist {
         return 0;
     }
 
-    public List getSongs() {
-        return Collections.EMPTY_LIST;
+    public List<Song> getSongs() {
+        return Collections.emptyList();
     }
     
     public void addPlaylist(Transaction txn, final Playlist playlist) {
@@ -99,7 +99,7 @@ public class Folder extends Playlist {
     
     private void addPlaylistP(Transaction txn, Playlist playlist) {
         if (playlists == null) {
-            playlists = new ArrayList();
+            playlists = new ArrayList<Playlist>();
         }
         
         if (!containsPlaylist(playlist) && playlists.add(playlist)) {

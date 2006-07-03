@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -207,9 +208,9 @@ public final class DaapUtil {
      * @param queryString a query String
      * @return the splitten query String as Map
      */
-    public static final Map parseQuery(String queryString) {
+    public static final Map<String, String> parseQuery(String queryString) {
         
-        Map map = new HashMap();
+        Map<String, String> map = new HashMap<String, String>();
         
         if (queryString != null && queryString.length() != 0) {
             StringTokenizer tok = new StringTokenizer(queryString, "&");
@@ -235,9 +236,9 @@ public final class DaapUtil {
      * @param meta a meta String
      * @return the splitten meta String as ArrayList
      */
-    public static final ArrayList parseMeta(String meta) {
+    public static final List<String> parseMeta(String meta) {
         StringTokenizer tok = new StringTokenizer(meta, ",");
-        ArrayList list = new ArrayList(tok.countTokens());
+        List<String> list = new ArrayList<String>(tok.countTokens());
         boolean flag = false;
         
         while(tok.hasMoreTokens()) {

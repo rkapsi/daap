@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,10 +45,10 @@ public abstract class DaapServer implements Runnable, LibraryListener {
     protected final Library library;
     
     /** Queue of Library patches */
-    protected final ArrayList libraryQueue = new ArrayList();
+    protected final List<Library> libraryQueue = new ArrayList<Library>();
     
     /** Set of currently active session ids */
-    protected final HashSet sessionIds = new HashSet();
+    protected final Set<SessionId> sessionIds = new HashSet<SessionId>();
     
     /** List of pending connections */
     protected final LinkedList pending = new LinkedList();

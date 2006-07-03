@@ -77,13 +77,13 @@ public class Database {
     private int totalSongCount = 0;
     
     /** A List of Playlists */
-    private final List playlists = new ArrayList();
+    private final List<Playlist> playlists = new ArrayList<Playlist>();
     
     /** Set of deleted playlists */
-    private HashSet deletedPlaylists = null;
+    private Set<Playlist> deletedPlaylists = null;
     
     /** Set of deleted Songs */
-    private HashSet deletedSongs = null;
+    private Set<Song> deletedSongs = null;
     
     /** master playlist */
     private Playlist masterPlaylist = null;
@@ -100,10 +100,7 @@ public class Database {
         
         Set songs = database.getSongs();
         
-        Iterator it = database.playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
-            
+        for (Playlist playlist : database.playlists) {
             if (txn.modified(playlist)) {
                 if (deletedPlaylists == null || !deletedPlaylists.contains(playlist)) {
                     Playlist clone = new Playlist(playlist, txn);
@@ -114,10 +111,10 @@ public class Database {
                     }
                 }
                 
-                Set deletedSongs = playlist.getDeletedSongs();
+                Set<Song> deletedSongs = playlist.getDeletedSongs();
                 if (deletedSongs != null && !deletedSongs.isEmpty()) {
                     if (this.deletedSongs == null) {
-                        this.deletedSongs = new HashSet(deletedSongs);
+                        this.deletedSongs = new HashSet<Song>(deletedSongs);
                     } else {
                         this.deletedSongs.addAll(deletedSongs);
                     }
@@ -226,7 +223,7 @@ public class Database {
      * 
      * @return unmodifiable Set of Playlists
      */
-    public List getPlaylists() {
+    public List<Playlist> getPlaylists() {
         return Collections.unmodifiableList(playlists);
     }
 
@@ -290,7 +287,7 @@ public class Database {
             totalPlaylistCount = playlists.size();
             
             if (deletedPlaylists == null) {
-                deletedPlaylists = new HashSet();
+                deletedPlaylists = new HashSet<Playlist>();
             }
             deletedPlaylists.add(playlist);
         }
@@ -371,19 +368,16 @@ public class Database {
      * Returns all Songs in this Database
      */
     public Set getSongs() {
-        HashSet songs = null;
-        Iterator it = playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
+        Set<Song> songs = null;
+        for (Playlist playlist : playlists) {
             if (!(playlist instanceof Folder)) {
                 if (songs == null) {
-                    songs = new HashSet(playlist.getSongs());
+                    songs = new HashSet<Song>(playlist.getSongs());
                 } else {
                     songs.addAll(playlist.getSongs());
                 }
             }
         }
-        
         if (songs == null) {
             return Collections.EMPTY_SET;
         } else {
@@ -402,9 +396,7 @@ public class Database {
      * Returns true if song is in this Database
      */
     public boolean containsSong(Song song) {
-        Iterator it = playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
+        for (Playlist playlist : playlists) {
             if (playlist.containsSong(song)) {
                 return true;
             }
@@ -419,9 +411,7 @@ public class Database {
      * @param song
      */
     public void addSong(Transaction txn, Song song) {
-        Iterator it = playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
+        for (Playlist playlist : playlists) {
             if (!(playlist instanceof Folder)) {
                 playlist.addSong(txn, song);
             }
@@ -435,29 +425,29 @@ public class Database {
      * @param song
      */
     public void removeSong(Transaction txn, Song song) {
-        Iterator it = playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
+        for (Playlist playlist : playlists) {
             if (!(playlist instanceof Folder)) {
                 playlist.removeSong(txn, song);
             }
         }
     }    
     
-    public Set getSongPlaylists(Song song) {
-        Set ret = null;
-        Iterator it = playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
+    public Set<Playlist> getSongPlaylists(Song song) {
+        Set<Playlist> ret = null;
+        for (Playlist playlist : playlists) {
             if (playlist.containsSong(song)) {
                 if (ret == null) {
-                    ret = new HashSet();
+                    ret = new HashSet<Playlist>();
                 }
                 ret.add(playlist);
             }
         }
         
-        return (ret != null) ? Collections.unmodifiableSet(ret) : Collections.EMPTY_SET;
+        if (ret != null) {
+            return Collections.unmodifiableSet(ret);
+        }
+        
+        return Collections.emptySet();
     }
     
     /**
@@ -467,9 +457,7 @@ public class Database {
      * @return
      */
     protected Song getSong(DaapRequest request) {
-        Iterator it = playlists.iterator();
-        while(it.hasNext()) {
-            Playlist playlist = (Playlist)it.next();
+        for (Playlist playlist : playlists) {
             if (!(playlist instanceof Folder)) {
                 Song song = playlist.getSong(request);
                 if (song != null) {
@@ -488,9 +476,7 @@ public class Database {
      */
     protected Playlist getPlaylist(DaapRequest request) {
         long playlistId = request.getContainerId();
-        Iterator it = playlists.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
+        for (Playlist playlist : playlists) {
             if (playlist.getItemId() == playlistId) {
                 return playlist;
             }
@@ -510,10 +496,7 @@ public class Database {
 
         Listing listing = new Listing();
 
-        Iterator it = playlists.iterator();
-        while (it.hasNext()) {
-            Playlist playlist = (Playlist) it.next();
-            
+        for (Playlist playlist : playlists) {
             ListingItem listingItem = new ListingItem();
             
             Iterator meta = request.getMeta().iterator();
@@ -537,9 +520,7 @@ public class Database {
         if (request.isUpdateType() && deletedPlaylists != null) {
             DeletedIdListing deletedListing = new DeletedIdListing();
             
-            it = deletedPlaylists.iterator();
-            while (it.hasNext()) {
-                Playlist playlist = (Playlist) it.next();
+            for (Playlist playlist : deletedPlaylists) {
                 deletedListing.add(new ItemId(playlist.getItemId()));
             }
 

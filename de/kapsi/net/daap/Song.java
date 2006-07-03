@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 
 import de.kapsi.net.daap.chunks.BooleanChunk;
 import de.kapsi.net.daap.chunks.Chunk;
@@ -102,7 +103,7 @@ public class Song {
     private static final SongFormat FORMAT = new SongFormat(SongFormat.MP3);
     private static final SongSampleRate SAMPLE_RATE = new SongSampleRate(SongSampleRate.KHZ_44100);
     
-    private final HashMap chunks = new HashMap();
+    private final Map<String, Chunk> chunks = new HashMap<String, Chunk>();
     
     private final ItemKind itemKind = new ItemKind(ItemKind.AUDIO);
     private final ItemId itemId = new ItemId();

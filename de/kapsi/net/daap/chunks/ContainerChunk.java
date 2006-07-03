@@ -31,21 +31,21 @@ import java.util.Iterator;
  */
 public class ContainerChunk extends AbstractChunk {
     
-    protected Collection collection;
+    protected Collection<Chunk> collection;
     
     /**
      * Creates a new ContainerChunk with an <tt>ArrayList</tt>
      * as the underlying collection.
      */
     protected ContainerChunk(String type, String name) {
-        this(type, name, new ArrayList());
+        this(type, name, new ArrayList<Chunk>());
     }
    
     /**
      * Note: you should use always a List as the underlying
      * collection.
      */
-    protected ContainerChunk(String type, String name, Collection collection) {
+    protected ContainerChunk(String type, String name, Collection<Chunk>collection) {
         super(type, name);
         this.collection = collection;
     }
@@ -79,7 +79,7 @@ public class ContainerChunk extends AbstractChunk {
     }
 
     public String toString(int indent) {
-        StringBuffer buffer = new StringBuffer(indent(indent));
+        StringBuilder buffer = new StringBuilder(indent(indent));
         buffer.append(name).append("(").append(getContentCodeString()).append("; container)\n");
         
         Iterator it = iterator();

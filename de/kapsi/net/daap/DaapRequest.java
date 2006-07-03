@@ -85,13 +85,13 @@ public class DaapRequest {
     private URI uri;
     private String protocol;
     
-    private Map queryMap;
+    private Map<String, String> queryMap;
     
     private SessionId sessionId = SessionId.INVALID;
     private int revisionNumber = DaapUtil.NULL;
     private int delta = DaapUtil.NULL;
     
-    private List meta;
+    private List<String> meta;
     private String metaString;
     
     private int requestType = DaapUtil.NULL;
@@ -99,7 +99,7 @@ public class DaapRequest {
     private long containerId = DaapUtil.NULL;
     private long itemId = DaapUtil.NULL;
     
-    private List headers;
+    private List<Header> headers;
     private boolean isServerSideRequest;
     private boolean isUpdateType;
    
@@ -110,7 +110,7 @@ public class DaapRequest {
      */
     private DaapRequest(DaapConnection connection) {
         this.connection = connection;
-        headers = new ArrayList();
+        headers = new ArrayList<Header>();
     }
     
     /**
@@ -262,7 +262,7 @@ public class DaapRequest {
                 }
                 
                 if (queryMap.containsKey("meta")) {
-                    metaString = (String)queryMap.get("meta");
+                    metaString = queryMap.get("meta");
                 }
 
                 isUpdateType = (delta != DaapUtil.NULL) && (delta < revisionNumber);
@@ -363,8 +363,9 @@ public class DaapRequest {
      * @return
      */
     public void addHeaders(Header[] headers) {
-        for(int i = 0; i < headers.length; i++)
-            this.headers.add(headers[i]);
+        for (Header header : headers) {
+            this.headers.add(header);
+        }
     }
     
     /**
@@ -373,7 +374,7 @@ public class DaapRequest {
      *
      * @return
      */
-    public void addHeaders(List headers) {
+    public void addHeaders(List<? extends Header> headers) {
         if (this.headers != headers)
             this.headers.addAll(headers);
     }
@@ -392,7 +393,7 @@ public class DaapRequest {
      *
      * @return
      */
-    public List getHeaders() {
+    public List<Header> getHeaders() {
         return headers;
     }
     
@@ -404,17 +405,15 @@ public class DaapRequest {
      */
     public Header getHeader(String key) {
         
-        if (headers == null)
+        if (headers == null) {
             return null;
+        }
         
-        Iterator it = headers.iterator();
-        while(it.hasNext()) {
-            Header header = (Header)it.next();
+        for (Header header : headers) {
             if (header.getName().equals(key)) {
                 return header;
             }
         }
-        
         return null;
     }
     
@@ -622,14 +621,18 @@ public class DaapRequest {
      *
      * @return
      */
-    public List getMeta() {
+    public List<String> getMeta() {
         // parse only if required...
         if (meta == null && metaString != null) {
             meta = DaapUtil.parseMeta(metaString);
             metaString = null;
         }
         
-        return (meta != null) ? Collections.unmodifiableList(meta) : Collections.EMPTY_LIST;
+        if (meta != null) {
+            return Collections.unmodifiableList(meta);
+        }
+        
+        return Collections.emptyList();
     }
     
     /**
@@ -704,8 +707,12 @@ public class DaapRequest {
      *
      * @return
      */
-    public Map getQueryMap() {
-        return (queryMap != null) ? Collections.unmodifiableMap(queryMap) : Collections.EMPTY_MAP;
+    public Map<String, String> getQueryMap() {
+        if (queryMap != null) {
+            return Collections.unmodifiableMap(queryMap);
+        }
+        
+        return Collections.emptyMap();
     }
     
     /**

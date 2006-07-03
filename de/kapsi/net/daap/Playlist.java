@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -88,13 +88,13 @@ public class Playlist {
     //private HasChildContainers hasChildContainers;
     
     /** */
-    private final HashMap chunks = new HashMap();
+    private final Map<String, Chunk> chunks = new HashMap<String, Chunk>();
     
     /** Set of Songs */
-    private final List songs = new ArrayList();
+    private final List<Song> songs = new ArrayList<Song>();
     
     /** Set of deleted Songs */
-    private HashSet deletedSongs = null;
+    private Set<Song> deletedSongs = null;
     
     protected Playlist(Playlist playlist, Transaction txn) {
         this.itemId.setValue(playlist.itemId.getValue());
@@ -107,10 +107,7 @@ public class Playlist {
             playlist.deletedSongs = null;
         }
         
-        Iterator it = playlist.songs.iterator();
-        while(it.hasNext()) {
-            Song song = (Song)it.next();
-            
+        for (Song song : playlist.songs) {
             if (txn.modified(song)) {
                 if (deletedSongs == null || !deletedSongs.contains(song)) {
                     // cloning is not necessary
@@ -288,7 +285,7 @@ public class Playlist {
     /**
      * Retuns an unmodifiable set of all songs
      */
-    public List getSongs() {
+    public List<Song> getSongs() {
         return Collections.unmodifiableList(songs);
     }
     
@@ -296,7 +293,7 @@ public class Playlist {
      * Returns a set of deleted Songs or null if 
      * no Songs were removed from this Playlist
      */
-    protected Set getDeletedSongs() {
+    protected Set<Song> getDeletedSongs() {
         return deletedSongs;
     }
     
@@ -351,7 +348,7 @@ public class Playlist {
         if (songs.remove(song)) {
             itemCount.setValue(songs.size());
             if (deletedSongs == null) {
-                deletedSongs = new HashSet();
+                deletedSongs = new HashSet<Song>();
             }
             deletedSongs.add(song);
         }
@@ -365,9 +362,7 @@ public class Playlist {
      */
     protected Song getSong(DaapRequest request) {
         long songId = request.getItemId();
-        Iterator it = songs.iterator();
-        while(it.hasNext()) {
-            Song song = (Song)it.next();
+        for (Song song : songs) {
             if (song.getItemId() == songId) {
                 return song;
             }
@@ -428,15 +423,10 @@ public class Playlist {
 
         Listing listing = new Listing();
 
-        Iterator it = songs.iterator();
-        while(it.hasNext()) {
-            Song song = (Song)it.next();
-
+        for (Song song : songs) {
             ListingItem listingItem = new ListingItem();
-            
-            Iterator meta = request.getMeta().iterator();
-            while(meta.hasNext()) {
-                String key = (String)meta.next();
+           
+            for (String key : request.getMeta()) {
                 Chunk chunk = song.getChunk(key);
 
                 if (chunk != null) {
@@ -455,12 +445,9 @@ public class Playlist {
         if (request.isUpdateType() && deletedSongs != null) {
             DeletedIdListing deletedListing = new DeletedIdListing();
             
-            it = deletedSongs.iterator();
-            while(it.hasNext()) {
-                Song song = (Song)it.next();
+            for (Song song : deletedSongs) {
                 deletedListing.add(song.getChunk("dmap.itemid"));
             }
-
             playlistSongs.add(deletedListing);
         }
         

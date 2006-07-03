@@ -29,11 +29,11 @@ import java.util.LinkedList;
  */
 public class DaapResponseWriter {
     
-    private LinkedList queue;
+    private LinkedList<DaapResponse> queue;
     
     /** Creates a new instance of DaapResponseWriter */
     public DaapResponseWriter() {
-        queue = new LinkedList();
+        queue = new LinkedList<DaapResponse>();
     }
     
     /**
@@ -74,8 +74,9 @@ public class DaapResponseWriter {
      * Send the next element
      */
     private void next() {
-        if (!isEmpty())
+        if (!isEmpty()) {
             queue.removeFirst();
+        }
     }
     
     /**
