@@ -2,8 +2,6 @@ package de.kapsi.net.daap.tools;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.HashMap;
-import java.util.Map;
 
 import de.kapsi.net.daap.chunks.AbstractChunk;
 import de.kapsi.net.daap.chunks.Chunk;
@@ -16,7 +14,7 @@ public final class ChunkUtil {
     public static final String CHUNK_DIR = CHUNK_PACKAGE.replace('.', File.separatorChar);
     public static final String CHUNK_IMPL_DIR = CHUNK_IMPL_PACKAGE.replace('.', File.separatorChar);
     
-    private static final Map map = new HashMap();
+    //private static final Map map = new HashMap();
     
     static {
         

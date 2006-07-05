@@ -74,7 +74,7 @@ public class DaapHeaderConstructor {
                 headers.add(new Header("Content-Encoding", "gzip"));
             }
             
-            return toByteArray(HTTP_OK, (Header[])headers.toArray(new Header[0]));
+            return toByteArray(HTTP_OK, headers.toArray(new Header[0]));
             
         } catch (IOException err) {
             // Should never happen
@@ -127,7 +127,7 @@ public class DaapHeaderConstructor {
             
             headers.add(new Header("Accept-Ranges", "bytes"));
             
-            return toByteArray(statusLine, (Header[])headers.toArray(new Header[0]));
+            return toByteArray(statusLine, headers.toArray(new Header[0]));
             
         } catch (IOException err) {
             // Should never happen

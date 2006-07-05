@@ -182,7 +182,7 @@ public class Main extends TimerTask implements DaapAuthenticator, DaapStreamSour
     }
 
     private int counter = 0;
-    private long t = -1;
+   // private long t = -1;
     
     public void run() {
         

@@ -48,7 +48,7 @@ public class DaapAudioResponseBIO extends DaapAudioResponse {
     }
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponseBIO(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
+    public DaapAudioResponseBIO(DaapRequest request, Song song, FileInputStream in, long pos, long end) {
         super(request, song, in, pos, end);
         
         DaapConnectionBIO connection = (DaapConnectionBIO)request.getConnection();

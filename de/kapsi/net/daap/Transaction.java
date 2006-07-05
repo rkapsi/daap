@@ -183,7 +183,8 @@ public class Transaction {
         Iterator it = playlist.getSongs().iterator();
         while(it.hasNext()) {
             if (modified((Song)it.next())) {
-                txnMap.put(playlist, Collections.EMPTY_LIST);
+                List<Txn> empty = Collections.emptyList();
+                txnMap.put(playlist, empty);
                 return true;
             }
         }

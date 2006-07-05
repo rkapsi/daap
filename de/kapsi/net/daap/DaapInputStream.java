@@ -165,7 +165,7 @@ public class DaapInputStream extends FilterInputStream {
     /**
      * Throws an IOE if expected differs from length
      */
-    private static void checkLength(Chunk chunk, int expected, int length) throws IOException {
+    private static void checkLength(Chunk chunk, int expected, int length) {
         if (expected != length) {
             //throw new IOException("Expected a chunk with length " + expected + " but got " + length + " (" + chunk.getContentCodeString() + ")");
             

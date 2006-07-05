@@ -39,7 +39,7 @@ public abstract class DaapAudioResponse implements DaapResponse {
     protected long pos;
         
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponse(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
+    public DaapAudioResponse(DaapRequest request, Song song, FileInputStream in, long pos, long end) {
         this.request = request;
         this.song = song;
         this.in = in;

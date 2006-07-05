@@ -2,13 +2,9 @@ package de.kapsi.net.daap.tools;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.Locale;
 
-import de.kapsi.net.daap.DaapUtil;
 import de.kapsi.net.daap.chunks.Chunk;
 
 public class ChunkFactoryGenerator {

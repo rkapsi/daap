@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -88,7 +89,7 @@ public class Library {
     private Set<Database> deletedDatabases = null;
     
     /** List of listener */
-    private final ArrayList listener = new ArrayList();
+    private final List<WeakReference<LibraryListener>> listener = new ArrayList<WeakReference<LibraryListener>>();
     
     protected boolean clone = false;
     
@@ -101,10 +102,7 @@ public class Library {
             library.deletedDatabases = null;
         }
         
-        Iterator it = library.databases.iterator();
-        while(it.hasNext()) {
-            Database database = (Database)it.next();
-            
+        for(Database database : library.databases) {
             if (txn.modified(database)) {
                 if (deletedDatabases == null || !deletedDatabases.contains(database)) {
                     Database clone = new Database(database, txn);
@@ -311,10 +309,9 @@ public class Library {
         Library diff = new Library(this, txn);
         
         synchronized(listener) {
-            Iterator it = listener.iterator();
+            Iterator<WeakReference<LibraryListener>> it = listener.iterator();
             while(it.hasNext()) {
-                WeakReference wr = (WeakReference)it.next();
-                LibraryListener l = (LibraryListener)wr.get();
+                LibraryListener l = it.next().get();
                 if (l == null) {
                     it.remove();
                 } else {
@@ -364,16 +361,16 @@ public class Library {
 
     public void addLibraryListener(LibraryListener l) {
         synchronized(listener) {
-            listener.add(new WeakReference(l));
+            listener.add(new WeakReference<LibraryListener>(l));
         }
     }
     
     public void removeLibraryListener(LibraryListener l) {
         synchronized(listener) {
-            Iterator it = listener.iterator();
+            Iterator<WeakReference<LibraryListener>> it = listener.iterator();
             while(it.hasNext()) {
-                WeakReference wr = (WeakReference)it.next();
-                if (wr.get() == null || wr.get() == l) {
+                LibraryListener gotten = it.next().get();
+                if (gotten == null || gotten == l) {
                     it.remove();
                 }
             }
@@ -382,9 +379,7 @@ public class Library {
     
     protected Database getDatabase(DaapRequest request) {
         long databaseId = request.getDatabaseId();
-        Iterator it = databases.iterator();
-        while(it.hasNext()) {
-            Database database = (Database)it.next();
+        for(Database database : databases) {
             if (database.getItemId() == databaseId) {
                 return database;
             }
@@ -430,12 +425,8 @@ public class Library {
 
         Listing listing = new Listing();
 
-        Iterator it = databases.iterator();
-        while (it.hasNext()) {
+        for(Database database : databases) {
             ListingItem listingItem = new ListingItem();
-
-            Database database = (Database) it.next();
-
             listingItem.add(new ItemId(database.getItemId()));
             listingItem.add(new PersistentId(database.getPersistentId()));
             listingItem.add(new ItemName(database.getName()));
@@ -450,11 +441,8 @@ public class Library {
         if (request.isUpdateType() && deletedDatabases != null) {
             DeletedIdListing deletedListing = new DeletedIdListing();
             
-            it = deletedDatabases.iterator();
-            while(it.hasNext()) {
-                Database database = (Database)it.next();
+            for(Database database : deletedDatabases)
                 deletedListing.add(new ItemId(database.getItemId()));
-            }
 
             serverDatabases.add(deletedListing);
         }

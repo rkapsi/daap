@@ -29,7 +29,7 @@ import java.util.Iterator;
  *
  * @author  Roger Kapsi
  */
-public class ContainerChunk extends AbstractChunk {
+public class ContainerChunk extends AbstractChunk implements Iterable<Chunk> {
     
     protected Collection<Chunk> collection;
     
@@ -60,7 +60,7 @@ public class ContainerChunk extends AbstractChunk {
         collection.add(chunk);
     }
          
-    public Iterator iterator() {
+    public Iterator<Chunk> iterator() {
         return Collections.unmodifiableCollection(collection).iterator();
     }
     
@@ -82,10 +82,10 @@ public class ContainerChunk extends AbstractChunk {
         StringBuilder buffer = new StringBuilder(indent(indent));
         buffer.append(name).append("(").append(getContentCodeString()).append("; container)\n");
         
-        Iterator it = iterator();
+        Iterator<Chunk> it = iterator();
         for(int i = 0; it.hasNext(); i++) {
-            AbstractChunk chunk = (AbstractChunk)it.next();
-            buffer./*append(i).append(": ").*/append(chunk.toString(indent + 4));
+            Chunk chunk = it.next();
+            buffer./*append(i).append(": ").*/append(indent(indent+4) + chunk.toString());
             if (it.hasNext()) {
                 buffer.append("\n");
             }

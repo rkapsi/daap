@@ -24,7 +24,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,7 +40,7 @@ import de.kapsi.net.daap.SessionId;
  *
  * @author  Roger Kapsi
  */
-public class DaapServerBIO extends DaapServer {
+public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
     
     private static final Log LOG = LogFactory.getLog(DaapServerBIO.class);
    
@@ -129,17 +128,14 @@ public class DaapServerBIO extends DaapServer {
      */
     public synchronized void disconnectAll() {
 
-        for(Iterator it = pending.iterator(); it.hasNext(); ) {
-            ((DaapConnectionBIO)it.next()).disconnect();
-        }
+        for(DaapConnectionBIO connection : pending)
+            connection.disconnect();
         
-        for(Iterator it = streams.iterator(); it.hasNext(); ) {
-            ((DaapConnectionBIO)it.next()).disconnect();
-        }
-        
-        for(Iterator it = connections.iterator(); it.hasNext(); ) {
-            ((DaapConnectionBIO)it.next()).disconnect();
-        }
+        for(DaapConnectionBIO connection : streams)
+            connection.disconnect();
+
+        for(DaapConnectionBIO connection : connections)
+            connection.disconnect();
         
         clear();
     }
@@ -148,11 +144,9 @@ public class DaapServerBIO extends DaapServer {
      * Call this to notify the server that Library has changed
      */
     protected synchronized void update() {
-        for(Iterator it = connections.iterator(); it.hasNext(); ) {
-            DaapConnectionBIO conn = (DaapConnectionBIO)it.next();
-            
+        for(DaapConnectionBIO conn : connections) {
             for(int i = 0; i < libraryQueue.size(); i++) {
-                conn.enqueueLibrary((Library)libraryQueue.get(i));
+                conn.enqueueLibrary(libraryQueue.get(i));
             }
             
             try {
@@ -225,12 +219,12 @@ public class DaapServerBIO extends DaapServer {
     }
     
     /* Make them accessible for classes in this package */
-    protected synchronized DaapConnection getAudioConnection(SessionId sessionId) {
+    protected synchronized DaapConnectionBIO getAudioConnection(SessionId sessionId) {
         return super.getAudioConnection(sessionId);
     }
     
     /* Make them accessible for classes in this package */
-    protected synchronized DaapConnection getDaapConnection(SessionId sessionId) {
+    protected synchronized DaapConnectionBIO getDaapConnection(SessionId sessionId) {
         return super.getDaapConnection(sessionId);
     }
     
@@ -245,7 +239,7 @@ public class DaapServerBIO extends DaapServer {
     }
     
     /* Make them accessible for classes in this package */
-    protected synchronized boolean updateConnection(DaapConnection connection) {
+    protected synchronized boolean updateConnection(DaapConnectionBIO connection) {
         if (!isRunning()) {
             return false;
         }

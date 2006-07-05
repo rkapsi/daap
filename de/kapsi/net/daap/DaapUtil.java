@@ -39,8 +39,6 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.commons.httpclient.auth.DigestScheme;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import de.kapsi.net.daap.chunks.Chunk;
 import de.kapsi.net.daap.chunks.UIntChunk;
@@ -52,7 +50,7 @@ import de.kapsi.net.daap.chunks.UIntChunk;
  */
 public final class DaapUtil {
     
-    private static final Log LOG = LogFactory.getLog(DaapUtil.class);
+    //private static final Log LOG = LogFactory.getLog(DaapUtil.class);
     
     /** */
     private static final Random generator = new Random();
@@ -155,10 +153,10 @@ public final class DaapUtil {
             throw new IllegalArgumentException("content code must have 4 characters!");
         }
         
-        return    (int)((contentCode.charAt(0) & 0xFF) << 24)
-                | (int)((contentCode.charAt(1) & 0xFF) << 16)
-                | (int)((contentCode.charAt(2) & 0xFF) <<  8)
-                | (int)((contentCode.charAt(3) & 0xFF));
+        return    ((contentCode.charAt(0) & 0xFF) << 24)
+                | ((contentCode.charAt(1) & 0xFF) << 16)
+                | ((contentCode.charAt(2) & 0xFF) <<  8)
+                | ((contentCode.charAt(3) & 0xFF));
     }
     
     /**

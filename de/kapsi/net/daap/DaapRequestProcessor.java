@@ -128,6 +128,7 @@ public class DaapRequestProcessor {
      * Returns <tt>true</tt> if request is authenticated 
      * or if no authentication is required (if disabled). 
      */
+    @SuppressWarnings("deprecation")
     private boolean isAuthenticated(DaapRequest request)
             throws UnsupportedEncodingException {
         

@@ -7,11 +7,13 @@
 package de.kapsi.net.daap.chunks;
 
 import java.util.HashMap;
+import java.util.Map;
+
 import de.kapsi.net.daap.DaapUtil;
 
 public final class ChunkFactory {
 
-    private final HashMap map = new HashMap();
+    private final Map<Integer, Class<? extends Chunk>> map = new HashMap<Integer, Class<? extends Chunk>>();
 
     public ChunkFactory() {
         map.put(new Integer(0x6D736175), de.kapsi.net.daap.chunks.impl.AuthenticationMethod.class); //msau
@@ -122,14 +124,14 @@ public final class ChunkFactory {
         map.put(new Integer(0x6D757479), de.kapsi.net.daap.chunks.impl.UpdateType.class); //muty
     }
 
-    public Class getChunkClass(Integer contentCode) {
-        return (Class)map.get(contentCode);
+    public Class<? extends Chunk> getChunkClass(Integer contentCode) {
+        return map.get(contentCode);
     }
 
     public Chunk newChunk(int contentCode) {
-        Class clazz = getChunkClass(new Integer(contentCode));
+        Class<? extends Chunk> clazz = getChunkClass(new Integer(contentCode));
         try {
-            return (Chunk)clazz.newInstance();
+            return clazz.newInstance();
         } catch (Exception err) {
             throw new RuntimeException(DaapUtil.toContentCodeString(contentCode), err);
         }

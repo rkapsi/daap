@@ -2,8 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="/lib/jars/jmdns.jar"/>
-	<classpathentry exported="true" kind="lib" path="/lib/jars/commons-logging.jar"/>
-	<classpathentry exported="true" kind="lib" path="/lib/jars/commons-httpclient.jar"/>
+	<classpathentry kind="lib" path="/_head_lib/jars/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/_head_lib/jars/jmdns.jar"/>
+	<classpathentry kind="lib" path="/_head_lib/jars/commons-httpclient.jar"/>
+	<classpathentry kind="lib" path="/_head_tests/lib/junit.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

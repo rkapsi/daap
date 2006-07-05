@@ -61,7 +61,7 @@ public abstract class VersionChunk extends AbstractChunk {
     }
     
     public long getValue() {
-        return (long)(version & MAX_VALUE);
+        return version & MAX_VALUE;
     }
     
     public void setMajorVersion(int majorVersion) {

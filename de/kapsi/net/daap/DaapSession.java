@@ -21,6 +21,7 @@ package de.kapsi.net.daap;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A session object where session related information can be stored.
@@ -32,7 +33,7 @@ import java.util.Iterator;
 public class DaapSession {
     
     private final long creationTime = System.currentTimeMillis();
-    private final HashMap attributes = new HashMap();
+    private final Map<String, Object> attributes = new HashMap<String, Object>();
     
     private final SessionId sessionId;
     private boolean valid;

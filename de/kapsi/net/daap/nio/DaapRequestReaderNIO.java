@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.httpclient.Header;
 
@@ -45,11 +46,11 @@ class DaapRequestReaderNIO {
     private ByteBuffer in;
     
     private String requestLine;
-    private ArrayList headers;
+    private List<Header> headers;
     
     private DaapLineReaderNIO lineReader;
     
-    private LinkedList pending;
+    private LinkedList<DaapRequest> pending;
     
     /** Creates a new instance of DaapRequestReader */
     DaapRequestReaderNIO(DaapConnectionNIO connection) {
@@ -61,8 +62,8 @@ class DaapRequestReaderNIO {
         in.flip();
         
         lineReader = new DaapLineReaderNIO();
-        headers = new ArrayList();
-        pending = new LinkedList();
+        headers = new ArrayList<Header>();
+        pending = new LinkedList<DaapRequest>();
     }
 
     public long getBytesRead() {
@@ -74,7 +75,7 @@ class DaapRequestReaderNIO {
         DaapRequest ret = null;
         
         if (pending.isEmpty()==false)
-            ret = (DaapRequest)pending.removeFirst();
+            ret = pending.removeFirst();
         
         String line = null;
         

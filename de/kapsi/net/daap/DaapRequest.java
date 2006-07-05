@@ -21,7 +21,6 @@ package de.kapsi.net.daap;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -81,9 +80,7 @@ public class DaapRequest {
     
     private static final Log LOG = LogFactory.getLog(DaapRequest.class);
     
-    private String method;
     private URI uri;
-    private String protocol;
     
     private Map<String, String> queryMap;
     
@@ -143,13 +140,11 @@ public class DaapRequest {
             throws URIException {
         this(connection);
         
-        String method = null;
         URI uri = null;
-        String protocol = null;
         
         try {
             StringTokenizer st = new StringTokenizer(requestLine, " ");
-            method = st.nextToken();
+            st.nextToken(); // method
             
             try {
                 uri = new URI(st.nextToken().toCharArray());
@@ -159,7 +154,7 @@ public class DaapRequest {
                 }
             }
             
-            protocol = st.nextToken();
+            st.nextToken(); // protocol
         } catch (NoSuchElementException err) {
             if (LOG.isErrorEnabled()) {
                 LOG.error(err);
@@ -169,9 +164,7 @@ public class DaapRequest {
         this.isServerSideRequest = false;
         this.isUpdateType = false;
         
-        setMethod(method);
         setURI(uri);
-        setProtocol(protocol); 
     }
     
     /**
@@ -189,27 +182,7 @@ public class DaapRequest {
         this.isServerSideRequest = false;
         this.isUpdateType = false;
         
-        setMethod(method);
         setURI(uri);
-        setProtocol(protocol); 
-    }
-    
-    /**
-     * Sets the request method (GET)
-     *
-     * @param method
-     */
-    private void setMethod(String method) {
-        this.method = method;
-    }
-    
-    /**
-     * Sets the protocol of the request (HTTP/1.1)
-     *
-     * @param protocol
-     */
-    private void setProtocol(String protocol) {
-        this.protocol = protocol;
     }
     
     /**
@@ -244,17 +217,17 @@ public class DaapRequest {
             }
             
             if (queryMap.containsKey("session-id")) {
-                sessionId = SessionId.parseSessionId((String)queryMap.get("session-id"));
+                sessionId = SessionId.parseSessionId(queryMap.get("session-id"));
             }
             
             if (!SessionId.INVALID.equals(sessionId)) {
 
                 if (queryMap.containsKey("revision-number")) {
-                    revisionNumber = Integer.parseInt((String)queryMap.get("revision-number"));
+                    revisionNumber = Integer.parseInt(queryMap.get("revision-number"));
                 }
 
                 if (queryMap.containsKey("delta")) {
-                    delta = Integer.parseInt((String)queryMap.get("delta"));
+                    delta = Integer.parseInt(queryMap.get("delta"));
                 }
                 
                 if (delta > revisionNumber) {
@@ -287,7 +260,7 @@ public class DaapRequest {
                             throw new URIException("Unknown token in path: " + path + " [" + token + "]@1");
                         }
 
-                        databaseId = DaapUtil.parseUInt((String)tok.nextToken());
+                        databaseId = DaapUtil.parseUInt(tok.nextToken());
                         token = tok.nextToken();
 
                         if (token.equals("items")) {
@@ -303,7 +276,7 @@ public class DaapRequest {
 
                         } else if (count == 4) {
 
-                            token = (String)tok.nextToken();
+                            token = tok.nextToken();
 
                             StringTokenizer fileTokenizer = new StringTokenizer(token, ".");
 
@@ -316,8 +289,8 @@ public class DaapRequest {
                             }
 
                         } else if (count == 5) {
-                            containerId = DaapUtil.parseUInt((String)tok.nextToken());
-                            token = (String)tok.nextToken();
+                            containerId = DaapUtil.parseUInt(tok.nextToken());
+                            token = tok.nextToken();
 
                             if (token.equals("items")) {
                                 requestType = PLAYLIST_SONGS;

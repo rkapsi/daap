@@ -50,7 +50,7 @@ import de.kapsi.net.daap.SessionId;
  *
  * @author  Roger Kapsi
  */
-public class DaapServerNIO extends DaapServer {
+public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
     
     private static final Log LOG = LogFactory.getLog(DaapServerNIO.class);
     
@@ -152,11 +152,8 @@ public class DaapServerNIO extends DaapServer {
         
         if (selector != null) {
             
-            Iterator it = selector.keys().iterator();
-            while(it.hasNext()) {
-                SelectionKey sk = (SelectionKey)it.next();
-                cancel(sk);
-            }
+            for(SelectionKey key : selector.keys())
+                cancel(key);
                 
             try {     
                 // Note: throws on OSX always "IOEx: Bad file descriptor"
@@ -196,7 +193,7 @@ public class DaapServerNIO extends DaapServer {
         
         sk.cancel();
         
-        SelectableChannel channel = (SelectableChannel)sk.channel();
+        SelectableChannel channel = sk.channel();
         
         try {
             channel.close();
@@ -249,10 +246,10 @@ public class DaapServerNIO extends DaapServer {
                 
                 channel.configureBlocking(false);
                 
-                DaapConnection connection 
+                DaapConnectionNIO connection 
                     = new DaapConnectionNIO(this, channel);
     
-                SelectionKey key = channel.register(selector, SelectionKey.OP_READ, connection);
+                channel.register(selector, SelectionKey.OP_READ, connection);
                 addPendingConnection(connection);
                 
             } else {
@@ -275,7 +272,6 @@ public class DaapServerNIO extends DaapServer {
             return;
         
         DaapConnectionNIO connection = (DaapConnectionNIO)sk.attachment(); 
-        SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;
         keepAlive = connection.read();
@@ -298,7 +294,6 @@ public class DaapServerNIO extends DaapServer {
             return;
         
         DaapConnectionNIO connection = (DaapConnectionNIO)sk.attachment();
-        SocketChannel channel = (SocketChannel)sk.channel();
         
         boolean keepAlive = false;
 
@@ -328,7 +323,7 @@ public class DaapServerNIO extends DaapServer {
         Iterator it = selector.keys().iterator();
         while(it.hasNext()) {
             SelectionKey sk = (SelectionKey)it.next();
-            SelectableChannel channel = (SelectableChannel)sk.channel();
+            SelectableChannel channel = sk.channel();
             if (channel instanceof SocketChannel) {
                 cancel(sk);
             }
@@ -342,15 +337,13 @@ public class DaapServerNIO extends DaapServer {
      */
     private void processUpdate() {
 
-        for(Iterator it = getDaapConnections().iterator(); it.hasNext(); ) {
-            
-            DaapConnectionNIO connection = (DaapConnectionNIO)it.next();
+        for(DaapConnectionNIO connection : getDaapConnections()) {
             SelectionKey sk = connection.getChannel().keyFor(selector);
             
             try {
                 
                 for(int i = 0; i < libraryQueue.size(); i++) {
-                    connection.enqueueLibrary((Library)libraryQueue.get(i));
+                    connection.enqueueLibrary(libraryQueue.get(i));
                 }
                 
                 connection.update();
@@ -383,18 +376,14 @@ public class DaapServerNIO extends DaapServer {
      * and this will prevent us from running out of memory if the client 
      * doesn't fetch its updates).
      */
-    protected void processTimeout() throws IOException {
-        for (Iterator it = getPendingConnections().iterator(); it.hasNext();) {
-            DaapConnectionNIO connection = (DaapConnectionNIO) it.next();
-
+    protected void processTimeout() {
+        for(DaapConnectionNIO connection : getPendingConnections()) {
             if (connection.timeout()) {
                 cancelConnection(connection);
             }
         }
 
-        for (Iterator it = getDaapConnections().iterator(); it.hasNext();) {
-            DaapConnectionNIO connection = (DaapConnectionNIO) it.next();
-
+        for(DaapConnectionNIO connection : getDaapConnections()) {
             if (connection.timeout()) {
                 connection.clearLibraryQueue();
             }
@@ -449,10 +438,10 @@ public class DaapServerNIO extends DaapServer {
                 
                 if (n > 0) {
                 
-                    for (Iterator it = selector.selectedKeys().iterator(); 
-                            it.hasNext() && running; ) {
+                    for (Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+                      it.hasNext() && running; ) {
                         
-                        SelectionKey sk = (SelectionKey)it.next();
+                        SelectionKey sk = it.next();
                         it.remove();
                         
                         try {
@@ -507,7 +496,7 @@ public class DaapServerNIO extends DaapServer {
             
             selector = Selector.open();
             
-            SelectionKey sk = ssc.register(selector, SelectionKey.OP_ACCEPT);
+            ssc.register(selector, SelectionKey.OP_ACCEPT);
             
             process();
             
@@ -521,12 +510,12 @@ public class DaapServerNIO extends DaapServer {
     }
     
     /* Make them accessible for classes in this package */
-    protected synchronized DaapConnection getAudioConnection(SessionId sessionId) {
+    protected synchronized DaapConnectionNIO getAudioConnection(SessionId sessionId) {
         return super.getAudioConnection(sessionId);
     }
     
     /* Make them accessible for classes in this package */
-    protected synchronized DaapConnection getDaapConnection(SessionId sessionId) {
+    protected synchronized DaapConnectionNIO getDaapConnection(SessionId sessionId) {
         return super.getDaapConnection(sessionId);
     }
     
@@ -536,7 +525,7 @@ public class DaapServerNIO extends DaapServer {
     }
     
     /* Make them accessible for classes in this package */
-    protected synchronized boolean updateConnection(DaapConnection connection) {
+    protected synchronized boolean updateConnection(DaapConnectionNIO connection) {
         return super.updateConnection(connection);
     }
 }

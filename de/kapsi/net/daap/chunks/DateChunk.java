@@ -48,7 +48,7 @@ public abstract class DateChunk extends AbstractChunk {
     }
     
     public long getValue() {
-        return (long)(date & MAX_VALUE);
+        return date & MAX_VALUE;
     }
     
     public void setValue(long date) {

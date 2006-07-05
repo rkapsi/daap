@@ -170,7 +170,7 @@ public class Playlist {
     }
     
     protected Chunk getChunk(String name) {
-        return (Chunk)chunks.get(name);
+        return chunks.get(name);
     }
     
     /**

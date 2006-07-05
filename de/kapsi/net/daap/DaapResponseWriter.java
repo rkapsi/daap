@@ -21,6 +21,7 @@ package de.kapsi.net.daap;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * FIFO based queue to write DaapResponses.
@@ -29,7 +30,7 @@ import java.util.LinkedList;
  */
 public class DaapResponseWriter {
     
-    private LinkedList<DaapResponse> queue;
+    private List<DaapResponse> queue;
     
     /** Creates a new instance of DaapResponseWriter */
     public DaapResponseWriter() {
@@ -75,7 +76,7 @@ public class DaapResponseWriter {
      */
     private void next() {
         if (!isEmpty()) {
-            queue.removeFirst();
+            queue.remove(0);
         }
     }
     
@@ -88,7 +89,7 @@ public class DaapResponseWriter {
      */ 
     public boolean write() throws IOException {
         if (!isEmpty()) {
-            DaapResponse response = (DaapResponse)queue.getFirst();
+            DaapResponse response = queue.get(0);
             if (response.write()) {
                 next();
             } else {

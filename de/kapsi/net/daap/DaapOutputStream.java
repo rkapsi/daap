@@ -23,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 
 import de.kapsi.net.daap.chunks.BooleanChunk;
 import de.kapsi.net.daap.chunks.ByteChunk;
@@ -146,10 +145,8 @@ public class DaapOutputStream extends FilterOutputStream {
     public void writeContainerChunk(ContainerChunk chunk) throws IOException {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         DaapOutputStream out = new DaapOutputStream(buffer);
-        Iterator it = ((ContainerChunk)chunk).iterator();
-        while(it.hasNext()) {
-            out.writeChunk((Chunk)it.next());
-        }
+        for(Chunk chnk : chunk)
+            out.writeChunk(chnk);
         out.close();
         byte[] b = buffer.toByteArray();
         

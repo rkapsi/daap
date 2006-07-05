@@ -47,7 +47,7 @@ public class DaapAudioResponseNIO extends DaapAudioResponse {
     }
     
     /** Creates a new instance of DaapAudioResponse */
-    public DaapAudioResponseNIO(DaapRequest request, Song song, FileInputStream in, long pos, long end) throws IOException {
+    public DaapAudioResponseNIO(DaapRequest request, Song song, FileInputStream in, long pos, long end) {
         super(request, song, in, pos, end);
         
         headerBuffer = ByteBuffer.wrap(header);

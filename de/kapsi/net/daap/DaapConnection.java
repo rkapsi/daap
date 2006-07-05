@@ -224,7 +224,7 @@ public abstract class DaapConnection {
     protected Library getFirstInQueue() {
         synchronized(libraryQueue) {
             if (!libraryQueue.isEmpty()) {
-                return (Library)libraryQueue.getFirst();
+                return libraryQueue.getFirst();
             }
             return server.getLibrary();
         }
@@ -236,7 +236,7 @@ public abstract class DaapConnection {
     protected Library getLastInQueue() {
         synchronized(libraryQueue) {
             if (!libraryQueue.isEmpty()) {
-                return (Library)libraryQueue.getLast();
+                return libraryQueue.getLast();
             }
             return server.getLibrary();
         }
@@ -253,7 +253,7 @@ public abstract class DaapConnection {
                 return server.getLibrary();
             }
             
-            Library first = (Library)libraryQueue.getFirst();
+            Library first = libraryQueue.getFirst();
             
             if (first.getRevision() != request.getRevisionNumber()) {
                 if (LOG.isErrorEnabled()) {
