@@ -49,14 +49,8 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
     /** Set of currently active session ids */
     protected final Set<SessionId> sessionIds = new HashSet<SessionId>();
     
-    /** List of pending connections */
-    protected final List<T> pending = new LinkedList<T>();
-    
-    /** List of DAAP connections */
+    /** Set of currently active connections */
     protected final List<T> connections = new LinkedList<T>();
-    
-    /** List of Audio connections */
-    protected final List<T> streams = new LinkedList<T>();
     
     /** A DaapConfig instance */
     protected DaapConfig config;
@@ -198,21 +192,21 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
      * Returns the number of connections
      */
     public synchronized int getNumberOfDaapConnections() {
-        return connections.size();
+        return getDaapConnections().size();
     }
     
     /**
      * Returns the number of streams
      */
     public synchronized int getNumberOfAudioConnections() {
-        return streams.size();
+        return getAudioConnections().size();
     }
     
     /**
      * Returns the number of pending connections
      */
     public synchronized int getNumberOfPendingConnections() {
-        return pending.size();
+        return getPendingConnections().size();
     }
     
     /**
@@ -262,87 +256,52 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
             throw new IllegalArgumentException();
         }
         
-        pending.add(connection);
+        connections.add(connection);
     }
     
     /** Returns an unmodifyable list of pending connections */
     protected synchronized List<T> getPendingConnections() {
-        List<T> l = Collections.emptyList();
-        if (!pending.isEmpty()) {
-            l = Collections.unmodifiableList(new ArrayList<T>(pending));
+        List<T> list = new ArrayList<T>();
+        for (T connection : connections) {
+            if (connection.isUndef()) {
+                list.add(connection);
+            }
         }
-        return l;
+        return Collections.unmodifiableList(list);
     }
     
-    /** Adds connection to DAAP connection pool */
-    protected synchronized boolean addDaapConnection(T connection) 
-            throws IllegalStateException, IllegalArgumentException {
-        
-        if (!pending.remove(connection)) {
-            throw new IllegalStateException();
-        }
-        
-        if (!connection.isDaapConnection()) {
-            throw new IllegalArgumentException();
-        }
-        
-        if (connections.size() < config.getMaxConnections()) {
-            connections.add(connection);
-            //connection.addLibrary(library);
-            return true;
-        } else {
-            return false;
-        }
+    protected synchronized List<T> getConnections() {
+        return Collections.unmodifiableList(new ArrayList<T>(connections));
     }
     
     /** Returns an unmodifyable list of DAAP connections */
     protected synchronized List<T> getDaapConnections() {
-        List<T> l = Collections.emptyList();
-        if (!connections.isEmpty()) {
-            l = Collections.unmodifiableList(new ArrayList<T>(connections));
+        List<T> list = new ArrayList<T>();
+        for (T connection : connections) {
+            if (connection.isDaapConnection()) {
+                list.add(connection);
+            }
         }
-        return l;
-    }
-
-    /** Adds connection to audio connection pool */
-    protected synchronized boolean addAudioConnection(T connection) 
-            throws IllegalStateException, IllegalArgumentException {
-        
-        if (!pending.remove(connection)) {
-            throw new IllegalStateException();
-        }
-        
-        if (!connection.isAudioStream()) {
-            throw new IllegalArgumentException();
-        }
-        
-        if (streams.size() < config.getMaxConnections()) {
-            streams.add(connection);
-            return true;
-        } else {
-            return false;
-        }
+        return Collections.unmodifiableList(list);
     }
     
     /** Returns an unmodifyable List of Audio connections */
     protected synchronized List<T> getAudioConnections() {
-        List<T> l = Collections.emptyList();
-        if (!streams.isEmpty()) {
-            l = Collections.unmodifiableList(new ArrayList<T>(streams));
+        List<T> list = new ArrayList<T>();
+        for (T connection : connections) {
+            if (connection.isAudioStream()) {
+                list.add(connection);
+            }
         }
-        return l;
+        return Collections.unmodifiableList(list);
     }
 
     /** Updates connection's state from pending to DAAP or Audio connection */
     protected synchronized boolean updateConnection(T connection) {
         if (connection.isDaapConnection()) {
-            return addDaapConnection(connection);
+            return getDaapConnections().size() < config.getMaxConnections();
         } else if (connection.isAudioStream()) {
-            return addAudioConnection(connection);
-        } else {
-            if (LOG.isErrorEnabled()) {
-                LOG.error("Unknown state of connection: " + connection);
-            }
+            return getAudioConnections().size() < config.getMaxConnections();
         }
         
         return false;
@@ -352,19 +311,7 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
     protected synchronized void removeConnection(DaapConnection connection) 
             throws IllegalStateException {
         
-        if (connection.isUndef()) {
-            if (!pending.remove(connection)) {
-                throw new IllegalStateException();
-            }
-        } else if (connection.isDaapConnection()) {
-            if (!connections.remove(connection)) {
-                throw new IllegalStateException();
-            }
-        } else if (connection.isAudioStream()) {
-            if (!streams.remove(connection)) {
-                throw new IllegalStateException();
-            }
-        } else {
+        if (!connections.remove(connection)) {
             throw new IllegalStateException();
         }
     }
@@ -373,7 +320,9 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
     protected synchronized T getDaapConnection(SessionId sessionId) {
         for(T connection : connections) {
             DaapSession session = connection.getSession(false);
-            if (session != null && sessionId.equals(session.getSessionId())) {
+            if (session != null 
+                    && connection.isDaapConnection() 
+                    && sessionId.equals(session.getSessionId())) {
                 return connection;
             }
         }
@@ -382,9 +331,11 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
     
     /** Returns an Audio connection for the provided sessionId */
     protected synchronized T getAudioConnection(SessionId sessionId) {
-        for(T connection : streams) {
+        for(T connection : connections) {
             DaapSession session = connection.getSession(false);
-            if (session != null && sessionId.equals(session.getSessionId())) {
+            if (session != null 
+                    && connection.isAudioStream() 
+                    && sessionId.equals(session.getSessionId())) {
                 return connection;
             }
         }
@@ -393,9 +344,7 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable, 
     
     /** Clears internal lists */
     protected synchronized void clear() {
-        pending.clear();
         connections.clear();
-        streams.clear();
         sessionIds.clear();
         libraryQueue.clear();
     }

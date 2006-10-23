@@ -143,7 +143,7 @@ public class DaapConnectionNIO extends DaapConnection {
     
     private void defineConnection(DaapRequest request) throws IOException {
         if (request.isSongRequest()) {
-            setConnectionType(DaapConnection.AUDIO);
+            setConnectionType(ConnectionType.AUDIO);
 
             // AudioStreams have a session-id and we must check the id
             SessionId sid = request.getSessionId();
@@ -172,7 +172,7 @@ public class DaapConnectionNIO extends DaapConnection {
 
         } else if (request.isServerInfoRequest()) {
 
-            setConnectionType(DaapConnection.DAAP);
+            setConnectionType(ConnectionType.DAAP);
             setProtocolVersion(DaapUtil.getProtocolVersion(request));
 
         } else {

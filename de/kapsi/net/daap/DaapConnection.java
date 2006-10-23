@@ -21,6 +21,7 @@ package de.kapsi.net.daap;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,25 +38,27 @@ public abstract class DaapConnection {
     public static final int TIMEOUT = 3000;
     public static final int LIBRARY_TIMEOUT = 30000;
     
-    /** Undef type of connection */
-    protected static final int UNDEF  = DaapUtil.NULL;
-    
-    /** A DAAP connection */
-    protected static final int DAAP = 1;
-    
-    /** An audio stream */
-    protected static final int AUDIO  = 2;
+    protected static enum ConnectionType {
+        /** Undef type of connection */
+        UNDEF,
+        
+        /** A DAAP connection */
+        DAAP,
+        
+        /** An audio stream */
+        AUDIO;
+    }
     
     protected final DaapResponseWriter writer;
     
     protected DaapServer server;
     protected DaapSession session;
     
-    protected int type = UNDEF;
-    protected int protocolVersion = UNDEF;
+    protected ConnectionType type = ConnectionType.UNDEF;
+    protected int protocolVersion = DaapUtil.NULL;
     protected String nonce;
     
-    protected LinkedList<Library> libraryQueue;
+    protected List<Library> libraryQueue;
     
     protected boolean locked = false;
     
@@ -82,7 +85,6 @@ public abstract class DaapConnection {
     public boolean write() throws IOException {
         
         if (writer.write()) {
-
             if (isAudioStream()) {
                 return false;
             }
@@ -121,7 +123,7 @@ public abstract class DaapConnection {
      * 
      * @param type the type of this connection
      */
-    protected void setConnectionType(int type) {
+    protected void setConnectionType(ConnectionType type) {
         this.type = type;
     }
     
@@ -139,7 +141,7 @@ public abstract class DaapConnection {
      * @return true if this is an audio stream
      */ 
     public boolean isAudioStream() {
-        return (type==DaapConnection.AUDIO);
+        return ConnectionType.AUDIO.equals(type);
     }
     
     /**
@@ -149,7 +151,7 @@ public abstract class DaapConnection {
      * @return true if this is a DAAP connection 
      */    
     public boolean isDaapConnection() {
-        return (type==DaapConnection.DAAP);
+        return ConnectionType.DAAP.equals(type);
     }
     
     /**
@@ -159,7 +161,7 @@ public abstract class DaapConnection {
      * @return <code>true</code> if connection is indetermined
      */    
     public boolean isUndef() {
-        return (type==DaapConnection.UNDEF);
+        return ConnectionType.UNDEF.equals(type);
     }
     
     /**
@@ -224,7 +226,7 @@ public abstract class DaapConnection {
     protected Library getFirstInQueue() {
         synchronized(libraryQueue) {
             if (!libraryQueue.isEmpty()) {
-                return libraryQueue.getFirst();
+                return libraryQueue.get(0);
             }
             return server.getLibrary();
         }
@@ -236,7 +238,7 @@ public abstract class DaapConnection {
     protected Library getLastInQueue() {
         synchronized(libraryQueue) {
             if (!libraryQueue.isEmpty()) {
-                return libraryQueue.getLast();
+                return libraryQueue.get(libraryQueue.size()-1);
             }
             return server.getLibrary();
         }
@@ -253,7 +255,7 @@ public abstract class DaapConnection {
                 return server.getLibrary();
             }
             
-            Library first = libraryQueue.getFirst();
+            Library first = libraryQueue.get(0);
             
             if (first.getRevision() != request.getRevisionNumber()) {
                 if (LOG.isErrorEnabled()) {
@@ -268,7 +270,7 @@ public abstract class DaapConnection {
                 clearLibraryQueue();
                 return null;
             } else if (first.getRevision() == delta) {
-                libraryQueue.removeFirst();
+                libraryQueue.remove(0);
                 
                 if (libraryQueue.isEmpty()) {
                     return server.getLibrary();

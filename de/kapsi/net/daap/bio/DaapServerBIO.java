@@ -127,15 +127,9 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
      * Disconnects all DAAP and Stream connections
      */
     public synchronized void disconnectAll() {
-
-        for(DaapConnectionBIO connection : pending)
+        for(DaapConnectionBIO connection : connections) {
             connection.disconnect();
-        
-        for(DaapConnectionBIO connection : streams)
-            connection.disconnect();
-
-        for(DaapConnectionBIO connection : connections)
-            connection.disconnect();
+        }
         
         clear();
     }

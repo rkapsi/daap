@@ -83,7 +83,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
             if (isUndef()) {
                 
                 if (request.isSongRequest()) {
-                    setConnectionType(DaapConnection.AUDIO);
+                    setConnectionType(ConnectionType.AUDIO);
                     
                     // as it is an audio connection there's nothing more to read
                     socket.shutdownInput();
@@ -114,7 +114,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                     setProtocolVersion(connection.getProtocolVersion());
                         
                 } else if (request.isServerInfoRequest()) {
-                    setConnectionType(DaapConnection.DAAP);
+                    setConnectionType(ConnectionType.DAAP);
                     setProtocolVersion(DaapUtil.getProtocolVersion(request));
                     
                 } else {
