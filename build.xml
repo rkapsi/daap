@@ -1,5 +1,7 @@
 <project name="DAAP" default="build" basedir=".">
     <description>DAAP support</description>
+
+    <property name="version" value="1.0"/>
 	
     <property name="basedir" value="."/>
     <property name="javadoc" value="${basedir}/javadoc"/>
@@ -92,7 +94,7 @@
 		</javadoc>
     </target>
 
-    <target name="jar">
+     <target name="jar">
         <javac srcdir="${basedir}" 
         			destdir="${basedir}" 
         			excludes="**/tests/*"
@@ -105,10 +107,20 @@
             <classpath refid="default.classpath"/>
         </javac>
         
-        <jar destfile="daap.jar" 
+        <jar destfile="daap-${version}.jar" 
                         basedir="${basedir}" 
                         includes="**/*.class"
             				compress="false"
+                        excludes="**/Main.* 
+                            de/kapsi/net/daap/tools/**/*.*
+                            de/kapsi/net/daap/tests/**/*.*"/>
+    </target>
+
+    <target name="src-jar">
+        <jar destfile="daap-${version}-src.jar" 
+                        basedir="${basedir}" 
+                        includes="**/*.java"
+						compress="false"
                         excludes="**/Main.* 
                             de/kapsi/net/daap/tools/**/*.*
                             de/kapsi/net/daap/tests/**/*.*"/>

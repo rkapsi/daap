@@ -1,0 +1,143 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
+  <modelVersion>4.0.0</modelVersion>  
+
+  <groupId>org.limewire</groupId>
+  <artifactId>daap</artifactId>
+  <packaging>jar</packaging>
+  <version>1.0</version>
+  <name>LimeWire Daap Library</name>
+
+  <organization>
+    <name>Lime Wire LLC</name>
+    <url>http://limewire.org</url>
+  </organization>
+
+  <licenses>
+    <license>
+      <name>GNU General Public License Version 2</name> 
+      <url>http://www.gnu.org/licenses/gpl.txt</url> 
+      <distribution>repo</distribution> 
+    </license>
+  </licenses>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://www.limewire.org/jira/browse/DAAP</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:cvs:pserver:guest:guest@cvs.limewire.org:/cvs:daap</connection>
+    <tag>HEAD</tag>
+    <url>https://www.limewire.org/fisheye/browse/misc/daap</url>
+  </scm>
+
+  <repositories>
+    <repository>
+      <id>limewire</id>
+      <name>LimeWire Repository</name>
+      <layout>default</layout>
+      <url>http://limewire.org/repository</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <dependencies>  
+    <dependency>
+      <groupId>org.limewire</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>2.0-rc2-lw-1</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>jmdns</groupId>
+      <artifactId>jmdns</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+	  <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>.</sourceDirectory>
+    <testSourceDirectory>.</testSourceDirectory>
+    <plugins>
+      <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+	    <artifactId>maven-compiler-plugin</artifactId>
+		<configuration>
+		  <source>1.5</source>
+		  <target>1.5</target>
+          <excludes>
+            <exclude>**/*Test.java</exclude>
+          </excludes>
+	    </configuration>
+     </plugin>
+     <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+          <argLine>-enableassertions</argLine>
+        </configuration>
+     </plugin>
+     <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <configuration>
+          <downloadSources>true</downloadSources>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <outputDirectory>target/site</outputDirectory>
+    <plugins>
+	  <plugin>
+	    <groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-project-info-reports-plugin</artifactId>
+		<reportSets>
+		  <reportSet>
+		    <reports>
+			  <report>dependencies</report>
+<!-- 			  <report>project-team</report> -->
+<!-- 			  <report>mailing-list</report> -->
+<!-- 			  <report>cim</report> -->
+			  <report>index</report>
+			  <report>issue-tracking</report>
+			  <report>license</report>
+			  <report>scm</report>
+			  <report>summary</report>
+		    </reports>
+		  </reportSet>
+		</reportSets>
+	  </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+      </plugin>
+	  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>
