@@ -45,11 +45,12 @@
   </repositories>
 
   <dependencies>  
-    <dependency>
+    <dependency> 
       <groupId>org.limewire</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>2.0-rc2-lw-1</version>
-    </dependency>
+      <artifactId>lw-httpclient</artifactId>
+      <version>4.0-alpha2-730</version>
+    </dependency>    
+  </dependencies>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
