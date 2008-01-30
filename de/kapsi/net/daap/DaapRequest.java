@@ -19,6 +19,8 @@
 
 package de.kapsi.net.daap;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,11 +28,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.URIException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 
 /**
  * A DAAP request. The data of this class is submitted by the client 
@@ -137,7 +137,7 @@ public class DaapRequest {
      * @throw URIException
      */
     public DaapRequest(DaapConnection connection, String requestLine) 
-            throws URIException {
+            throws URISyntaxException {
         this(connection);
         
         URI uri = null;
@@ -147,8 +147,8 @@ public class DaapRequest {
             st.nextToken(); // method
             
             try {
-                uri = new URI(st.nextToken().toCharArray());
-            } catch (URIException err) {
+                uri = new URI(st.nextToken());
+            } catch (URISyntaxException err) {
                 if (LOG.isErrorEnabled()) {
                     LOG.error(err);
                 }
@@ -176,7 +176,7 @@ public class DaapRequest {
      * @throw URIException
      */
     public DaapRequest(DaapConnection connection, String method, 
-            URI uri, String protocol) throws URIException {
+            URI uri, String protocol) throws URISyntaxException {
         this(connection);
         
         this.isServerSideRequest = false;
@@ -192,7 +192,7 @@ public class DaapRequest {
      * @param uri
      * @throws URIException
      */    
-    private void setURI(URI uri) throws URIException {
+    private void setURI(URI uri) throws URISyntaxException {
         
         this.uri = uri;
         
@@ -231,7 +231,7 @@ public class DaapRequest {
                 }
                 
                 if (delta > revisionNumber) {
-                    throw new URIException("Delta must be less or equal to revision-number: " + delta + "/" + revisionNumber);
+                    throw new URISyntaxException(uri.toASCIIString(), "Delta must be less or equal to revision-number: " + delta + "/" + revisionNumber);
                 }
                 
                 if (queryMap.containsKey("meta")) {
@@ -257,7 +257,7 @@ public class DaapRequest {
                         String token = tok.nextToken();
 
                         if (token.equals("databases")==false) {
-                            throw new URIException("Unknown token in path: " + path + " [" + token + "]@1");
+                            throw new URISyntaxException(uri.toASCIIString(), "Unknown token in path: " + path + " [" + token + "]@1");
                         }
 
                         databaseId = DaapUtil.parseUInt(tok.nextToken());
@@ -268,7 +268,7 @@ public class DaapRequest {
                         } else if (token.equals("containers")) {
                             requestType = DATABASE_PLAYLISTS;
                         } else {
-                            throw new URIException("Unknown token in path: " + path + " [" + token + "]@2");
+                            throw new URISyntaxException(uri.toASCIIString(), "Unknown token in path: " + path + " [" + token + "]@2");
                         }
 
                         if (count == 3) {
@@ -285,7 +285,7 @@ public class DaapRequest {
                                 requestType = SONG;
 
                             } else {
-                                throw new URIException("Unknown token in path: " + path + " [" + token + "]@3");
+                                throw new URISyntaxException(uri.toASCIIString(), "Unknown token in path: " + path + " [" + token + "]@3");
                             }
 
                         } else if (count == 5) {
@@ -296,14 +296,14 @@ public class DaapRequest {
                                 requestType = PLAYLIST_SONGS;
 
                             } else {
-                                throw new URIException("Unknown token in path: " + path + " [" + token + "@4");
+                                throw new URISyntaxException(uri.toASCIIString(), "Unknown token in path: " + path + " [" + token + "@4");
                             }
 
                         } else {
-                            throw new URIException("Unknown token in path: " + path + " [" + token + "]@5");
+                            throw new URISyntaxException(uri.toASCIIString(), "Unknown token in path: " + path + " [" + token + "]@5");
                         }
                     } else {
-                        throw new URIException("Unknown token in path: " + path);
+                        throw new URISyntaxException(uri.toASCIIString(), "Unknown token in path: " + path);
                     }
                 }
             }

@@ -26,11 +26,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.URISyntaxException;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
+import org.apache.http.HttpException;
 
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapRequest;
@@ -275,12 +276,22 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
         if(line == null) {
             throw new IOException("Request is null: " + this);
         }
-        
-        DaapRequest request = new DaapRequest(this, line);
-        Header[] headers = HttpParser.parseHeaders(in);
-        request.addHeaders(headers);
-        
-        return request;
+
+        DaapRequest request = null;
+        try {
+            request = new DaapRequest(this, line);        
+            Header[] headers = HttpParser.parseHeaders(in);
+            request.addHeaders(headers);            
+            return request;
+        } catch (URISyntaxException e) {
+            IOException ioe = new IOException();
+            ioe.initCause(e);
+            throw ioe;
+        } catch (HttpException e) {
+            IOException ioe = new IOException();
+            ioe.initCause(e);
+            throw ioe;
+        }
     }
     
     public String toString() {

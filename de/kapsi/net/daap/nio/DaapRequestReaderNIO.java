@@ -24,8 +24,10 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.net.URISyntaxException;
 
-import org.apache.commons.httpclient.Header;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 
 import de.kapsi.net.daap.DaapRequest;
 
@@ -98,7 +100,7 @@ class DaapRequestReaderNIO {
                 
                 String name = line.substring(0, p).trim();
                 String value = line.substring(++p).trim();
-                headers.add(new Header(name, value));
+                headers.add(new BasicHeader(name, value));
             }
         }
         
@@ -109,6 +111,10 @@ class DaapRequestReaderNIO {
             try {
                 request = new DaapRequest(connection, requestLine);
                 request.addHeaders(headers);
+            } catch (URISyntaxException e) {
+                IOException ioe = new IOException();
+                ioe.initCause(e);
+                throw ioe;
             } finally {
                 requestLine = null;
                 headers.clear();

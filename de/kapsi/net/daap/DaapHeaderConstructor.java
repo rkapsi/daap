@@ -25,7 +25,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.Header;
+import org.apache.http.Header;
+import org.apache.http.message.BasicHeader;
 
 /**
  * A helper class to create easily misc DAAP response header
@@ -64,14 +65,14 @@ public class DaapHeaderConstructor {
             String serverName = connection.getServer().getConfig().getServerName();
             
             List<Header> headers = new ArrayList<Header>();
-            headers.add(new Header("Date", DaapUtil.now()));
-            headers.add(new Header("DAAP-Server", serverName));
-            headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
-            headers.add(new Header("Content-Length", Long.toString(contentLength)));
-            headers.add(new Header("Connection", "Keep-Alive"));
+            headers.add(new BasicHeader("Date", DaapUtil.now()));
+            headers.add(new BasicHeader("DAAP-Server", serverName));
+            headers.add(new BasicHeader("Content-Type", "application/x-dmap-tagged"));
+            headers.add(new BasicHeader("Content-Length", Long.toString(contentLength)));
+            headers.add(new BasicHeader("Connection", "Keep-Alive"));
             
             if (DaapUtil.COMPRESS && request.isGZIPSupported()) {
-                headers.add(new Header("Content-Encoding", "gzip"));
+                headers.add(new BasicHeader("Content-Encoding", "gzip"));
             }
             
             return toByteArray(HTTP_OK, headers.toArray(new Header[0]));
@@ -104,16 +105,16 @@ public class DaapHeaderConstructor {
             String statusLine = null;
             
             List<Header> headers = new ArrayList<Header>();
-            headers.add(new Header("Date", DaapUtil.now()));
-            headers.add(new Header("DAAP-Server", serverName));
-            headers.add(new Header("Content-Type", "application/x-dmap-tagged"));
-            headers.add(new Header("Connection", "close"));
+            headers.add(new BasicHeader("Date", DaapUtil.now()));
+            headers.add(new BasicHeader("DAAP-Server", serverName));
+            headers.add(new BasicHeader("Content-Type", "application/x-dmap-tagged"));
+            headers.add(new BasicHeader("Connection", "close"));
             
             // 
             if (pos == 0 || version <= DaapUtil.DAAP_VERSION_2 ) {
                 
                 statusLine = HTTP_OK;
-                headers.add(new Header("Content-Length", Long.toString(contentLength)));
+                headers.add(new BasicHeader("Content-Length", Long.toString(contentLength)));
             
             } else {
                 
@@ -121,11 +122,11 @@ public class DaapHeaderConstructor {
                 
                 String cotentLengthStr = Long.toString(contentLength - pos);
                 String contentRange = "bytes " + pos + "-" + (contentLength-1) + "/" + contentLength;
-                headers.add(new Header("Content-Length", cotentLengthStr));
-                headers.add(new Header("Content-Range", contentRange));
+                headers.add(new BasicHeader("Content-Length", cotentLengthStr));
+                headers.add(new BasicHeader("Content-Range", contentRange));
             }
             
-            headers.add(new Header("Accept-Ranges", "bytes"));
+            headers.add(new BasicHeader("Accept-Ranges", "bytes"));
             
             return toByteArray(statusLine, headers.toArray(new Header[0]));
             
@@ -149,12 +150,12 @@ public class DaapHeaderConstructor {
             String serverName = connection.getServer().getConfig().getServerName();
             
             Header[] headers = {
-                new Header("Date", DaapUtil.now()),
-                new Header("DAAP-Server", serverName),
-                new Header("Content-Type", "text/html"),
-                new Header("Content-Length", "0"),
-                new Header("WWW-Authenticate", "Basic realm=\"" + DaapUtil.DAAP_REALM + "\""),
-                new Header("Connection", "Keep-Alive")
+                new BasicHeader("Date", DaapUtil.now()),
+                new BasicHeader("DAAP-Server", serverName),
+                new BasicHeader("Content-Type", "text/html"),
+                new BasicHeader("Content-Length", "0"),
+                new BasicHeader("WWW-Authenticate", "Basic realm=\"" + DaapUtil.DAAP_REALM + "\""),
+                new BasicHeader("Connection", "Keep-Alive")
             };
             
             return toByteArray(HTTP_AUTH, headers);
@@ -176,12 +177,12 @@ public class DaapHeaderConstructor {
             String nonce = connection.createNonce();
             
             Header[] headers = {
-                new Header("Date", DaapUtil.now()),
-                new Header("DAAP-Server", serverName),
-                new Header("Content-Type", "text/html"),
-                new Header("Content-Length", "0"),
-                new Header("WWW-Authenticate", "Digest realm=\"" + DaapUtil.DAAP_REALM + "\", nonce=\"" + nonce + "\""),
-                new Header("Connection", "Keep-Alive")
+                new BasicHeader("Date", DaapUtil.now()),
+                new BasicHeader("DAAP-Server", serverName),
+                new BasicHeader("Content-Type", "text/html"),
+                new BasicHeader("Content-Length", "0"),
+                new BasicHeader("WWW-Authenticate", "Digest realm=\"" + DaapUtil.DAAP_REALM + "\", nonce=\"" + nonce + "\""),
+                new BasicHeader("Connection", "Keep-Alive")
             };
             
             return toByteArray(HTTP_AUTH, headers);
@@ -206,11 +207,11 @@ public class DaapHeaderConstructor {
             String serverName = connection.getServer().getConfig().getServerName();
 
             Header[] headers = {
-                new Header("Date", DaapUtil.now()),
-                new Header("DAAP-Server", serverName),
-                new Header("Content-Type", "application/x-dmap-tagged"),
-                new Header("Content-Length", "0"),
-                new Header("Connection", request.isLogoutRequest() ? "close" : "Keep-Alive")
+                new BasicHeader("Date", DaapUtil.now()),
+                new BasicHeader("DAAP-Server", serverName),
+                new BasicHeader("Content-Type", "application/x-dmap-tagged"),
+                new BasicHeader("Content-Length", "0"),
+                new BasicHeader("Connection", request.isLogoutRequest() ? "close" : "Keep-Alive")
             };
             
             return toByteArray(HTTP_NO_CONTENT, headers);
@@ -318,7 +319,7 @@ public class DaapHeaderConstructor {
         out.write(DaapUtil.CRLF);
         
         for(int i = 0; i < headers.length; i++) {
-            out.write(DaapUtil.getBytes(headers[i].toExternalForm(), DaapUtil.ISO_8859_1));
+            out.write(DaapUtil.getBytes(headers[i].toString() + "\r\n", DaapUtil.ISO_8859_1));
         }
         
         out.write(DaapUtil.CRLF);

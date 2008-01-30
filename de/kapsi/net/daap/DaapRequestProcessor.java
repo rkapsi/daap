@@ -27,10 +27,10 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 
 import de.kapsi.net.daap.chunks.Chunk;
 
@@ -172,7 +172,7 @@ public class DaapRequestProcessor {
                 return false;
             }
             
-            byte[] logpass = Base64.decode(tok.nextToken().getBytes(DaapUtil.ISO_8859_1));
+            byte[] logpass = Base64.decodeBase64(tok.nextToken().getBytes(DaapUtil.ISO_8859_1));
             
             int q = 0;
             for(;q<logpass.length && logpass[q] != ':';q++);

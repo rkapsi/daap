@@ -36,9 +36,9 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.auth.AuthenticationException;
-import org.apache.commons.httpclient.auth.DigestScheme;
+import org.apache.http.Header;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.impl.auth.DigestScheme;
 
 import de.kapsi.net.daap.chunks.Chunk;
 import de.kapsi.net.daap.chunks.UIntChunk;
@@ -484,12 +484,7 @@ public final class DaapUtil {
      * Creates a random nonce
      */
     public static String nonce() {
-        try {
-            return DigestScheme.createCnonce();
-        } catch (AuthenticationException err) {
-            // should never happen
-            throw new RuntimeException(err);
-        }
+        return DigestScheme.createCnonce();
     }
     
     public static byte[] toMD5(String s) {
