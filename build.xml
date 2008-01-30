@@ -1,7 +1,7 @@
 <project name="DAAP" default="build" basedir=".">
     <description>DAAP support</description>
 
-    <property name="version" value="1.0"/>
+    <property name="version" value="1.1"/>
 	
     <property name="basedir" value="."/>
     <property name="javadoc" value="${basedir}/javadoc"/>
