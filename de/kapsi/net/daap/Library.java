@@ -56,8 +56,11 @@ import de.kapsi.net.daap.chunks.impl.SessionId;
 import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
 import de.kapsi.net.daap.chunks.impl.Status;
 import de.kapsi.net.daap.chunks.impl.SupportsAutoLogout;
+import de.kapsi.net.daap.chunks.impl.SupportsBrowse;
 import de.kapsi.net.daap.chunks.impl.SupportsExtensions;
+import de.kapsi.net.daap.chunks.impl.SupportsIndex;
 import de.kapsi.net.daap.chunks.impl.SupportsPersistentIds;
+import de.kapsi.net.daap.chunks.impl.SupportsQuery;
 import de.kapsi.net.daap.chunks.impl.SupportsUpdate;
 import de.kapsi.net.daap.chunks.impl.TimeoutInterval;
 import de.kapsi.net.daap.chunks.impl.UpdateResponse;
@@ -468,7 +471,7 @@ public class Library {
         serverInfoResponse.add(new TimeoutInterval(1800));
         serverInfoResponse.add(new DmapProtocolVersion(DaapUtil.DMAP_VERSION_201));
         serverInfoResponse.add(new DaapProtocolVersion(DaapUtil.DAAP_VERSION_3));
-        serverInfoResponse.add(new MusicSharingVersion(DaapUtil.MUSIC_SHARING_VERSION_201));
+        //serverInfoResponse.add(new MusicSharingVersion(DaapUtil.MUSIC_SHARING_VERSION_201));
         serverInfoResponse.add(new ItemName(name));
         
         // NOTE: the value of the following boolean chunks does not matter!
@@ -476,10 +479,13 @@ public class Library {
         
         // client should perform /login request (create session)
         serverInfoResponse.add(new LoginRequired(true));
+        serverInfoResponse.add(new SupportsPersistentIds(false));
+        serverInfoResponse.add(new SupportsIndex(false));
+        serverInfoResponse.add(new SupportsBrowse(false));
+        serverInfoResponse.add(new SupportsQuery(false));
         
-        serverInfoResponse.add(new SupportsAutoLogout(true));
-        serverInfoResponse.add(new SupportsUpdate(true));
-        serverInfoResponse.add(new SupportsPersistentIds(true));
+        //serverInfoResponse.add(new SupportsAutoLogout(true));
+        //serverInfoResponse.add(new SupportsUpdate(true));
         
         // TODO: figure out what is an extension and what not.
         // /content-codes request
