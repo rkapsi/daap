@@ -483,9 +483,9 @@ public class Library {
         serverInfoResponse.add(new SupportsPersistentIds(false));
         serverInfoResponse.add(new SupportsIndex(true));
         serverInfoResponse.add(new SupportsQuery(true));
+        serverInfoResponse.add(new SupportsUpdate(true));
         
         //serverInfoResponse.add(new SupportsAutoLogout(true));
-        //serverInfoResponse.add(new SupportsUpdate(true));
         
         // TODO: figure out what is an extension and what not.
         // /content-codes request
