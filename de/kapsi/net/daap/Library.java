@@ -479,10 +479,10 @@ public class Library {
         
         // client should perform /login request (create session)
         serverInfoResponse.add(new LoginRequired(true));
+        serverInfoResponse.add(new SupportsBrowse(true));
         serverInfoResponse.add(new SupportsPersistentIds(false));
-        serverInfoResponse.add(new SupportsIndex(false));
-        serverInfoResponse.add(new SupportsBrowse(false));
-        serverInfoResponse.add(new SupportsQuery(false));
+        serverInfoResponse.add(new SupportsIndex(true));
+        serverInfoResponse.add(new SupportsQuery(true));
         
         //serverInfoResponse.add(new SupportsAutoLogout(true));
         //serverInfoResponse.add(new SupportsUpdate(true));
