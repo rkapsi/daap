@@ -17,10 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks.impl;
+package org.ardverk.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.UIntChunk;
-import de.kapsi.net.daap.chunks.VersionChunk;
+import org.ardverk.daap.chunks.UIntChunk;
+import org.ardverk.daap.chunks.VersionChunk;
 
 /**
  * Unknown purpose.

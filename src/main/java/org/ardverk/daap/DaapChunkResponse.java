@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 /**
  * An abstract base class for DaapChunkRespones. A Chunk is either a single

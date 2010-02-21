@@ -17,9 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks;
+package org.ardverk.daap.chunks;
 
-import de.kapsi.net.daap.DaapUtil;
+import org.ardverk.daap.DaapUtil;
 
 /**
  * An abstract base class for Chunks.

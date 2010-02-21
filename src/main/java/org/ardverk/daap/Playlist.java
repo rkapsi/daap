@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,29 +31,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.ardverk.daap.chunks.BooleanChunk;
+import org.ardverk.daap.chunks.Chunk;
+import org.ardverk.daap.chunks.StringChunk;
+import org.ardverk.daap.chunks.UByteChunk;
+import org.ardverk.daap.chunks.impl.DeletedIdListing;
+import org.ardverk.daap.chunks.impl.ItemCount;
+import org.ardverk.daap.chunks.impl.ItemId;
+import org.ardverk.daap.chunks.impl.ItemName;
+import org.ardverk.daap.chunks.impl.Listing;
+import org.ardverk.daap.chunks.impl.ListingItem;
+import org.ardverk.daap.chunks.impl.PersistentId;
+import org.ardverk.daap.chunks.impl.PlaylistRepeatMode;
+import org.ardverk.daap.chunks.impl.PlaylistShuffleMode;
+import org.ardverk.daap.chunks.impl.PlaylistSongs;
+import org.ardverk.daap.chunks.impl.PodcastPlaylist;
+import org.ardverk.daap.chunks.impl.ReturnedCount;
+import org.ardverk.daap.chunks.impl.SmartPlaylist;
+import org.ardverk.daap.chunks.impl.SpecifiedTotalCount;
+import org.ardverk.daap.chunks.impl.Status;
+import org.ardverk.daap.chunks.impl.UpdateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.chunks.BooleanChunk;
-import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.chunks.StringChunk;
-import de.kapsi.net.daap.chunks.UByteChunk;
-import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
-import de.kapsi.net.daap.chunks.impl.ItemCount;
-import de.kapsi.net.daap.chunks.impl.ItemId;
-import de.kapsi.net.daap.chunks.impl.ItemName;
-import de.kapsi.net.daap.chunks.impl.Listing;
-import de.kapsi.net.daap.chunks.impl.ListingItem;
-import de.kapsi.net.daap.chunks.impl.PersistentId;
-import de.kapsi.net.daap.chunks.impl.PlaylistRepeatMode;
-import de.kapsi.net.daap.chunks.impl.PlaylistShuffleMode;
-import de.kapsi.net.daap.chunks.impl.PlaylistSongs;
-import de.kapsi.net.daap.chunks.impl.PodcastPlaylist;
-import de.kapsi.net.daap.chunks.impl.ReturnedCount;
-import de.kapsi.net.daap.chunks.impl.SmartPlaylist;
-import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.UpdateType;
 
 /**
  * The name is self explaining. A Playlist is a set of Songs.

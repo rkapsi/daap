@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.nio;
+package org.ardverk.daap.nio;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -25,17 +25,16 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 
+import org.ardverk.daap.DaapConnection;
+import org.ardverk.daap.DaapRequest;
+import org.ardverk.daap.DaapRequestProcessor;
+import org.ardverk.daap.DaapResponse;
+import org.ardverk.daap.DaapResponseFactory;
+import org.ardverk.daap.DaapSession;
+import org.ardverk.daap.DaapUtil;
+import org.ardverk.daap.SessionId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapRequestProcessor;
-import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapResponseFactory;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.SessionId;
 
 /**
  * A NIO based implementation of DaapConnection.

@@ -17,13 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.nio;
+package org.ardverk.daap.nio;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import de.kapsi.net.daap.DaapNoContentResponse;
-import de.kapsi.net.daap.DaapRequest;
+import org.ardverk.daap.DaapNoContentResponse;
+import org.ardverk.daap.DaapRequest;
 
 /**
  * A No Contents Response (just header without playload).

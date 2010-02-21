@@ -17,13 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.tests;
+package org.ardverk.daap.tests;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import de.kapsi.net.daap.Database;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.Transaction;
+
+import org.ardverk.daap.Database;
+import org.ardverk.daap.Library;
+import org.ardverk.daap.Transaction;
 
 public class LibraryTest extends TestCase {
     

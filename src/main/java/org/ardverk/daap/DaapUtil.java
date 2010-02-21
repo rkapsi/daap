@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,9 +38,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.Header;
 import org.apache.http.impl.auth.DigestScheme;
-
-import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.chunks.UIntChunk;
+import org.ardverk.daap.chunks.Chunk;
+import org.ardverk.daap.chunks.UIntChunk;
 
 /**
  * Misc methods and constants

@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks;
+package org.ardverk.daap.chunks;
 
 public interface ByteChunk extends Chunk {
     public void setValue(int value);

@@ -1,6 +1,6 @@
-package de.kapsi.net.daap.chunks.impl;
+package org.ardverk.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.UIntChunk;
+import org.ardverk.daap.chunks.UIntChunk;
 
 public class ITMSStorefrontId extends UIntChunk {
     

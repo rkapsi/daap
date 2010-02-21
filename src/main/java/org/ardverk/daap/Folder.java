@@ -17,14 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import de.kapsi.net.daap.chunks.impl.HasChildContainers;
-import de.kapsi.net.daap.chunks.impl.ParentContainerId;
+import org.ardverk.daap.chunks.impl.HasChildContainers;
+import org.ardverk.daap.chunks.impl.ParentContainerId;
 
 /**
  * A Folder is a Playlist of Playlists

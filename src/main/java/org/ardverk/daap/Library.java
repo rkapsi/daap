@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -27,42 +27,40 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.ardverk.daap.chunks.ContentCodesResponseImpl;
+import org.ardverk.daap.chunks.impl.AuthenticationMethod;
+import org.ardverk.daap.chunks.impl.AuthenticationSchemes;
+import org.ardverk.daap.chunks.impl.ContainerCount;
+import org.ardverk.daap.chunks.impl.ContentCodesResponse;
+import org.ardverk.daap.chunks.impl.DaapProtocolVersion;
+import org.ardverk.daap.chunks.impl.DatabaseCount;
+import org.ardverk.daap.chunks.impl.DeletedIdListing;
+import org.ardverk.daap.chunks.impl.DmapProtocolVersion;
+import org.ardverk.daap.chunks.impl.ItemCount;
+import org.ardverk.daap.chunks.impl.ItemId;
+import org.ardverk.daap.chunks.impl.ItemName;
+import org.ardverk.daap.chunks.impl.Listing;
+import org.ardverk.daap.chunks.impl.ListingItem;
+import org.ardverk.daap.chunks.impl.LoginRequired;
+import org.ardverk.daap.chunks.impl.LoginResponse;
+import org.ardverk.daap.chunks.impl.PersistentId;
+import org.ardverk.daap.chunks.impl.ReturnedCount;
+import org.ardverk.daap.chunks.impl.ServerDatabases;
+import org.ardverk.daap.chunks.impl.ServerInfoResponse;
+import org.ardverk.daap.chunks.impl.ServerRevision;
+import org.ardverk.daap.chunks.impl.SpecifiedTotalCount;
+import org.ardverk.daap.chunks.impl.Status;
+import org.ardverk.daap.chunks.impl.SupportsBrowse;
+import org.ardverk.daap.chunks.impl.SupportsExtensions;
+import org.ardverk.daap.chunks.impl.SupportsIndex;
+import org.ardverk.daap.chunks.impl.SupportsPersistentIds;
+import org.ardverk.daap.chunks.impl.SupportsQuery;
+import org.ardverk.daap.chunks.impl.SupportsUpdate;
+import org.ardverk.daap.chunks.impl.TimeoutInterval;
+import org.ardverk.daap.chunks.impl.UpdateResponse;
+import org.ardverk.daap.chunks.impl.UpdateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
-import de.kapsi.net.daap.chunks.impl.AuthenticationMethod;
-import de.kapsi.net.daap.chunks.impl.AuthenticationSchemes;
-import de.kapsi.net.daap.chunks.impl.ContainerCount;
-import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
-import de.kapsi.net.daap.chunks.impl.DaapProtocolVersion;
-import de.kapsi.net.daap.chunks.impl.DatabaseCount;
-import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
-import de.kapsi.net.daap.chunks.impl.DmapProtocolVersion;
-import de.kapsi.net.daap.chunks.impl.ItemCount;
-import de.kapsi.net.daap.chunks.impl.ItemId;
-import de.kapsi.net.daap.chunks.impl.ItemName;
-import de.kapsi.net.daap.chunks.impl.Listing;
-import de.kapsi.net.daap.chunks.impl.ListingItem;
-import de.kapsi.net.daap.chunks.impl.LoginRequired;
-import de.kapsi.net.daap.chunks.impl.LoginResponse;
-import de.kapsi.net.daap.chunks.impl.PersistentId;
-import de.kapsi.net.daap.chunks.impl.ReturnedCount;
-import de.kapsi.net.daap.chunks.impl.ServerDatabases;
-import de.kapsi.net.daap.chunks.impl.ServerInfoResponse;
-import de.kapsi.net.daap.chunks.impl.ServerRevision;
-import de.kapsi.net.daap.chunks.impl.SessionId;
-import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.SupportsBrowse;
-import de.kapsi.net.daap.chunks.impl.SupportsExtensions;
-import de.kapsi.net.daap.chunks.impl.SupportsIndex;
-import de.kapsi.net.daap.chunks.impl.SupportsPersistentIds;
-import de.kapsi.net.daap.chunks.impl.SupportsQuery;
-import de.kapsi.net.daap.chunks.impl.SupportsUpdate;
-import de.kapsi.net.daap.chunks.impl.TimeoutInterval;
-import de.kapsi.net.daap.chunks.impl.UpdateResponse;
-import de.kapsi.net.daap.chunks.impl.UpdateType;
 
 /**
  * 
@@ -389,9 +387,9 @@ public class Library {
     }
     
     private LoginResponse getLoginResponse(DaapRequest request) {
-        de.kapsi.net.daap.SessionId sessionId = request.getSessionId();
+        SessionId sessionId = request.getSessionId();
         
-        if (sessionId.equals(de.kapsi.net.daap.SessionId.INVALID)) {
+        if (sessionId.equals(SessionId.INVALID)) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Unknown SessionId, check Server code!");
             }
@@ -400,7 +398,7 @@ public class Library {
         
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.add(new Status(200));
-        loginResponse.add(new SessionId(sessionId.intValue()));
+        loginResponse.add(new org.ardverk.daap.chunks.impl.SessionId(sessionId.intValue()));
         return loginResponse;
     }
     

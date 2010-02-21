@@ -1,12 +1,12 @@
 
-package de.kapsi.net.daap.tools;
+package org.ardverk.daap.tools;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Locale;
 
-import de.kapsi.net.daap.chunks.Chunk;
+import org.ardverk.daap.chunks.Chunk;
 
 public class ContentCodesGenerator {
     

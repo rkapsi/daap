@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,10 +29,9 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
+import org.ardverk.daap.chunks.Chunk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.chunks.Chunk;
 
 /**
  * DaapRequestProcessor processes a DaapRequest and generates

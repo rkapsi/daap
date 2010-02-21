@@ -17,12 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks;
+package org.ardverk.daap.chunks;
 
+import org.ardverk.daap.DaapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.DaapUtil;
 
 /**
  * This class implements a Version chunk. A Version chunk is 

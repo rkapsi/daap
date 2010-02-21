@@ -1,10 +1,10 @@
-package de.kapsi.net.daap.tools;
+package org.ardverk.daap.tools;
 
 import java.io.File;
 import java.io.FilenameFilter;
 
-import de.kapsi.net.daap.chunks.AbstractChunk;
-import de.kapsi.net.daap.chunks.Chunk;
+import org.ardverk.daap.chunks.AbstractChunk;
+import org.ardverk.daap.chunks.Chunk;
 
 public final class ChunkUtil {
 	

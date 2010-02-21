@@ -17,10 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
-import de.kapsi.net.daap.bio.DaapServerBIO;
-import de.kapsi.net.daap.nio.DaapServerNIO;
+import org.ardverk.daap.bio.DaapServerBIO;
+import org.ardverk.daap.nio.DaapServerNIO;
 
 /**
  * This is a helper class to simplify the DaapServer 

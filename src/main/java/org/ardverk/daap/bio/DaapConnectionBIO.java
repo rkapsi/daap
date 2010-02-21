@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.bio;
+package org.ardverk.daap.bio;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -30,18 +30,17 @@ import java.net.URISyntaxException;
 
 import org.apache.http.Header;
 import org.apache.http.HttpException;
+import org.ardverk.daap.DaapConnection;
+import org.ardverk.daap.DaapRequest;
+import org.ardverk.daap.DaapRequestProcessor;
+import org.ardverk.daap.DaapResponse;
+import org.ardverk.daap.DaapResponseFactory;
+import org.ardverk.daap.DaapSession;
+import org.ardverk.daap.DaapStreamException;
+import org.ardverk.daap.DaapUtil;
+import org.ardverk.daap.SessionId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapRequestProcessor;
-import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapResponseFactory;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapStreamException;
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.SessionId;
 
 /**
  * This class is a cover for an incoming connection and is based 

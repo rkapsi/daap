@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,21 +26,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.ardverk.daap.chunks.Chunk;
+import org.ardverk.daap.chunks.UIntChunk;
+import org.ardverk.daap.chunks.impl.DatabasePlaylists;
+import org.ardverk.daap.chunks.impl.DatabaseSongs;
+import org.ardverk.daap.chunks.impl.DeletedIdListing;
+import org.ardverk.daap.chunks.impl.ItemId;
+import org.ardverk.daap.chunks.impl.Listing;
+import org.ardverk.daap.chunks.impl.ListingItem;
+import org.ardverk.daap.chunks.impl.ReturnedCount;
+import org.ardverk.daap.chunks.impl.SpecifiedTotalCount;
+import org.ardverk.daap.chunks.impl.Status;
+import org.ardverk.daap.chunks.impl.UpdateType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.chunks.UIntChunk;
-import de.kapsi.net.daap.chunks.impl.DatabasePlaylists;
-import de.kapsi.net.daap.chunks.impl.DatabaseSongs;
-import de.kapsi.net.daap.chunks.impl.DeletedIdListing;
-import de.kapsi.net.daap.chunks.impl.ItemId;
-import de.kapsi.net.daap.chunks.impl.Listing;
-import de.kapsi.net.daap.chunks.impl.ListingItem;
-import de.kapsi.net.daap.chunks.impl.ReturnedCount;
-import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
-import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.UpdateType;
 
 /**
  * A Database is a container for Playlists and it keeps track of 

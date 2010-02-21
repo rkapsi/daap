@@ -17,16 +17,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.bio;
+package org.ardverk.daap.bio;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapResponse;
-import de.kapsi.net.daap.DaapResponseFactory;
-import de.kapsi.net.daap.Song;
+import org.ardverk.daap.DaapRequest;
+import org.ardverk.daap.DaapResponse;
+import org.ardverk.daap.DaapResponseFactory;
+import org.ardverk.daap.Song;
 
 /**
  * This factory creates BIO DaapRespones.

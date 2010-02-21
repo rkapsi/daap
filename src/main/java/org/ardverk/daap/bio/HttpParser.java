@@ -1,4 +1,4 @@
-package de.kapsi.net.daap.bio;
+package org.ardverk.daap.bio;
 /*
  * $HeadURL$
  * $Revision$

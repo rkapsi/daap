@@ -17,23 +17,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap;
+package org.ardverk.daap;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import de.kapsi.net.daap.chunks.BooleanChunk;
-import de.kapsi.net.daap.chunks.ByteChunk;
-import de.kapsi.net.daap.chunks.Chunk;
-import de.kapsi.net.daap.chunks.ContainerChunk;
-import de.kapsi.net.daap.chunks.DateChunk;
-import de.kapsi.net.daap.chunks.IntChunk;
-import de.kapsi.net.daap.chunks.LongChunk;
-import de.kapsi.net.daap.chunks.ShortChunk;
-import de.kapsi.net.daap.chunks.StringChunk;
-import de.kapsi.net.daap.chunks.VersionChunk;
+import org.ardverk.daap.chunks.BooleanChunk;
+import org.ardverk.daap.chunks.ByteChunk;
+import org.ardverk.daap.chunks.Chunk;
+import org.ardverk.daap.chunks.ContainerChunk;
+import org.ardverk.daap.chunks.DateChunk;
+import org.ardverk.daap.chunks.IntChunk;
+import org.ardverk.daap.chunks.LongChunk;
+import org.ardverk.daap.chunks.ShortChunk;
+import org.ardverk.daap.chunks.StringChunk;
+import org.ardverk.daap.chunks.VersionChunk;
 
 public class DaapOutputStream extends FilterOutputStream {
     

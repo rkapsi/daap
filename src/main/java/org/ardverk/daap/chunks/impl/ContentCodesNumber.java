@@ -17,10 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks.impl;
+package org.ardverk.daap.chunks.impl;
 
-import de.kapsi.net.daap.DaapUtil;
-import de.kapsi.net.daap.chunks.UIntChunk;
+import org.ardverk.daap.DaapUtil;
+import org.ardverk.daap.chunks.UIntChunk;
 
 /**
  * The number of a ContentCode (it's actually a four character code). 

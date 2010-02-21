@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.tools;
+package org.ardverk.daap.tools;
 
 import java.awt.FileDialog;
 import java.awt.Frame;
@@ -29,8 +29,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import de.kapsi.net.daap.ByteUtil;
-import de.kapsi.net.daap.chunks.Chunk;
+import org.ardverk.daap.ByteUtil;
+import org.ardverk.daap.chunks.Chunk;
 
 /**
  * This tool will help you to detect changes in the DAAP protocol.

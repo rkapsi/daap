@@ -17,21 +17,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.tests;
+package org.ardverk.daap.tests;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import de.kapsi.net.daap.Database;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.Playlist;
-import de.kapsi.net.daap.Song;
-import de.kapsi.net.daap.Transaction;
-import de.kapsi.net.daap.Txn;
-import de.kapsi.net.daap.chunks.impl.SongDataKind;
-import de.kapsi.net.daap.chunks.impl.SongEqPreset;
-import de.kapsi.net.daap.chunks.impl.SongFormat;
-import de.kapsi.net.daap.chunks.impl.SongGenre;
-import de.kapsi.net.daap.chunks.impl.SongUserRating;
+
+import org.ardverk.daap.Database;
+import org.ardverk.daap.Library;
+import org.ardverk.daap.Playlist;
+import org.ardverk.daap.Song;
+import org.ardverk.daap.Transaction;
+import org.ardverk.daap.Txn;
+import org.ardverk.daap.chunks.impl.SongDataKind;
+import org.ardverk.daap.chunks.impl.SongEqPreset;
+import org.ardverk.daap.chunks.impl.SongFormat;
+import org.ardverk.daap.chunks.impl.SongGenre;
+import org.ardverk.daap.chunks.impl.SongUserRating;
 
 public class SongTest extends TestCase {
 

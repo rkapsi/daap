@@ -4,10 +4,10 @@
  * must pre-create a such list manually. This file must be rebuild whenever a class
  * is removed or a class is added to the {@see de.kapsi.net.daap.chunks.impl} package.
  */
-package de.kapsi.net.daap.chunks;
+package org.ardverk.daap.chunks;
 
-import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
-import de.kapsi.net.daap.chunks.impl.Status;
+import org.ardverk.daap.chunks.impl.ContentCodesResponse;
+import org.ardverk.daap.chunks.impl.Status;
 
 public final class ContentCodesResponseImpl extends ContentCodesResponse {
     public ContentCodesResponseImpl() {

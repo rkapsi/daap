@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.nio;
+package org.ardverk.daap.nio;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -34,16 +34,15 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
+import org.ardverk.daap.DaapConfig;
+import org.ardverk.daap.DaapConnection;
+import org.ardverk.daap.DaapServer;
+import org.ardverk.daap.DaapSession;
+import org.ardverk.daap.DaapStreamException;
+import org.ardverk.daap.Library;
+import org.ardverk.daap.SessionId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.DaapConfig;
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapSession;
-import de.kapsi.net.daap.DaapStreamException;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.SessionId;
 
 /**
  * A DAAP server written with NIO and a single Thread.

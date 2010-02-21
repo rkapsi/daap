@@ -17,9 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks.impl;
+package org.ardverk.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.DateChunk;
+import org.ardverk.daap.chunks.DateChunk;
 
 /**
  * The date when the Song was added. Date is the difference between

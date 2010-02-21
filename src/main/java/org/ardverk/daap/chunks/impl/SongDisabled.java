@@ -17,9 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks.impl;
+package org.ardverk.daap.chunks.impl;
 
-import de.kapsi.net.daap.chunks.BooleanChunk;
+import org.ardverk.daap.chunks.BooleanChunk;
 
 /**
  * Enables or disables the Song. Default is enabled. iTunes shows this

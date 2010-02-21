@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.chunks;
+package org.ardverk.daap.chunks;
 
-import de.kapsi.net.daap.chunks.impl.ContentCodesName;
-import de.kapsi.net.daap.chunks.impl.ContentCodesNumber;
-import de.kapsi.net.daap.chunks.impl.ContentCodesType;
-import de.kapsi.net.daap.chunks.impl.Dictionary;
+import org.ardverk.daap.chunks.impl.ContentCodesName;
+import org.ardverk.daap.chunks.impl.ContentCodesNumber;
+import org.ardverk.daap.chunks.impl.ContentCodesType;
+import org.ardverk.daap.chunks.impl.Dictionary;
 
 /**
  * A content code is essentially a description of a chunk.

@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.bio;
+package org.ardverk.daap.bio;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -25,15 +25,14 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 
+import org.ardverk.daap.DaapConfig;
+import org.ardverk.daap.DaapConnection;
+import org.ardverk.daap.DaapServer;
+import org.ardverk.daap.DaapThreadFactory;
+import org.ardverk.daap.Library;
+import org.ardverk.daap.SessionId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.kapsi.net.daap.DaapConfig;
-import de.kapsi.net.daap.DaapConnection;
-import de.kapsi.net.daap.DaapServer;
-import de.kapsi.net.daap.DaapThreadFactory;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.SessionId;
 
 /**
  * This DAAP server is written with the classical I/O and multible Threads.

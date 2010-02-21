@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.bio;
+package org.ardverk.daap.bio;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,10 +25,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.SocketException;
 
-import de.kapsi.net.daap.DaapAudioResponse;
-import de.kapsi.net.daap.DaapRequest;
-import de.kapsi.net.daap.DaapStreamException;
-import de.kapsi.net.daap.Song;
+import org.ardverk.daap.DaapAudioResponse;
+import org.ardverk.daap.DaapRequest;
+import org.ardverk.daap.DaapStreamException;
+import org.ardverk.daap.Song;
 
 /**
  * An Audio Response.

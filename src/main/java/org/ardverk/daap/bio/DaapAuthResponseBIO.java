@@ -17,13 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package de.kapsi.net.daap.bio;
+package org.ardverk.daap.bio;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import de.kapsi.net.daap.DaapAuthResponse;
-import de.kapsi.net.daap.DaapRequest;
+import org.ardverk.daap.DaapAuthResponse;
+import org.ardverk.daap.DaapRequest;
 
 /**
  * An Authentication Response.
