@@ -19,15 +19,16 @@
 
 package de.kapsi.net.daap.chunks;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * A signed short
  */
 public abstract class SShortChunk extends AbstractChunk implements ShortChunk {
     
-    private static final Log LOG = LogFactory.getLog(SShortChunk.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SShortChunk.class);
   
     public static final int MIN_VALUE = Short.MIN_VALUE;
     public static final int MAX_VALUE = Short.MAX_VALUE;

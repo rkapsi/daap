@@ -6,8 +6,8 @@
  */
 package de.kapsi.net.daap.chunks;
 
-import de.kapsi.net.daap.chunks.impl.Status;
 import de.kapsi.net.daap.chunks.impl.ContentCodesResponse;
+import de.kapsi.net.daap.chunks.impl.Status;
 
 public final class ContentCodesResponseImpl extends ContentCodesResponse {
     public ContentCodesResponseImpl() {

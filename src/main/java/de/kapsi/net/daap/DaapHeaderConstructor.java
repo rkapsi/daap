@@ -35,7 +35,7 @@ import org.apache.http.message.BasicHeader;
  */
 public class DaapHeaderConstructor {
     
-    //private static final Log LOG = LogFactory.getLog(DaapHeaderConstructor.class);
+    //private static final Logger LOG = LoggerFactory.getLogger(DaapHeaderConstructor.class);
     
     private static final String HTTP_OK = "HTTP/1.1 200 OK";
     private static final String HTTP_NO_CONTENT = "HTTP/1.1 204 No Content";

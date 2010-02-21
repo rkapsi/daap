@@ -28,9 +28,9 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.chunks.Chunk;
 
@@ -42,7 +42,7 @@ import de.kapsi.net.daap.chunks.Chunk;
  */
 public class DaapRequestProcessor {
     
-    private static final Log LOG = LogFactory.getLog(DaapRequestProcessor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapRequestProcessor.class);
     
     private DaapResponseFactory factory;
     
@@ -653,11 +653,11 @@ public class DaapRequestProcessor {
                 
             } catch (NoSuchElementException err) {
                 // not critical, we can recover...
-                LOG.error(err);
+                LOG.error("NoSuchElementException", err);
                 
             } catch (NumberFormatException err) {
                 // not critical, we can recover...
-                LOG.error(err);
+                LOG.error("NumberFormatException", err);
             }
         }
         

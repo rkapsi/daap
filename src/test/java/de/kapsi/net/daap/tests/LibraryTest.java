@@ -19,8 +19,11 @@
 
 package de.kapsi.net.daap.tests;
 
-import junit.framework.*;
-import de.kapsi.net.daap.*;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import de.kapsi.net.daap.Database;
+import de.kapsi.net.daap.Library;
+import de.kapsi.net.daap.Transaction;
 
 public class LibraryTest extends TestCase {
     

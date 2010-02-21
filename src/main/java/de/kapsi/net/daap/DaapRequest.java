@@ -28,9 +28,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import javax.print.URIException;
+
 import org.apache.http.Header;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A DAAP request. The data of this class is submitted by the client 
@@ -78,7 +80,7 @@ public class DaapRequest {
     /** "/databases/databaseId/items/itemId.format" */
     public static final int SONG = 11;
     
-    private static final Log LOG = LogFactory.getLog(DaapRequest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapRequest.class);
     
     private URI uri;
     
@@ -149,16 +151,12 @@ public class DaapRequest {
             try {
                 uri = new URI(st.nextToken());
             } catch (URISyntaxException err) {
-                if (LOG.isErrorEnabled()) {
-                    LOG.error(err);
-                }
+                LOG.error("URISyntaxException", err);
             }
             
             st.nextToken(); // protocol
         } catch (NoSuchElementException err) {
-            if (LOG.isErrorEnabled()) {
-                LOG.error(err);
-            }
+            LOG.error("NoSuchElementException", err);
         }
         
         this.isServerSideRequest = false;

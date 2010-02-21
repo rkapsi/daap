@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.chunks.BooleanChunk;
 import de.kapsi.net.daap.chunks.Chunk;
@@ -62,7 +62,7 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
  */
 public class Playlist {
     
-    private static final Log LOG = LogFactory.getLog(Playlist.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Playlist.class);
     
     /** playlistId is an 32bit unsigned value! */
     private static int playlistId = 1;

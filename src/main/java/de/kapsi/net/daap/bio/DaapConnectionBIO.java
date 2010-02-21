@@ -28,10 +28,10 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URISyntaxException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapRequest;
@@ -52,7 +52,7 @@ import de.kapsi.net.daap.SessionId;
  */
 public class DaapConnectionBIO extends DaapConnection implements Runnable {
     
-    private static final Log LOG = LogFactory.getLog(DaapConnectionBIO.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapConnectionBIO.class);
     
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryBIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
@@ -181,7 +181,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
             // whenever the user disconnects...
             
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("IOException", err);
         } finally {
             close();
         }

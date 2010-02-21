@@ -25,8 +25,8 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.chunks.ByteChunk;
 import de.kapsi.net.daap.chunks.Chunk;
@@ -41,7 +41,7 @@ import de.kapsi.net.daap.chunks.VersionChunk;
 
 public class DaapInputStream extends FilterInputStream {
     
-    private static final Log LOG = LogFactory.getLog(DaapInputStream.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapInputStream.class);
     
     private ChunkFactory factory = null;
     

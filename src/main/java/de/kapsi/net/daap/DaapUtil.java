@@ -37,7 +37,6 @@ import java.util.StringTokenizer;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.Header;
-import org.apache.http.auth.AuthenticationException;
 import org.apache.http.impl.auth.DigestScheme;
 
 import de.kapsi.net.daap.chunks.Chunk;
@@ -50,7 +49,7 @@ import de.kapsi.net.daap.chunks.UIntChunk;
  */
 public final class DaapUtil {
     
-    //private static final Log LOG = LogFactory.getLog(DaapUtil.class);
+    //private static final Logger LOG = LoggerFactory.getLogger(DaapUtil.class);
     
     /** */
     private static final Random generator = new Random();
@@ -76,7 +75,7 @@ public final class DaapUtil {
     /** "\r\n" <b>DON'T TOUCH!</b> */
     static final byte[] CRLF = { (byte)'\r', (byte)'\n' };
     
-    //private static final Log LOG = LogFactory.getLog(DaapUtil.class);
+    //private static final Logger LOG = LoggerFactory.getLogger(DaapUtil.class);
     
     private final static SimpleDateFormat formatter = 
         new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss z", Locale.US);

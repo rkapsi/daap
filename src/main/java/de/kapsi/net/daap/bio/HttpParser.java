@@ -32,15 +32,15 @@ package de.kapsi.net.daap.bio;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ProtocolException;
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
-import org.apache.http.ProtocolException;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EncodingUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A utility class for parsing http header values according to
@@ -54,7 +54,7 @@ import org.apache.http.util.EncodingUtils;
 public class HttpParser {
 
     /** Log object for this class. */
-    private static final Log LOG = LogFactory.getLog(HttpParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpParser.class);
     
     /**
      * Constructor for HttpParser.

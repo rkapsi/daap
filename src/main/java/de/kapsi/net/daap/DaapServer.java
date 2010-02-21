@@ -28,8 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DaapServer
@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class DaapServer<T extends DaapConnection> implements Runnable, LibraryListener {
     
-    protected static final Log LOG = LogFactory.getLog(DaapServer.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DaapServer.class);
     
     /** The Library */
     protected final Library library;

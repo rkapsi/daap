@@ -25,8 +25,8 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapConnection;
@@ -42,7 +42,7 @@ import de.kapsi.net.daap.SessionId;
  */
 public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
     
-    private static final Log LOG = LogFactory.getLog(DaapServerBIO.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapServerBIO.class);
    
     private int threadNo = 0;
     private DaapThreadFactory threadFactory;
@@ -117,7 +117,7 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
             if (ssocket != null)
                 ssocket.close();
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("IOException", err);
         }
         
         disconnectAll();
@@ -146,7 +146,7 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
             try {
                 conn.update();
             } catch (IOException err) {
-                LOG.error(err);
+                LOG.error("IOException", err);
             }
         }
         
@@ -184,7 +184,7 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
                         }
                     }
                 } catch (IOException err) {
-                    LOG.error(err);
+                    LOG.error("IOException", err);
                     try {
                         socket.close();
                     } catch(IOException ignored) {}
@@ -194,17 +194,17 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
             }
             
         } catch (InterruptedException err) {
-            LOG.error(err);
+                LOG.error("InterruptedException", err);
          //   throw new RuntimeException(err);
             
         } catch (SocketException err) {
             if (running) {
-                LOG.error(err);
+                LOG.error("SocketException", err);
             }
           //  throw new RuntimeException(err);
             
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("IOException", err);
           //  throw new RuntimeException(err);
             
         } finally {

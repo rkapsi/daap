@@ -25,8 +25,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.DaapConnection;
 import de.kapsi.net.daap.DaapRequest;
@@ -44,7 +44,7 @@ import de.kapsi.net.daap.SessionId;
  */
 public class DaapConnectionNIO extends DaapConnection {
     
-    private static final Log LOG = LogFactory.getLog(DaapConnectionNIO.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapConnectionNIO.class);
     
     private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
     private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(FACTORY);
@@ -130,8 +130,7 @@ public class DaapConnectionNIO extends DaapConnection {
         DaapResponse response = PROCESSOR.process(request);
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace(request);
-            LOG.trace(response);
+            LOG.trace("Request=" + request + ", response=" + response);
         }
 
         if (response != null) {

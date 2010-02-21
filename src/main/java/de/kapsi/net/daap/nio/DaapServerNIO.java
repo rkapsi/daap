@@ -34,8 +34,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.DaapConfig;
 import de.kapsi.net.daap.DaapConnection;
@@ -52,7 +52,7 @@ import de.kapsi.net.daap.SessionId;
  */
 public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
     
-    private static final Log LOG = LogFactory.getLog(DaapServerNIO.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DaapServerNIO.class);
     
     /** Selector.select() timeout */
     private static final long TIMEOUT = 250;
@@ -220,7 +220,7 @@ public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
             removeConnection(connection);
         } catch (IllegalStateException err) {
             // Shouldn't happen
-            LOG.error(err);
+            LOG.error("IllegalStateException", err);
         }
     }
     
@@ -256,7 +256,7 @@ public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
                 channel.close();
             }
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("IOException", err);
             try { channel.close(); } catch (IOException iox) {}
         }
     }
@@ -305,7 +305,7 @@ public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
             // or whatever. Just close the connection and go 
             // ahead
             keepAlive = false;
-            LOG.error(err);
+            LOG.error("DaapStreamException", err);
         }
         
         if (keepAlive) {
@@ -501,7 +501,7 @@ public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
             process();
             
         } catch (IOException err) {
-            LOG.error(err);
+            LOG.error("IOException", err);
             throw new RuntimeException(err);
             
         } finally {

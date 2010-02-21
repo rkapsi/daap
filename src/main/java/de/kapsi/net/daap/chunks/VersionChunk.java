@@ -19,8 +19,8 @@
 
 package de.kapsi.net.daap.chunks;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.DaapUtil;
 
@@ -34,7 +34,7 @@ import de.kapsi.net.daap.DaapUtil;
  */
 public abstract class VersionChunk extends AbstractChunk {
     
-    private static final Log LOG = LogFactory.getLog(VersionChunk.class);
+    private static final Logger LOG = LoggerFactory.getLogger(VersionChunk.class);
     
     public static final long MIN_VALUE = 0l;
     public static final long MAX_VALUE = 0xFFFFFFFFl;

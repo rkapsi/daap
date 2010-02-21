@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract base class for DaapConnections.
@@ -33,7 +33,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class DaapConnection {
     
-    private static final Log LOG = LogFactory.getLog(DaapConnection.class);
+    //private static final Logger LOG = LoggerFactory.getLogger(DaapConnection.class);
+    
+    private static final Logger LOG = LoggerFactory.getLogger(DaapConnection.class);
     
     public static final int TIMEOUT = 3000;
     public static final int LIBRARY_TIMEOUT = 30000;

@@ -22,12 +22,6 @@ package de.kapsi.net.daap;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import de.kapsi.net.daap.Database;
-import de.kapsi.net.daap.Library;
-import de.kapsi.net.daap.Playlist;
-import de.kapsi.net.daap.Song;
-import de.kapsi.net.daap.Transaction;
-
 /**
  * An auto commiting Transaction.
  * 

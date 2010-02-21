@@ -19,8 +19,9 @@
 
 package de.kapsi.net.daap.chunks;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * This class is an implementation of a date chunk.
@@ -30,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public abstract class DateChunk extends AbstractChunk {
     
-    private static final Log LOG = LogFactory.getLog(DateChunk.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DateChunk.class);
     
     public static final long MIN_VALUE = 0l;
     public static final long MAX_VALUE = 0xFFFFFFFFl;

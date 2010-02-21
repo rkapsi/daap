@@ -27,8 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.kapsi.net.daap.chunks.ContentCodesResponseImpl;
 import de.kapsi.net.daap.chunks.impl.AuthenticationMethod;
@@ -46,7 +46,6 @@ import de.kapsi.net.daap.chunks.impl.Listing;
 import de.kapsi.net.daap.chunks.impl.ListingItem;
 import de.kapsi.net.daap.chunks.impl.LoginRequired;
 import de.kapsi.net.daap.chunks.impl.LoginResponse;
-import de.kapsi.net.daap.chunks.impl.MusicSharingVersion;
 import de.kapsi.net.daap.chunks.impl.PersistentId;
 import de.kapsi.net.daap.chunks.impl.ReturnedCount;
 import de.kapsi.net.daap.chunks.impl.ServerDatabases;
@@ -55,7 +54,6 @@ import de.kapsi.net.daap.chunks.impl.ServerRevision;
 import de.kapsi.net.daap.chunks.impl.SessionId;
 import de.kapsi.net.daap.chunks.impl.SpecifiedTotalCount;
 import de.kapsi.net.daap.chunks.impl.Status;
-import de.kapsi.net.daap.chunks.impl.SupportsAutoLogout;
 import de.kapsi.net.daap.chunks.impl.SupportsBrowse;
 import de.kapsi.net.daap.chunks.impl.SupportsExtensions;
 import de.kapsi.net.daap.chunks.impl.SupportsIndex;
@@ -72,7 +70,7 @@ import de.kapsi.net.daap.chunks.impl.UpdateType;
  */
 public class Library {
 
-    private static final Log LOG = LogFactory.getLog(Library.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Library.class);
 
     private static long persistentId = 1;
     

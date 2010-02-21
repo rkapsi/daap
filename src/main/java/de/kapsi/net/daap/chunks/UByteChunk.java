@@ -19,15 +19,16 @@
 
 package de.kapsi.net.daap.chunks;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * An unsigned byte
  */
 public abstract class UByteChunk extends AbstractChunk implements ByteChunk {
     
-    private static final Log LOG = LogFactory.getLog(UByteChunk.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UByteChunk.class);
     
     public static final int MIN_VALUE = 0;
     public static final int MAX_VALUE = 0xFF;

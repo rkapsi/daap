@@ -20,11 +20,11 @@
 package de.kapsi.net.daap.nio;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.net.URISyntaxException;
 
 import org.apache.http.Header;
 import org.apache.http.message.BasicHeader;

@@ -24,9 +24,6 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceInfo;
-
 /**
  * Test and Sample environment for DAAP
  * 
@@ -74,7 +71,7 @@ public class Main extends TimerTask implements DaapAuthenticator, DaapStreamSour
     
     public Main() throws Exception {
 
-        System.out.println(SONG);
+        /*System.out.println(SONG);
 
         JmDNS jmdns = new JmDNS();
         ServiceInfo serviceInfo = new ServiceInfo("_daap._tcp.local.", LIBRARY
@@ -146,6 +143,7 @@ public class Main extends TimerTask implements DaapAuthenticator, DaapStreamSour
         serverThread.start();
         
         autoCommitTxn = new AutoCommitTransaction(library);
+        */
     }
 
     public Song createSong(int i) {
