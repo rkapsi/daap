@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/main/java/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/main/java/jmdns-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/main/java/httpclient-4.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/main/java/logback-classic-0.9.18.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
