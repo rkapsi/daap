@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.ardverk.daap.chunks.BooleanChunk;
 import org.ardverk.daap.chunks.Chunk;
@@ -98,7 +99,7 @@ import org.ardverk.daap.chunks.impl.SongYear;
 public class Song {
     
     /** songId is an 32bit unsigned value! */
-    private static long songId = 1;
+    private static final AtomicLong SONG_ID = new AtomicLong(1);
     
     private static final SongFormat FORMAT = new SongFormat(SongFormat.MP3);
     private static final SongSampleRate SAMPLE_RATE = new SongSampleRate(SongSampleRate.KHZ_44100);
@@ -106,7 +107,7 @@ public class Song {
     private final Map<String, Chunk> chunks = new HashMap<String, Chunk>();
     
     private final ItemKind itemKind = new ItemKind(ItemKind.AUDIO);
-    private final ItemId itemId = new ItemId();
+    private final ItemId itemId = new ItemId(SONG_ID.getAndIncrement());
     private final ItemName itemName = new ItemName();
     private final ContainerItemId containerItemId = new ContainerItemId();
     private final PersistentId persistentId = new PersistentId();
@@ -169,11 +170,6 @@ public class Song {
      * Creates a new Song
      */
     public Song() {
-        
-        synchronized(Song.class) {
-            itemId.setValue(songId++);
-        }
-        
         persistentId.setValue(itemId.getValue());
         containerItemId.setValue(itemId.getValue());
         init();

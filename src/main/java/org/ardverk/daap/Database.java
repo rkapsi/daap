@@ -24,9 +24,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.ardverk.daap.chunks.Chunk;
-import org.ardverk.daap.chunks.UIntChunk;
 import org.ardverk.daap.chunks.impl.DatabasePlaylists;
 import org.ardverk.daap.chunks.impl.DatabaseSongs;
 import org.ardverk.daap.chunks.impl.DeletedIdListing;
@@ -53,7 +53,7 @@ public class Database {
     private static final Logger LOG = LoggerFactory.getLogger(Database.class);
     
     /** databaseId is an 32bit unsigned value! */
-    private static long databaseId = 1;
+    private static final AtomicLong DATABASE_ID = new AtomicLong();
     
     /** unique id */
     private final long itemId;
@@ -137,11 +137,8 @@ public class Database {
      * 
      * @param name a name for this Database
      */
-    public Database(String name, Playlist masterPlaylist) {
-        synchronized(Database.class) {
-            this.itemId = UIntChunk.checkUIntRange(databaseId++);
-        }
-        
+    public Database(String name, Playlist masterPlaylist) {        
+        this.itemId = DATABASE_ID.getAndIncrement();
         this.persistentId = Library.nextPersistentId();
         this.name = name;
         this.totalPlaylistCount = 0;

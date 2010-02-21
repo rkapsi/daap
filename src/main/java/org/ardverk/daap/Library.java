@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.ardverk.daap.chunks.ContentCodesResponseImpl;
 import org.ardverk.daap.chunks.impl.AuthenticationMethod;
@@ -69,8 +70,8 @@ import org.slf4j.LoggerFactory;
 public class Library {
 
     private static final Logger LOG = LoggerFactory.getLogger(Library.class);
-
-    private static long persistentId = 1;
+    
+    private static final AtomicLong PERISTENT_ID = new AtomicLong(1);
     
     /** The revision of this Library */
     private int revision = 0;
@@ -353,9 +354,7 @@ public class Library {
     }
     
     protected static long nextPersistentId() {
-        synchronized(Library.class) {
-            return persistentId++;
-        }
+        return PERISTENT_ID.getAndIncrement();
     }
 
     public void addLibraryListener(LibraryListener l) {

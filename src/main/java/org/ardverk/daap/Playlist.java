@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.ardverk.daap.chunks.BooleanChunk;
 import org.ardverk.daap.chunks.Chunk;
@@ -64,10 +65,10 @@ public class Playlist {
     private static final Logger LOG = LoggerFactory.getLogger(Playlist.class);
     
     /** playlistId is an 32bit unsigned value! */
-    private static int playlistId = 1;
+    private static final AtomicLong PLAYLIST_ID = new AtomicLong(1);
     
     /** unique id */
-    private final ItemId itemId = new ItemId();
+    private final ItemId itemId = new ItemId(PLAYLIST_ID.getAndIncrement());
     
     /** unique persistent id */
     private final PersistentId persistentId = new PersistentId();
@@ -125,10 +126,6 @@ public class Playlist {
      * @param name the Name of the Playlist
      */
     public Playlist(String name) {
-        synchronized(Playlist.class) {
-            this.itemId.setValue(playlistId++);
-        }
-        
         this.itemName.setValue(name);
         this.persistentId.setValue(Library.nextPersistentId());
         
