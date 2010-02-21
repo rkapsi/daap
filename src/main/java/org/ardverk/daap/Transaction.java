@@ -180,9 +180,8 @@ public class Transaction {
             return true;
         }
         
-        Iterator it = playlist.getSongs().iterator();
-        while(it.hasNext()) {
-            if (modified((Song)it.next())) {
+        for (Song song : playlist.getSongs()) {
+            if (modified(song)) {
                 List<Txn> empty = Collections.emptyList();
                 txnMap.put(playlist, empty);
                 return true;

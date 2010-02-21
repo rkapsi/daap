@@ -458,7 +458,7 @@ public class Library {
             return null;
         }
         
-        DaapServer server = request.getServer();
+        DaapServer<?> server = request.getServer();
         DaapConfig config = server.getConfig();
         
         ServerInfoResponse serverInfoResponse = new ServerInfoResponse();

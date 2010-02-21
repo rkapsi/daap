@@ -44,7 +44,7 @@ public class DaapServerFactory {
      * @return either {@see de.kapsi.net.daap.nio.DaapServerNIO} or 
      *                  {@see de.kapsi.net.daap.bio.DaapServerBIO}
      */    
-    public static DaapServer createServer(Library library, boolean nio) {
+    public static DaapServer<?> createServer(Library library, boolean nio) {
         if (nio) {
             return createNIOServer(library);
         } else {
@@ -63,7 +63,7 @@ public class DaapServerFactory {
      * @return either {@see de.kapsi.net.daap.nio.DaapServerNIO} or 
      *                  {@see de.kapsi.net.daap.bio.DaapServerBIO}
      */    
-    public static DaapServer createServer(Library library, DaapConfig config, boolean nio) {
+    public static DaapServer<?> createServer(Library library, DaapConfig config, boolean nio) {
         if (nio) {
             return createNIOServer(library, config);
         } else {
@@ -77,7 +77,7 @@ public class DaapServerFactory {
      * @param library an instance of Library
      * @return {@see de.kapsi.net.daap.bio.DaapServerBIO} 
      */    
-    public static DaapServer createBIOServer(Library library) {
+    public static DaapServer<?> createBIOServer(Library library) {
         return new DaapServerBIO(library);
     }
     
@@ -88,7 +88,7 @@ public class DaapServerFactory {
      * @param config an instance of DaapConfig
      * @return {@see de.kapsi.net.daap.bio.DaapServerBIO} 
      */    
-    public static DaapServer createBIOServer(Library library, DaapConfig config) {
+    public static DaapServer<?> createBIOServer(Library library, DaapConfig config) {
         return new DaapServerBIO(library, config);
     }
     
@@ -98,7 +98,7 @@ public class DaapServerFactory {
      * @param library an instance of Library
      * @return {@see de.kapsi.net.daap.nio.DaapServerNIO} 
      */    
-    public static DaapServer createNIOServer(Library library) {
+    public static DaapServer<?> createNIOServer(Library library) {
         return new DaapServerNIO(library);
     }
     
@@ -109,7 +109,7 @@ public class DaapServerFactory {
      * @param config an instance of DaapConfig
      * @return {@see de.kapsi.net.daap.nio.DaapServerNIO}
      */    
-    public static DaapServer createNIOServer(Library library, DaapConfig config) {
+    public static DaapServer<?> createNIOServer(Library library, DaapConfig config) {
         return new DaapServerNIO(library, config);
     }
 }

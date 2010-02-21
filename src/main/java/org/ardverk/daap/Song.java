@@ -1127,7 +1127,8 @@ public class Song {
         return createNewTxn(name, String.class, value);
     }
     
-    protected Txn createNewTxn(final String fieldName, final Class valueClass, final Object value) {
+    protected Txn createNewTxn(final String fieldName, 
+            final Class<?> valueClass, final Object value) {
         Txn txn = new Txn() {
             public void commit(Transaction txn) {
                 setValue(fieldName, valueClass, value);
@@ -1153,7 +1154,7 @@ public class Song {
         setValue(fieldName, String.class, value);
     }
     
-    protected void setValue(String fieldName, Class valueClass, Object value) {
+    protected void setValue(String fieldName, Class<?> valueClass, Object value) {
         try {
 
             Field field = Song.class.getDeclaredField(fieldName);
@@ -1161,7 +1162,7 @@ public class Song {
 
             Chunk chunk = (Chunk)field.get(this);
             if (chunk == null) {
-                Constructor con = field.getType().getConstructor(new Class[] { valueClass });
+                Constructor<?> con = field.getType().getConstructor(new Class[] { valueClass });
                 chunk = (Chunk)con.newInstance(new Object[]{value});
                 field.set(this, chunk);
                 addChunk(chunk);

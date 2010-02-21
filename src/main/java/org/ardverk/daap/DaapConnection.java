@@ -53,7 +53,7 @@ public abstract class DaapConnection {
     
     protected final DaapResponseWriter writer;
     
-    protected DaapServer server;
+    protected DaapServer<?> server;
     protected DaapSession session;
     
     protected ConnectionType type = ConnectionType.UNDEF;
@@ -64,7 +64,7 @@ public abstract class DaapConnection {
     
     protected boolean locked = false;
     
-    public DaapConnection(DaapServer server) {
+    public DaapConnection(DaapServer<?> server) {
         this.server = server;
         writer = new DaapResponseWriter();
         libraryQueue = new LinkedList<Library>();
@@ -115,7 +115,7 @@ public abstract class DaapConnection {
      *
      * @return the associated DaapServer
      */    
-    public DaapServer getServer() {
+    public DaapServer<?> getServer() {
         return server;
     }
     

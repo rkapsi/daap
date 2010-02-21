@@ -54,7 +54,7 @@ public final class SessionId {
      * 
      * @param uniqueSet A set of SessionIds that are already taken
      */
-    public static SessionId createSessionId(Set uniqueSet) {
+    public static SessionId createSessionId(Set<? extends SessionId> uniqueSet) {
 
         for(int i = 0; i < Integer.MAX_VALUE; i++) {
             int id = DaapUtil.nextInt(Integer.MAX_VALUE);

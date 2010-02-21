@@ -35,7 +35,7 @@ public abstract class DaapAuthResponse implements DaapResponse {
     public DaapAuthResponse(DaapRequest request) {
         this.request = request;
         
-        DaapServer server = request.getServer();
+        DaapServer<?> server = request.getServer();
         DaapConfig config = server.getConfig();
         Object scheme = config.getAuthenticationScheme();
         

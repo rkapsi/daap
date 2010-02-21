@@ -391,7 +391,7 @@ public class DaapRequest {
     /**
      * Returns the Server reference
      */
-    public DaapServer getServer() {
+    public DaapServer<?> getServer() {
         return getConnection().getServer();
     }
     

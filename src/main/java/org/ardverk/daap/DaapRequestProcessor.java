@@ -127,7 +127,6 @@ public class DaapRequestProcessor {
      * Returns <tt>true</tt> if request is authenticated 
      * or if no authentication is required (if disabled). 
      */
-    @SuppressWarnings("deprecation")
     private boolean isAuthenticated(DaapRequest request)
             throws UnsupportedEncodingException {
         
@@ -136,7 +135,7 @@ public class DaapRequestProcessor {
         }
         
         DaapConnection connection = request.getConnection();
-        DaapServer server = request.getServer();
+        DaapServer<?> server = request.getServer();
         DaapConfig config = server.getConfig();
         DaapAuthenticator authenticator = server.getAuthenticator();
         
@@ -569,7 +568,7 @@ public class DaapRequestProcessor {
         }
         
         DaapConnection connection = request.getConnection();
-        DaapServer server = connection.getServer();      
+        DaapServer<?> server = connection.getServer();      
         DaapStreamSource streamSource = server.getStreamSource();
          
         if (streamSource != null) {

@@ -142,11 +142,11 @@ public class Folder extends Playlist {
         return getPlaylists().size();
     }
     
-    public List getPlaylists() {
+    public List<Playlist> getPlaylists() {
         if (playlists != null) {
             return Collections.unmodifiableList(playlists);
         } else {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
     

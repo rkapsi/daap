@@ -22,7 +22,6 @@ package org.ardverk.daap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -97,7 +96,7 @@ public class Database {
             database.deletedPlaylists = null;
         }
         
-        Set songs = database.getSongs();
+        Set<Song> songs = database.getSongs();
         
         for (Playlist playlist : database.playlists) {
             if (txn.modified(playlist)) {
@@ -366,7 +365,7 @@ public class Database {
     /**
      * Returns all Songs in this Database
      */
-    public Set getSongs() {
+    public Set<Song> getSongs() {
         Set<Song> songs = null;
         for (Playlist playlist : playlists) {
             if (!(playlist instanceof Folder)) {
@@ -378,7 +377,7 @@ public class Database {
             }
         }
         if (songs == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         } else {
             return Collections.unmodifiableSet(songs);
         }
@@ -498,9 +497,7 @@ public class Database {
         for (Playlist playlist : playlists) {
             ListingItem listingItem = new ListingItem();
             
-            Iterator meta = request.getMeta().iterator();
-            while(meta.hasNext()) {
-                String key = (String)meta.next();
+            for (String key : request.getMeta()) {
                 Chunk chunk = playlist.getChunk(key);
                 
                 if (chunk != null) {
@@ -536,19 +533,15 @@ public class Database {
         databaseSongs.add(new UpdateType(request.isUpdateType() ? 1 : 0));
         databaseSongs.add(new SpecifiedTotalCount(totalSongCount));
         
-        Set songs = getSongs();
+        Set<Song> songs = getSongs();
         databaseSongs.add(new ReturnedCount(songs.size()));
 
         Listing listing = new Listing();
         
-        Iterator it = songs.iterator();
-        while (it.hasNext()) {
+        for (Song song : songs) {
             ListingItem listingItem = new ListingItem();
-            Song song = (Song)it.next();
 
-            Iterator meta = request.getMeta().iterator();
-            while (meta.hasNext()) {
-                String key = (String)meta.next();
+            for (String key : request.getMeta()) {
                 Chunk chunk = song.getChunk(key);
 
                 if (chunk != null) {
@@ -567,9 +560,7 @@ public class Database {
         if (request.isUpdateType() && deletedSongs != null) {
             DeletedIdListing deletedListing = new DeletedIdListing();
             
-            it = deletedSongs.iterator();
-            while (it.hasNext()) {
-                Song song = (Song) it.next();
+            for (Song song : deletedSongs) {
                 deletedListing.add(song.getChunk("dmap.itemid"));
             }
 

@@ -319,9 +319,7 @@ public class DaapServerNIO extends DaapServer<DaapConnectionNIO> {
      * Disconnects all clients from this server
      */
     private void processDisconnectAll() {
-        Iterator it = selector.keys().iterator();
-        while(it.hasNext()) {
-            SelectionKey sk = (SelectionKey)it.next();
+        for (SelectionKey sk : selector.keys()) {
             SelectableChannel channel = sk.channel();
             if (channel instanceof SocketChannel) {
                 cancel(sk);

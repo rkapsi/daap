@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ProtocolException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.http.Header;
 import org.apache.http.HttpException;
@@ -164,7 +165,7 @@ public class HttpParser {
     public static Header[] parseHeaders(InputStream is, String charset) throws IOException, HttpException {
         LOG.trace("enter HeaderParser.parseHeaders(InputStream, String)");
 
-        ArrayList headers = new ArrayList();
+        List<Header> headers = new ArrayList<Header>();
         String name = null;
         StringBuffer value = null;
         for (; ;) {

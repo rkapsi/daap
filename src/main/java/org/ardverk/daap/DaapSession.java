@@ -158,7 +158,7 @@ public class DaapSession {
      * 
      * @return an Iterator
      */    
-    public synchronized Iterator getAttributeNames() {
+    public synchronized Iterator<String> getAttributeNames() {
         return attributes.keySet().iterator();
     }
     
