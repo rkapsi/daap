@@ -1,136 +1,102 @@
 <project name="DAAP" default="build" basedir=".">
     <description>DAAP support</description>
 
-    <property name="version" value="1.1"/>
+	<property name="version" value="0.1"/>
+		
+	<property name="daap" value="daap-${version}"/>
 	
-    <property name="basedir" value="."/>
-    <property name="javadoc" value="${basedir}/javadoc"/>
-    
-    <property name="gui" value="${basedir}/../gui"/>
-    <property name="core" value="${basedir}/../core"/>
-    <property name="tests" value="${basedir}/../tests"/>
-    
-    <property name="lib" value="${basedir}/../lib"/>
-    <property name="jars" value="${lib}/jars"/>
-  
-	<property name="DEBUG" value="yes"/>
-	<property name="OPTIMIZE" value="yes"/>
+	<property name="build" location="build"/>
+	<property name="dist" location="dist/${daap}"/>
 	
-    <path id="default.classpath">
-        <pathelement location="${basedir}"/>
-        <pathelement location="${core}"/>
-        <pathelement location="${gui}"/>
-        <fileset dir="${jars}" includes="*.jar" excludes="daap.jar"/>
-    </path>
-    
-    <target name="init">
-        <available file="${jars}" type="dir" property="jars.present"/>
-        <tstamp/>
-        <antcall target="checkjars"/>
-    </target>
-    
-    <target name="checkjars" unless="jars.present">
-        <echo message="*******************************************************"/>
-        <echo message="*******  YOU MUST CHECKOUT THE lib MODULE *************"/>
-        <echo message="**** and place it as a sibling to this daap module ****"/>
-        <echo message="*******************************************************"/>
-    </target>
-    
-	<target name="build" depends="init">
-	    <javac srcdir="${basedir}" 
-	    			destdir="${basedir}" 
-	    			excludes="**/tests/*"
-        			target="1.5"
-        			source="1.5"
-        			compiler="javac1.5"
-        			debug="${DEBUG}"
-                    optimize="${OPTIMIZE}" 
-                    deprecation="no">
-			<classpath refid="default.classpath"/>
-	    </javac>
+	<property name="src" location="src/main/java"/>
+	<property name="rsrc" location="resources/main/java"/>
+	
+	<property name="build.classes" location="${build}/classes"/>
+	<property name="build.resources" location="${build}/resources"/>
+	<property name="build.lib" location="${build}/lib"/>
+	
+	<property name="daap-jar" location="${build.lib}/${daap}.jar"/>
+		
+	<target name="init">
+		<tstamp/>
 	</target>
-
-    <target name="runTest" depends="init">
-        <java classname="de.kapsi.net.daap.Main">
-            <classpath refid="default.classpath"/>
-        </java>
-    </target>
-    
-    <target name="runLime" depends="init">
-        <java classname="com.limegroup.gnutella.gui.Main" dir="${gui}" fork="true">
-            
-            <sysproperty key="java.library.path" value="../lib/native"/>
-            <sysproperty key="java.util.logging.config.file" 
-                                value="jdk14.logging.properties"/>
-            
-            <classpath refid="default.classpath"/>
-            
-            <classpath>
-                <pathelement location="/System/Library/Java"/>
-                <pathelement location="../lib/messagebundles"/>
-            </classpath>
-            
-        </java>
-    </target>
-    
-    <target name="javadoc">
-		
-        <mkdir dir="${javadoc}"/>
-
-		<javadoc 
-		        destdir="${javadoc}"
-		        author="true"
-		        version="true"
-		        use="true">
-		
-			<classpath refid="default.classpath"/>
+	
+	<target name="build" depends="init">
+		<mkdir dir="${build.classes}"/>
+		<javac srcdir="${src}" 
+			destdir="${build.classes}"
+			source="1.5"
+			target="1.5">
 			
-			<!--<classpath>
-				<fileset dir="${tests}" includes="lib/*.jar"/>
-			</classpath>-->
-			
-			<packageset dir="${basedir}"/>
+			<classpath>
+				<fileset dir="lib/main/java">
+					<include name="**/*.jar"/>
+				</fileset>
+		    </classpath>
+		</javac>
 		
+		<mkdir dir="${build.resources}"/>
+		<copy todir="${build.resources}" failonerror="false">
+    		<fileset dir="${rsrc}"/>
+	  	</copy>
+	</target>
+	
+	<target name="jar" depends="clean, build">
+		<mkdir dir="${build.lib}"/>
+		
+		<jar jarfile="${daap-jar}">
+			<fileset dir="${build.classes}"/>
+	    	<fileset dir="${build.resources}"/>
+			
+			<manifest>
+				<attribute name="Built-By" value="${user.name}"/>
+				<attribute name="Implementation-Title" value="DAAP"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="dist" depends="jar">
+		<mkdir dir="${dist}"/>
+		<copy file="README" todir="${dist}"/>
+		<copy file="${daap-jar}" todir="${dist}"/>
+		
+		<!-- Copy the docs directory -->
+		<mkdir dir="${dist}/docs"/>
+		<copy todir="${dist}/docs">
+			<fileset dir="docs"/>
+		</copy>
+		
+		<!-- Copy the License files -->
+		<copy todir="${dist}">
+			<fileset dir="${basedir}">
+				<include name="LICENSE*.txt"/>
+			</fileset>
+		</copy>
+		
+		<!-- Copy the runtime JARs -->
+		<mkdir dir="${dist}/lib"/>
+		<copy todir="${dist}/lib">
+			<fileset dir="lib/main/java">
+				<include name="**/*.jar"/>
+			</fileset>
+		</copy>
+		
+		<property name="javadoc.dir" location="/home/roger/Desktop/docs/api"/>
+		
+		<javadoc
+			sourcepath="${src}"
+			destdir="${dist}/api"
+			author="true"
+			version="true"
+			use="true"
+			windowtitle="DAAP">
+			
+			<link offline="true" href="http://java.sun.com/javase/6/docs/api" packagelistLoc="${javadoc.dir}"/>
 		</javadoc>
-    </target>
-
-     <target name="jar">
-        <javac srcdir="${basedir}" 
-        			destdir="${basedir}" 
-        			excludes="**/tests/*"
-        			target="1.5"
-        			source="1.5"
-        			compiler="javac1.5"
-        			debug="${DEBUG}"
-                    optimize="${OPTIMIZE}" 
-                    deprecation="no">
-            <classpath refid="default.classpath"/>
-        </javac>
-        
-        <jar destfile="daap-${version}.jar" 
-                        basedir="${basedir}" 
-                        includes="**/*.class"
-            				compress="false"
-                        excludes="**/Main.* 
-                            de/kapsi/net/daap/tools/**/*.*
-                            de/kapsi/net/daap/tests/**/*.*"/>
-    </target>
-
-    <target name="src-jar">
-        <jar destfile="daap-${version}-src.jar" 
-                        basedir="${basedir}" 
-                        includes="**/*.java"
-						compress="false"
-                        excludes="**/Main.* 
-                            de/kapsi/net/daap/tools/**/*.*
-                            de/kapsi/net/daap/tests/**/*.*"/>
-    </target>
-		
-    <target name="clean" description="clean up">
-        <delete>
-            <fileset dir="${basedir}">
-                <include name="**/*.class"/>
-            </fileset>
-        </delete>
-    </target>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+	</target>
 </project>
