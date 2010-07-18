@@ -347,14 +347,17 @@ public class Database {
         return null;
     }
 
+    @Override
     public String toString() {
         return "Database(" + getItemId() + ", " + getName() + ")";
     }
 
+    @Override
     public int hashCode() {
         return (int) (getItemId() & Integer.MAX_VALUE);
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Database)) {
             return false;

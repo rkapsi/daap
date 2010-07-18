@@ -46,6 +46,7 @@ public abstract class DaapAuthResponse implements DaapResponse {
         }
     }
 
+    @Override
     public String toString() {
         return (new String(header));
     }

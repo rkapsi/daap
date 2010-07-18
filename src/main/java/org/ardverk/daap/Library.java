@@ -337,14 +337,7 @@ public class Library {
         return databases.size();
     }
 
-    public boolean equals(Object o) {
-        if (!(o instanceof Library)) {
-            return false;
-        }
-
-        return o == this;
-    }
-
+    @Override
     public String toString() {
         if (!clone) {
             return "Library(" + revision + ")";

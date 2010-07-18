@@ -24,6 +24,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.util.concurrent.ThreadFactory;
 
 import org.ardverk.daap.DaapConfig;
 import org.ardverk.daap.DaapConnection;
@@ -41,11 +42,11 @@ import org.slf4j.LoggerFactory;
  */
 public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(DaapServerBIO.class);
+    private static final Logger LOG 
+        = LoggerFactory.getLogger(DaapServerBIO.class);
 
-    private int threadNo = 0;
-    private DaapThreadFactory threadFactory;
+    private volatile ThreadFactory threadFactory 
+        = new DaapThreadFactory("DaapConnectionThread");
 
     private ServerSocket ssocket;
 
@@ -69,8 +70,6 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
      */
     public DaapServerBIO(Library library, DaapConfig config) {
         super(library, config);
-
-        threadFactory = new DaapThreadFactoryImpl();
     }
 
     /**
@@ -79,9 +78,9 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
      * @param fectory
      *            a DaapThreadFactory
      */
-    public synchronized void setThreadFactory(DaapThreadFactory factory) {
+    public synchronized void setThreadFactory(ThreadFactory factory) {
         if (factory == null) {
-            threadFactory = new DaapThreadFactoryImpl();
+            threadFactory = new DaapThreadFactory("DaapConnectionThread");
         } else {
             threadFactory = factory;
         }
@@ -160,9 +159,9 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
     /**
      * The run loop
      */
+    @Override
     public void run() {
 
-        threadNo = 0;
         running = true;
 
         try {
@@ -180,9 +179,7 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
                                     this, socket);
                             addPendingConnection(connection);
 
-                            Thread connThread = threadFactory.createDaapThread(
-                                    connection, "DaapConnectionThread-"
-                                            + (++threadNo));
+                            Thread connThread = threadFactory.newThread(connection);
                             connThread.start();
 
                         } else {
@@ -248,20 +245,5 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
         }
 
         return super.updateConnection(connection);
-    }
-
-    /**
-     * The default DaapThreadFactory
-     */
-    private static class DaapThreadFactoryImpl implements DaapThreadFactory {
-
-        private DaapThreadFactoryImpl() {
-        }
-
-        public Thread createDaapThread(Runnable runnable, String name) {
-            Thread thread = new Thread(runnable, name);
-            thread.setDaemon(true);
-            return thread;
-        }
     }
 }

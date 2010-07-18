@@ -159,9 +159,9 @@ public class Transaction {
             return true;
         }
 
-        Iterator it = database.getPlaylists().iterator();
+        Iterator<Playlist> it = database.getPlaylists().iterator();
         while (it.hasNext()) {
-            if (modified((Playlist) it.next())) {
+            if (modified(it.next())) {
                 txnMap.put(database, Collections.EMPTY_LIST);
                 return true;
             }
@@ -213,6 +213,7 @@ public class Transaction {
         }
     }
 
+    @Override
     public String toString() {
         return "Transaction: " + library;
     }

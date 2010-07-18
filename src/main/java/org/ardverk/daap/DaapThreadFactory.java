@@ -19,18 +19,32 @@
 
 package org.ardverk.daap;
 
-/**
- * This interface enables you to create customized Threads from outside of
- * DaapServer. The DaapServer will call this interface whenever a new Thread
- * needs to be created.
- * <p>
- * <b>Important:</b> Just create the Thread, setup some properties like
- * setDaemon() or setPriority() but <b><u><i>do not</i></u></b> start the
- * Thread!!!
- * 
- * @author Roger Kapsi
- */
-public interface DaapThreadFactory {
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    public Thread createDaapThread(Runnable runner, String name);
+/**
+ * 
+ */
+public class DaapThreadFactory implements ThreadFactory {
+    
+    private final AtomicInteger count = new AtomicInteger();
+    
+    private final String name;
+
+    private final boolean daemon = true;
+    
+    public DaapThreadFactory(String name) {
+        this.name = name;
+    }
+
+    private String createName() {
+        return name + "-" + count.incrementAndGet();
+    }
+    
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread thread = new Thread(r, createName());
+        thread.setDaemon(daemon);
+        return thread;
+    }
 }

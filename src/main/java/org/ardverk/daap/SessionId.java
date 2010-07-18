@@ -85,10 +85,12 @@ public final class SessionId {
         return sessionId;
     }
 
+    @Override
     public int hashCode() {
         return sessionId;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof SessionId)) {
             return false;
@@ -97,6 +99,7 @@ public final class SessionId {
         return ((SessionId) o).sessionId == sessionId;
     }
 
+    @Override
     public String toString() {
         return Integer.toString(sessionId);
     }

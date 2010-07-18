@@ -394,10 +394,12 @@ public class Playlist {
         return songs.contains(song);
     }
 
+    @Override
     public int hashCode() {
         return itemId.getValue();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Playlist)) {
             return false;
@@ -406,6 +408,7 @@ public class Playlist {
         return ((Playlist) o).getItemId() == getItemId();
     }
 
+    @Override
     public String toString() {
         return getName() + " (" + getItemId() + ")";
     }

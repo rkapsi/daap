@@ -51,6 +51,7 @@ public abstract class DaapAudioResponse implements DaapResponse {
                 song.getSize());
     }
 
+    @Override
     public String toString() {
         return (new String(header));
     }

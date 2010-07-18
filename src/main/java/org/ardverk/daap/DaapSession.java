@@ -191,6 +191,7 @@ public class DaapSession {
         lastAccesedTime = System.currentTimeMillis();
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
 

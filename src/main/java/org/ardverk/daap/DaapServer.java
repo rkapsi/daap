@@ -351,6 +351,7 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable,
         libraryQueue.clear();
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Name: ").append(config.getServerName()).append("\n");

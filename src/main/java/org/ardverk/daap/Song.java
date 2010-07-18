@@ -918,6 +918,7 @@ public class Song {
         return attachment;
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
 
@@ -932,10 +933,12 @@ public class Song {
         return buffer.append("\n").toString();
     }
 
+    @Override
     public int hashCode() {
         return (int) getItemId();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof Song)) {
             return false;

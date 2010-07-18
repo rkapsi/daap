@@ -40,6 +40,7 @@ public abstract class DaapChunkResponse implements DaapResponse {
         header = DaapHeaderConstructor.createChunkHeader(request, data.length);
     }
 
+    @Override
     public String toString() {
         return (new String(header));
     }
