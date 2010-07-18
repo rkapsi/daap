@@ -304,6 +304,7 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
         }
     }
 
+    @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer("DaapConnection [");
 
