@@ -142,8 +142,8 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
      */
     protected synchronized void update() {
         for (DaapConnectionBIO conn : connections) {
-            for (int i = 0; i < libraryQueue.size(); i++) {
-                conn.enqueueLibrary(libraryQueue.get(i));
+            for (Library library : libraryQueue) {
+                conn.enqueueLibrary(library);
             }
 
             try {
@@ -175,8 +175,8 @@ public class DaapServerBIO extends DaapServer<DaapConnectionBIO> {
 
                             socket.setSoTimeout(DaapConnection.TIMEOUT);
 
-                            DaapConnectionBIO connection = new DaapConnectionBIO(
-                                    this, socket);
+                            DaapConnectionBIO connection 
+                                = new DaapConnectionBIO(this, socket);
                             addPendingConnection(connection);
 
                             Thread connThread = threadFactory.newThread(connection);

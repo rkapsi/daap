@@ -20,6 +20,7 @@
 package org.ardverk.daap.bio;
 
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,6 +40,7 @@ import org.ardverk.daap.DaapSession;
 import org.ardverk.daap.DaapStreamException;
 import org.ardverk.daap.DaapUtil;
 import org.ardverk.daap.SessionId;
+import org.ardverk.daap.io.IoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,14 +51,17 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Roger Kapsi
  */
-public class DaapConnectionBIO extends DaapConnection implements Runnable {
+public class DaapConnectionBIO extends DaapConnection 
+        implements Closeable, Runnable {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(DaapConnectionBIO.class);
+    private static final Logger LOG 
+        = LoggerFactory.getLogger(DaapConnectionBIO.class);
 
-    private static final DaapResponseFactory FACTORY = new DaapResponseFactoryBIO();
-    private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(
-            FACTORY);
+    private static final DaapResponseFactory FACTORY 
+        = new DaapResponseFactoryBIO();
+    
+    private static final DaapRequestProcessor PROCESSOR 
+        = new DaapRequestProcessor(FACTORY);
 
     private Socket socket;
 
@@ -209,11 +214,9 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
                         .getAttribute("CLIENT_REVISION");
 
                 // to request
-                Integer revisionNumber = new Integer(getFirstInQueue()
-                        .getRevision());
-
+                int revisionNumber = getFirstInQueue().getRevision();
                 DaapRequest request = new DaapRequest(this, sessionId,
-                        revisionNumber.intValue(), delta.intValue());
+                        revisionNumber, delta.intValue());
 
                 DaapResponse response = PROCESSOR.process(request);
 
@@ -229,30 +232,14 @@ public class DaapConnectionBIO extends DaapConnection implements Runnable {
         close();
     }
 
+    @Override
     public synchronized void close() {
         try {
             super.close();
-
-            try {
-                if (in != null)
-                    in.close();
-            } catch (IOException err) {
-                LOG.error("Error while closing connection", err);
-            }
-
-            try {
-                if (out != null)
-                    out.close();
-            } catch (IOException err) {
-                LOG.error("Error while closing connection", err);
-            }
-
-            try {
-                if (socket != null)
-                    socket.close();
-            } catch (IOException err) {
-                LOG.error("Error while closing connection", err);
-            }
+            
+            IoUtils.closeAll(in, out);
+            IoUtils.close(socket);
+            
         } finally {
 
             // running is true if thread died (e.g. due to an IOE)
