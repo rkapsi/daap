@@ -41,9 +41,9 @@ import org.slf4j.LoggerFactory;
  */
 public class DaapRequestProcessor {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(DaapRequestProcessor.class);
-
+    private static final Logger LOG 
+        = LoggerFactory.getLogger(DaapRequestProcessor.class);
+    
     private DaapResponseFactory factory;
 
     /** Creates a new instance of DaapRequestProcessor */
@@ -432,8 +432,9 @@ public class DaapRequestProcessor {
                 throw new IOException(
                         "Connection is not associated with a Session");
             }
-            session.setAttribute("CLIENT_REVISION", new Integer(library
-                    .getRevision()));
+            
+            session.setAttribute("CLIENT_REVISION", 
+                    library.getRevision());
             return null;
         }
 

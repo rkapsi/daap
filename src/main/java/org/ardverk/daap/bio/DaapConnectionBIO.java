@@ -209,14 +209,13 @@ public class DaapConnectionBIO extends DaapConnection
                 SessionId sessionId = session.getSessionId();
 
                 // client's revision
-                // Integer delta = new Integer(getFirstInQueue().getRevision());
-                Integer delta = (Integer) session
-                        .getAttribute("CLIENT_REVISION");
+                // int delta = getFirstInQueue().getRevision();
+                int delta = (Integer) session.getAttribute("CLIENT_REVISION");
 
                 // to request
                 int revisionNumber = getFirstInQueue().getRevision();
                 DaapRequest request = new DaapRequest(this, sessionId,
-                        revisionNumber, delta.intValue());
+                        revisionNumber, delta);
 
                 DaapResponse response = PROCESSOR.process(request);
 

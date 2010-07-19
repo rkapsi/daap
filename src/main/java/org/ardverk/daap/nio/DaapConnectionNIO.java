@@ -46,9 +46,11 @@ public class DaapConnectionNIO extends DaapConnection {
     private static final Logger LOG = LoggerFactory
             .getLogger(DaapConnectionNIO.class);
 
-    private static final DaapResponseFactory FACTORY = new DaapResponseFactoryNIO();
-    private static final DaapRequestProcessor PROCESSOR = new DaapRequestProcessor(
-            FACTORY);
+    private static final DaapResponseFactory FACTORY 
+        = new DaapResponseFactoryNIO();
+    
+    private static final DaapRequestProcessor PROCESSOR 
+        = new DaapRequestProcessor(FACTORY);
 
     private SocketChannel socketChannel;
     private DaapRequestReaderNIO reader;
@@ -221,16 +223,14 @@ public class DaapConnectionNIO extends DaapConnection {
                 SessionId sessionId = session.getSessionId();
 
                 // client's revision
-                // Integer delta = new Integer(getFirstInQueue().getRevision());
-                Integer delta = (Integer) session
-                        .getAttribute("CLIENT_REVISION");
+                // int delta = getFirstInQueue().getRevision();
+                int delta = (Integer) session.getAttribute("CLIENT_REVISION");
 
                 // to request
-                Integer revisionNumber = new Integer(getFirstInQueue()
-                        .getRevision());
+                int revisionNumber = getFirstInQueue().getRevision();
 
                 DaapRequest request = new DaapRequest(this, sessionId,
-                        revisionNumber.intValue(), delta.intValue());
+                        revisionNumber, delta);
 
                 DaapResponse response = PROCESSOR.process(request);
                 if (response != null) {
