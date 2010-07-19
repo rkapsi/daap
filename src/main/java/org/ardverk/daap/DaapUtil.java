@@ -48,9 +48,6 @@ import org.ardverk.daap.chunks.UIntChunk;
  */
 public final class DaapUtil {
 
-    // private static final Logger LOG =
-    // LoggerFactory.getLogger(DaapUtil.class);
-
     /** */
     private static final Random generator = new Random();
 
@@ -74,10 +71,7 @@ public final class DaapUtil {
 
     /** "\r\n" <b>DON'T TOUCH!</b> */
     static final byte[] CRLF = { (byte) '\r', (byte) '\n' };
-
-    // private static final Logger LOG =
-    // LoggerFactory.getLogger(DaapUtil.class);
-
+    
     private final static SimpleDateFormat formatter = new SimpleDateFormat(
             "EEE, d MMM yyyy hh:mm:ss z", Locale.US);
 
@@ -103,8 +97,10 @@ public final class DaapUtil {
     public static final int MUSIC_SHARING_VERSION_201 = 0x00020001; // 2.0.1
 
     /** 0, 1, ... F */
-    private static final char[] HEX = { '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+    private static final char[] HEX = { 
+        '0', '1', '2', '3', '4', '5', '6', '7',
+        '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' 
+    };
 
     /** Default DAAP realm */
     static final String DAAP_REALM = "daap";
@@ -114,8 +110,9 @@ public final class DaapUtil {
      * 
      * TODO: complete list
      */
-    private static final String[] SUPPORTED_FORMATS = { ".mp3", ".m4a", ".m4p",
-            ".wav", ".aif", ".aiff", ".m1a" };
+    private static final String[] SUPPORTED_FORMATS = { 
+        ".mp3", ".m4a", ".m4p", ".wav", ".aif", ".aiff", ".m1a" 
+    };
 
     private DaapUtil() {
     }
@@ -370,8 +367,8 @@ public final class DaapUtil {
     }
 
     /**
-*
-*/
+     *
+     */
     public static long parseUInt(String value) throws NumberFormatException {
         try {
             return UIntChunk.checkUIntRange(Long.parseLong(value));

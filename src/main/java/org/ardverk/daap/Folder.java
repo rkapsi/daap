@@ -38,7 +38,7 @@ public class Folder extends Playlist {
     private final ParentContainerId parentContainerId = new ParentContainerId();
 
     // @since iTunes 5.0
-    private HasChildContainers hasChildContainers = new HasChildContainers(true);
+    private final HasChildContainers hasChildContainers = new HasChildContainers(true);
 
     /** */
     private List<Playlist> playlists = null;

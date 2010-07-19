@@ -137,10 +137,6 @@ public class Playlist {
         addChunk(itemId);
         addChunk(itemName);
         addChunk(persistentId);
-        /*
-         * addChunk(smartPlaylist); addChunk(repeatMode); addChunk(shuffleMode);
-         * addChunk(podcastPlaylist); addChunk(hasChildContainers);
-         */
         addChunk(itemCount);
     }
 
@@ -216,8 +212,8 @@ public class Playlist {
     }
 
     /**
-*
-*/
+     *
+     */
     public void setPodcastPlaylist(Transaction txn,
             final boolean podcastPlaylist) {
         if (txn != null) {
@@ -228,15 +224,15 @@ public class Playlist {
     }
 
     /**
-*
-*/
+     *
+     */
     public boolean isPodcastPlaylist() {
         return getBooleanValue(podcastPlaylist);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setRepeatMode(Transaction txn, int repeatMode) {
         UByteChunk.checkUByteRange(repeatMode);
         if (txn != null) {
@@ -247,15 +243,15 @@ public class Playlist {
     }
 
     /**
-*
-*/
+     *
+     */
     public int getRepeatMode() {
         return getUByteValue(repeatMode);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setShuffleMode(Transaction txn, int shuffleMode) {
         UByteChunk.checkUByteRange(shuffleMode);
         if (txn != null) {
@@ -266,8 +262,8 @@ public class Playlist {
     }
 
     /**
-*
-*/
+     *
+     */
     public int getShuffleMode() {
         return getUByteValue(shuffleMode);
     }

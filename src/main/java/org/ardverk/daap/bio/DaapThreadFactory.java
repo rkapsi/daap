@@ -17,24 +17,29 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.ardverk.daap;
+package org.ardverk.daap.bio;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 
+ * A {@link ThreadFactory} for DAAP {@link Thread}s.
  */
-public class DaapThreadFactory implements ThreadFactory {
+class DaapThreadFactory implements ThreadFactory {
     
     private final AtomicInteger count = new AtomicInteger();
     
     private final String name;
 
-    private final boolean daemon = true;
+    private final boolean daemon;
     
     public DaapThreadFactory(String name) {
+        this(name, true);
+    }
+    
+    DaapThreadFactory(String name, boolean daemon) {
         this.name = name;
+        this.daemon = daemon;
     }
 
     private String createName() {

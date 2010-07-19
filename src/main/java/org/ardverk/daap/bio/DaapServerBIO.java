@@ -29,7 +29,6 @@ import java.util.concurrent.ThreadFactory;
 import org.ardverk.daap.DaapConfig;
 import org.ardverk.daap.DaapConnection;
 import org.ardverk.daap.DaapServer;
-import org.ardverk.daap.DaapThreadFactory;
 import org.ardverk.daap.Library;
 import org.ardverk.daap.SessionId;
 import org.slf4j.Logger;

@@ -89,7 +89,8 @@ public class Library {
     private Set<Database> deletedDatabases = null;
 
     /** List of listener */
-    private final List<WeakReference<LibraryListener>> listener = new ArrayList<WeakReference<LibraryListener>>();
+    private final List<WeakReference<LibraryListener>> listener 
+        = new ArrayList<WeakReference<LibraryListener>>();
 
     protected boolean clone = false;
 

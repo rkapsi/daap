@@ -103,9 +103,11 @@ public class Song {
     /** songId is an 32bit unsigned value! */
     private static final AtomicLong SONG_ID = new AtomicLong(1);
 
-    private static final SongFormat FORMAT = new SongFormat(SongFormat.MP3);
-    private static final SongSampleRate SAMPLE_RATE = new SongSampleRate(
-            SongSampleRate.KHZ_44100);
+    private static final SongFormat FORMAT 
+        = new SongFormat(SongFormat.MP3);
+    
+    private static final SongSampleRate SAMPLE_RATE 
+        = new SongSampleRate(SongSampleRate.KHZ_44100);
 
     private final Map<String, Chunk> chunks = new HashMap<String, Chunk>();
 
@@ -198,26 +200,6 @@ public class Song {
 
         // VLC requires the sample rate
         addChunk(SAMPLE_RATE);
-
-        /*
-         * addChunk(album); addChunk(artist); addChunk(bpm); addChunk(bitrate);
-         * addChunk(comment); addChunk(compilation); addChunk(composer);
-         * addChunk(dataKind); addChunk(dataUrl); addChunk(dateAdded);
-         * addChunk(dateModified); addChunk(description); addChunk(disabled);
-         * addChunk(discCount); addChunk(discNumber); addChunk(eqPreset);
-         * addChunk(format); // and overwrite if not null addChunk(genre);
-         * addChunk(relativeVolume); addChunk(sampleRate); addChunk(size);
-         * addChunk(startTime); addChunk(stopTime); addChunk(time);
-         * addChunk(trackCount); addChunk(trackNumber); addChunk(userRating);
-         * addChunk(year); addChunk(grouping); addChunk(persistentId);
-         * addChunk(normVolume);
-         * 
-         * addChunk(codecType); addChunk(codecSubtype);
-         * 
-         * addChunk(itmsArtistId); addChunk(itmsComposerId);
-         * addChunk(itmsGenreId); addChunk(itmsPlaylistId);
-         * addChunk(itmsStorefrontId); addChunk(itmsSongId);
-         */
     }
 
     /**
@@ -791,85 +773,85 @@ public class Song {
     }
 
     /**
-*
-*/
+     *
+     */
     public void setPodcast(Transaction txn, boolean podcast) {
         setBooleanValue(txn, "podcast", podcast);
     }
 
     /**
-*
-*/
+     *
+     */
     public boolean isPodcast() {
         return getBooleanValue(podcast);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setCategory(Transaction txn, String category) {
         setStringValue(txn, "category", category);
     }
 
     /**
-*
-*/
+     *
+     */
     public String getCategory() {
         return getStringValue(category);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setContentDescription(Transaction txn, String contentDescription) {
         setStringValue(txn, "contentDescription", contentDescription);
     }
 
     /**
-*
-*/
+     *
+     */
     public String getContentDescription() {
         return getStringValue(contentDescription);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setContentRating(Transaction txn, int contentRating) {
         setUByteValue(txn, "contentRating", contentRating);
     }
 
     /**
-*
-*/
+     *
+     */
     public int getContentRating() {
         return getUByteValue(contentRating);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setKeywords(Transaction txn, String keywords) {
         setStringValue(txn, "keywords", keywords);
     }
 
     /**
-*
-*/
+     *
+     */
     public String getKeywords() {
         return getStringValue(keywords);
     }
 
     /**
-*
-*/
+     *
+     */
     public void setLongDescription(Transaction txn, String longDescription) {
         setStringValue(txn, "longDescription", longDescription);
     }
 
     /**
-*
-*/
+     *
+     */
     public String getLongDescription() {
         return getStringValue(longDescription);
     }

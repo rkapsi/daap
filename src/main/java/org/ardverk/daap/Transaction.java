@@ -34,11 +34,13 @@ import java.util.Map;
  */
 public class Transaction {
 
-    protected Library library;
+    protected final Map<Object, List<Txn>> txnMap 
+        = new HashMap<Object, List<Txn>>();
+    
+    protected final Library library;
+    
     protected boolean open = false;
-
-    protected Map<Object, List<Txn>> txnMap = new HashMap<Object, List<Txn>>();
-
+    
     protected Transaction(Library library) {
         this.library = library;
         this.open = true;
@@ -208,7 +210,6 @@ public class Transaction {
 
             if (txnMap != null) {
                 txnMap.clear();
-                txnMap = null;
             }
         }
     }

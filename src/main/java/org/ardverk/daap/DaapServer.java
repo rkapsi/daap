@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,10 +154,9 @@ public abstract class DaapServer<T extends DaapConnection> implements Runnable,
      * Sets the factory for Threads. Servers (NIO) that do not support a
      * Threaded moddel throw an {@see java.lang.UnsupportedOperationException}
      * 
-     * @param factory
-     *            a DaapThreadFactory
+     * @param factory a {@link ThreadFactory}
      */
-    public synchronized void setThreadFactory(DaapThreadFactory factory) {
+    public synchronized void setThreadFactory(ThreadFactory factory) {
         throw new UnsupportedOperationException();
     }
 
